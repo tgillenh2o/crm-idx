@@ -1,0 +1,14 @@
+# Cloudflare Worker configuration
+name = "crm-idx-worker"                     # name of your worker
+main = "cf-worker/src/index.js"             # path to your worker script
+compatibility_date = "2025-10-21"           # today’s date, ensures Workers API compatibility
+
+# Cron triggers (runs every 10 minutes)
+[triggers]
+crons = ["*/10 * * * *"]
+
+# Environment variables accessible in the worker
+[vars]
+API_URL = "https://your-backend.onrender.com"
+IDX_FEED_URL = "https://your-idx-feed-url"
+
