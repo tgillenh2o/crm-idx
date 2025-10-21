@@ -1,0 +1,49 @@
+# render.yaml
+services:
+  - type: web
+    name: crm-backend
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGO_URI
+        sync: false
+      - key: APP_URL
+        fromService:
+          name: crm-backend
+          type: web
+          property: host
+
+  - type: web
+    name: crm-frontend
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./frontend/Dockerfile
+    envVars:
+      - key: VITE_API_BASE
+        fromService:
+          name: crm-backend
+          type: web
+          property: host
+
+  - type: worker
+    name: crm-worker
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./worker/Dockerfile
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: SYNC_INTERVAL_MINUTES
+        value: 10
+      - key: IDX_FEED_URL
+        value: https://mock.idxfeed.com/data
