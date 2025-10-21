@@ -9,6 +9,6 @@ crons = ["*/10 * * * *"]
 
 # Environment variables accessible in the worker
 [vars]
-API_URL = "https://your-backend.onrender.com"
-IDX_FEED_URL = "https://your-idx-feed-url"
+API_URL = "https://crm-backend-pvhz.onrender.com"
+IDX_FEED_URL = "https://raw.githubusercontent.com/tgillenh2o/crm-idx/main/cf-worker/data/feed.json"
 
