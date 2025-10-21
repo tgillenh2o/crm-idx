@@ -1,5 +1,5 @@
 export async function onRequestGet() {
-  const feedUrl = "https://raw.githubusercontent.com/tgillenwater/crm-idx/main/cf-worker/data/feed.json";
+  const feedUrl = "https://raw.githubusercontent.com/tgillenh2o/crm-idx/main/cf-worker/data/feed.json";
 
   try {
     const response = await fetch(feedUrl);
