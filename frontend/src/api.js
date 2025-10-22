@@ -1,4 +1,4 @@
-const API_URL = "https://crm-idx-backend.onrender.com/api"; // <-- replace with your actual backend URL
+const API_URL = "https://crm-idx.onrender.com/api"; // Use your primary Render backend URL
 
 export const setAuthToken = (token) => {
   if (token) localStorage.setItem("crm_token", token);
@@ -12,7 +12,9 @@ export const auth = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    return res.json();
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || "Login failed");
+    return json;
   },
   register: async (data) => {
     const res = await fetch(`${API_URL}/auth/register`, {
@@ -20,7 +22,9 @@ export const auth = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    return res.json();
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || "Registration failed");
+    return json;
   },
 };
 
