@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { auth, teams, properties, setAuthToken, invites, leads } from "./api";
+import { auth, teams, properties, setAuthToken } from "./api";
 import TeamList from "./components/TeamList";
 import TeamAdminPanel from "./components/TeamAdminPanel";
 import InvitePanel from "./components/InvitePanel";
@@ -13,47 +13,66 @@ export default function App() {
   const [propertiesData, setPropertiesData] = useState([]);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState(""); // "success" or "error"
+  const [activeTab, setActiveTab] = useState("login"); // "login" or "register"
 
   useEffect(() => {
-    const stored = localStorage.getItem("crm_user");
+    const storedUser = localStorage.getItem("crm_user");
     const token = localStorage.getItem("crm_token");
-    if (stored && token) {
-      setUser(JSON.parse(stored));
+    if (storedUser && token) {
+      setUser(JSON.parse(storedUser));
       setAuthToken(token);
-      loadData();
+      loadData(token);
     }
   }, []);
 
-  async function loadData() {
+  // ------------------ Load Teams & Properties ------------------
+  async function loadData(token) {
+    setMessage("");
     try {
-      const [tRes, pRes] = await Promise.all([teams.list(), properties.list()]);
-      setTeamsData(tRes.data || []);
-      setPropertiesData(pRes.data || []);
+      const [tRes, pRes] = await Promise.all([
+        teams.list(token),
+        properties.list(token),
+      ]);
+
+      console.log("Teams response:", tRes);
+      console.log("Properties response:", pRes);
+
+      if (!tRes.data || !pRes.data) {
+        throw new Error("Invalid data returned from backend");
+      }
+
+      setTeamsData(tRes.data);
+      setPropertiesData(pRes.data);
     } catch (err) {
-      console.error(err);
+      console.error("Load data error:", err);
+      setMessage("Load failed: " + (err.message || "Unknown error"));
+      setMessageType("error");
     }
   }
 
+  // ------------------ Handle Login ------------------
   async function handleLogin(e) {
     e.preventDefault();
     setMessage("");
     try {
-      const email = e.target.email.value;
+      const email = e.target.email.value.trim();
       const password = e.target.password.value;
       const res = await auth.login({ email, password });
       setUser(res.data.user);
       localStorage.setItem("crm_user", JSON.stringify(res.data.user));
       localStorage.setItem("crm_token", res.data.token);
       setAuthToken(res.data.token);
-      loadData();
+      loadData(res.data.token);
       setMessage("Login successful!");
       setMessageType("success");
     } catch (err) {
-      setMessage(err.message);
+      console.error("Login error:", err);
+      setMessage(err.message || "Login failed");
       setMessageType("error");
     }
   }
 
+  // ------------------ Handle Register ------------------
   async function handleRegister(e) {
     e.preventDefault();
     setMessage("");
@@ -70,26 +89,40 @@ export default function App() {
 
     try {
       const res = await auth.register({ name, email, password });
-      setMessage(res.message || "User registered successfully!");
+      setMessage(res.message || "Registration successful! You can now login.");
       setMessageType("success");
       e.target.reset();
+      setActiveTab("login"); // switch to login after successful registration
     } catch (err) {
-      setMessage(err.message);
+      console.error("Register error:", err);
+      setMessage(err.message || "Registration failed");
       setMessageType("error");
     }
   }
 
+  // ------------------ Logout ------------------
+  function handleLogout() {
+    localStorage.clear();
+    setUser(null);
+    setAuthToken(null);
+    setTeamsData([]);
+    setPropertiesData([]);
+    setMessage("");
+  }
+
+  // ------------------ JSX ------------------
   return (
     <div className="container">
       <h1>CRM + IDX (cloud)</h1>
 
       {!user ? (
         <div style={{ maxWidth: 420 }}>
+          {/* Message */}
           {message && (
             <div
               style={{
                 padding: 8,
-                marginBottom: 8,
+                marginBottom: 12,
                 borderRadius: 4,
                 backgroundColor: messageType === "success" ? "#d1fae5" : "#fee2e2",
                 color: messageType === "success" ? "#065f46" : "#991b1b",
@@ -99,66 +132,105 @@ export default function App() {
             </div>
           )}
 
-          {/* Login Form */}
-          <form onSubmit={handleLogin} className="card" style={{ marginBottom: 16 }}>
-            <h3>Login</h3>
-            <input name="email" className="input" placeholder="Email" />
-            <div style={{ height: 8 }} />
-            <input name="password" type="password" className="input" placeholder="Password" />
-            <div style={{ height: 12 }} />
-            <button className="btn btn-primary" type="submit">
+          {/* Tabs */}
+          <div style={{ display: "flex", marginBottom: 16 }}>
+            <button
+              onClick={() => setActiveTab("login")}
+              className={`btn ${activeTab === "login" ? "btn-primary" : "btn-secondary"}`}
+              style={{ flex: 1 }}
+            >
               Login
             </button>
-          </form>
-
-          {/* Register Form */}
-          <form onSubmit={handleRegister} className="card">
-            <h3>Register</h3>
-            <input name="name" className="input" placeholder="Name" />
-            <div style={{ height: 8 }} />
-            <input name="email" className="input" placeholder="Email" />
-            <div style={{ height: 8 }} />
-            <input name="password" type="password" className="input" placeholder="Password" />
-            <div style={{ height: 8 }} />
-            <input name="confirm" type="password" className="input" placeholder="Confirm Password" />
-            <div style={{ height: 12 }} />
-            <button className="btn btn-secondary" type="submit">
+            <button
+              onClick={() => setActiveTab("register")}
+              className={`btn ${activeTab === "register" ? "btn-primary" : "btn-secondary"}`}
+              style={{ flex: 1 }}
+            >
               Register
             </button>
-          </form>
+          </div>
+
+          {/* Forms */}
+          {activeTab === "login" && (
+            <form onSubmit={handleLogin} className="card">
+              <input name="email" className="input" placeholder="Email" required />
+              <div style={{ height: 8 }} />
+              <input name="password" type="password" className="input" placeholder="Password" required />
+              <div style={{ height: 12 }} />
+              <button className="btn btn-primary" type="submit">
+                Login
+              </button>
+            </form>
+          )}
+
+          {activeTab === "register" && (
+            <form onSubmit={handleRegister} className="card">
+              <input name="name" className="input" placeholder="Name" required />
+              <div style={{ height: 8 }} />
+              <input name="email" className="input" placeholder="Email" required />
+              <div style={{ height: 8 }} />
+              <input name="password" type="password" className="input" placeholder="Password" required />
+              <div style={{ height: 8 }} />
+              <input name="confirm" type="password" className="input" placeholder="Confirm Password" required />
+              <div style={{ height: 12 }} />
+              <button className="btn btn-primary" type="submit">
+                Register
+              </button>
+            </form>
+          )}
         </div>
       ) : (
         <div>
+          {message && (
+            <div
+              style={{
+                padding: 8,
+                marginBottom: 12,
+                borderRadius: 4,
+                backgroundColor: messageType === "success" ? "#d1fae5" : "#fee2e2",
+                color: messageType === "success" ? "#065f46" : "#991b1b",
+              }}
+            >
+              {message}
+            </div>
+          )}
+
+          {/* Logged-in Header */}
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
             <div>
               <strong>{user.name}</strong> <small>({user.role})</small>
               <div style={{ color: "#6b7280" }}>{user.email}</div>
             </div>
             <div>
-              <button
-                onClick={() => {
-                  localStorage.clear();
-                  setUser(null);
-                  setAuthToken(null);
-                }}
-                className="btn"
-              >
+              <button onClick={handleLogout} className="btn">
                 Logout
               </button>
             </div>
           </div>
 
+          {/* Main Grid */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 16 }}>
             <div>
               <h3>Teams</h3>
               <TeamList teams={teamsData} />
-              {user.role === "teamAdmin" && <TeamAdminPanel user={user} onTeamsUpdated={loadData} />}
-              {user.role === "teamAdmin" && <InvitePanel user={user} onInvitesCreated={loadData} />}
+              {user.role === "teamAdmin" && (
+                <TeamAdminPanel user={user} onTeamsUpdated={() => loadData(localStorage.getItem("crm_token"))} />
+              )}
+              {user.role === "teamAdmin" && (
+                <InvitePanel user={user} onInvitesCreated={() => loadData(localStorage.getItem("crm_token"))} />
+              )}
             </div>
 
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <button className="btn btn-primary" onClick={() => properties.sync().then(loadData)}>
+                <button
+                  className="btn btn-primary"
+                  onClick={() =>
+                    properties
+                      .sync(localStorage.getItem("crm_token"))
+                      .then(() => loadData(localStorage.getItem("crm_token")))
+                  }
+                >
                   Sync IDX
                 </button>
                 <div style={{ color: "#6b7280" }}>Background worker auto-syncs every X minutes</div>
