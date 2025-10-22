@@ -1,5 +1,5 @@
 const express = require('express');
-const Property = require('../models/Property');
+const Property = require('../models/property');
 const auth = require('../middleware/auth');
 const { syncPropertiesToDb } = require('../services/idxService');
 

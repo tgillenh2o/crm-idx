@@ -1,5 +1,5 @@
 const express = require('express');
-const Team = require('../models/Team');
+const Team = require('../models/team');
 const User = require('../models/user');
 const auth = require('../middleware/auth');
 

@@ -1,5 +1,5 @@
 // Mock IDX adapter for testing/dev
-const Property = require('../models/Property');
+const Property = require('../models/property');
 
 function mockListings() {
   // A small sample of listings

@@ -1,7 +1,7 @@
 const express = require('express');
 const crypto = require('crypto');
-const Invite = require('../models/Invite');
-const Team = require('../models/Team');
+const Invite = require('../models/invite');
+const Team = require('../models/team');
 const auth = require('../middleware/auth');
 const nodemailer = require('nodemailer');
 

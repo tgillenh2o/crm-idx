@@ -1,6 +1,6 @@
 const express = require('express');
 const Lead = require('../models/Lead');
-const Team = require('../models/Team');
+const Team = require('../models/team');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
