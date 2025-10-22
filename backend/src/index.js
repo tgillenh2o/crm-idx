@@ -13,16 +13,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ------------------ MongoDB Connection ------------------
-const MONGO_URI = process.env.MONGO_URI;
-mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("✅ Mongo connected"))
-  .catch((err) => {
+  .catch(err => {
     console.error("❌ Mongo connection error:", err);
     process.exit(1);
   });
 
-// ------------------ Routes ------------------
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/teams", teamRoutes);
 app.use("/api/invites", inviteRoutes);
@@ -32,6 +31,6 @@ app.use("/api/leads", leadRoutes);
 // Health check
 app.get("/", (req, res) => res.json({ ok: true, service: "crm-idx-backend" }));
 
-// ------------------ Start Server ------------------
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Backend running on port ${PORT}`));
