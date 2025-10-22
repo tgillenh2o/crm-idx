@@ -1,5 +1,5 @@
 services:
-  # Backend (Express API / CRM)
+  # Backend (CRM Express API)
   - type: web
     name: crm-idx-backend
     env: node
@@ -11,7 +11,7 @@ services:
     buildCommand: "npm install"
     startCommand: "node src/index.js"
 
-  # Frontend (Vite/React)
+  # Frontend (Vite/React app)
   - type: static
     name: crm-idx-frontend
     env: node
@@ -22,7 +22,3 @@ services:
     autoDeploy: true
     buildCommand: "npm install && npm run build"
     publishPath: dist
-
-  # Cloudflare Worker Proxy (IDX feed)
-  # Optional: keep separate if you deploy on Cloudflare
-  # Otherwise Render won't build Workers directly
