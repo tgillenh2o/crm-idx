@@ -14,6 +14,8 @@ export default function App() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState(""); // "success" or "error"
   const [activeTab, setActiveTab] = useState("login"); // "login" or "register"
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("crm_user");
@@ -33,16 +35,8 @@ export default function App() {
         teams.list(token),
         properties.list(token),
       ]);
-
-      console.log("Teams response:", tRes);
-      console.log("Properties response:", pRes);
-
-      if (!tRes.data || !pRes.data) {
-        throw new Error("Invalid data returned from backend");
-      }
-
-      setTeamsData(tRes.data);
-      setPropertiesData(pRes.data);
+      setTeamsData(tRes.data || []);
+      setPropertiesData(pRes.data || []);
     } catch (err) {
       console.error("Load data error:", err);
       setMessage("Load failed: " + (err.message || "Unknown error"));
@@ -92,7 +86,7 @@ export default function App() {
       setMessage(res.message || "Registration successful! You can now login.");
       setMessageType("success");
       e.target.reset();
-      setActiveTab("login"); // switch to login after successful registration
+      setActiveTab("login");
     } catch (err) {
       console.error("Register error:", err);
       setMessage(err.message || "Registration failed");
@@ -112,20 +106,22 @@ export default function App() {
 
   // ------------------ JSX ------------------
   return (
-    <div className="container">
-      <h1>CRM + IDX (cloud)</h1>
+    <div className="container" style={{ maxWidth: 480, margin: "0 auto", padding: 16 }}>
+      <h1 style={{ textAlign: "center", marginBottom: 24 }}>CRM + IDX (cloud)</h1>
 
       {!user ? (
-        <div style={{ maxWidth: 420 }}>
+        <div>
           {/* Message */}
           {message && (
             <div
               style={{
-                padding: 8,
-                marginBottom: 12,
-                borderRadius: 4,
+                padding: 10,
+                marginBottom: 16,
+                borderRadius: 6,
                 backgroundColor: messageType === "success" ? "#d1fae5" : "#fee2e2",
                 color: messageType === "success" ? "#065f46" : "#991b1b",
+                textAlign: "center",
+                fontWeight: 500,
               }}
             >
               {message}
@@ -133,18 +129,32 @@ export default function App() {
           )}
 
           {/* Tabs */}
-          <div style={{ display: "flex", marginBottom: 16 }}>
+          <div style={{ display: "flex", marginBottom: 16, borderRadius: 6, overflow: "hidden", boxShadow: "0 0 6px rgba(0,0,0,0.1)" }}>
             <button
               onClick={() => setActiveTab("login")}
-              className={`btn ${activeTab === "login" ? "btn-primary" : "btn-secondary"}`}
-              style={{ flex: 1 }}
+              style={{
+                flex: 1,
+                padding: 10,
+                backgroundColor: activeTab === "login" ? "#2563eb" : "#e5e7eb",
+                color: activeTab === "login" ? "#fff" : "#111827",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: 500,
+              }}
             >
               Login
             </button>
             <button
               onClick={() => setActiveTab("register")}
-              className={`btn ${activeTab === "register" ? "btn-primary" : "btn-secondary"}`}
-              style={{ flex: 1 }}
+              style={{
+                flex: 1,
+                padding: 10,
+                backgroundColor: activeTab === "register" ? "#2563eb" : "#e5e7eb",
+                color: activeTab === "register" ? "#fff" : "#111827",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: 500,
+              }}
             >
               Register
             </button>
@@ -152,28 +162,64 @@ export default function App() {
 
           {/* Forms */}
           {activeTab === "login" && (
-            <form onSubmit={handleLogin} className="card">
-              <input name="email" className="input" placeholder="Email" required />
-              <div style={{ height: 8 }} />
-              <input name="password" type="password" className="input" placeholder="Password" required />
-              <div style={{ height: 12 }} />
-              <button className="btn btn-primary" type="submit">
+            <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 12, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.1)", borderRadius: 8 }}>
+              <input name="email" type="email" placeholder="Email" required style={{ padding: 8, borderRadius: 4, border: "1px solid #d1d5db" }} />
+              <div style={{ position: "relative" }}>
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  required
+                  style={{ padding: 8, borderRadius: 4, border: "1px solid #d1d5db", width: "100%" }}
+                />
+                <span
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: "absolute", right: 8, top: 8, cursor: "pointer", fontSize: 12, color: "#6b7280" }}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </span>
+              </div>
+              <button type="submit" style={{ padding: 10, backgroundColor: "#2563eb", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer" }}>
                 Login
               </button>
             </form>
           )}
 
           {activeTab === "register" && (
-            <form onSubmit={handleRegister} className="card">
-              <input name="name" className="input" placeholder="Name" required />
-              <div style={{ height: 8 }} />
-              <input name="email" className="input" placeholder="Email" required />
-              <div style={{ height: 8 }} />
-              <input name="password" type="password" className="input" placeholder="Password" required />
-              <div style={{ height: 8 }} />
-              <input name="confirm" type="password" className="input" placeholder="Confirm Password" required />
-              <div style={{ height: 12 }} />
-              <button className="btn btn-primary" type="submit">
+            <form onSubmit={handleRegister} style={{ display: "flex", flexDirection: "column", gap: 12, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.1)", borderRadius: 8 }}>
+              <input name="name" placeholder="Name" required style={{ padding: 8, borderRadius: 4, border: "1px solid #d1d5db" }} />
+              <input name="email" type="email" placeholder="Email" required style={{ padding: 8, borderRadius: 4, border: "1px solid #d1d5db" }} />
+              <div style={{ position: "relative" }}>
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  required
+                  style={{ padding: 8, borderRadius: 4, border: "1px solid #d1d5db", width: "100%" }}
+                />
+                <span
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: "absolute", right: 8, top: 8, cursor: "pointer", fontSize: 12, color: "#6b7280" }}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </span>
+              </div>
+              <div style={{ position: "relative" }}>
+                <input
+                  name="confirm"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  required
+                  style={{ padding: 8, borderRadius: 4, border: "1px solid #d1d5db", width: "100%" }}
+                />
+                <span
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{ position: "absolute", right: 8, top: 8, cursor: "pointer", fontSize: 12, color: "#6b7280" }}
+                >
+                  {showConfirmPassword ? "Hide" : "Show"}
+                </span>
+              </div>
+              <button type="submit" style={{ padding: 10, backgroundColor: "#2563eb", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer" }}>
                 Register
               </button>
             </form>
@@ -181,28 +227,30 @@ export default function App() {
         </div>
       ) : (
         <div>
+          {/* Logged-in User Section */}
           {message && (
             <div
               style={{
-                padding: 8,
+                padding: 10,
                 marginBottom: 12,
-                borderRadius: 4,
+                borderRadius: 6,
                 backgroundColor: messageType === "success" ? "#d1fae5" : "#fee2e2",
                 color: messageType === "success" ? "#065f46" : "#991b1b",
+                textAlign: "center",
+                fontWeight: 500,
               }}
             >
               {message}
             </div>
           )}
 
-          {/* Logged-in Header */}
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
             <div>
               <strong>{user.name}</strong> <small>({user.role})</small>
               <div style={{ color: "#6b7280" }}>{user.email}</div>
             </div>
             <div>
-              <button onClick={handleLogout} className="btn">
+              <button onClick={handleLogout} style={{ padding: 6, borderRadius: 4, cursor: "pointer", border: "1px solid #d1d5db" }}>
                 Logout
               </button>
             </div>
@@ -222,14 +270,14 @@ export default function App() {
             </div>
 
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
                 <button
-                  className="btn btn-primary"
                   onClick={() =>
                     properties
                       .sync(localStorage.getItem("crm_token"))
                       .then(() => loadData(localStorage.getItem("crm_token")))
                   }
+                  style={{ padding: 8, borderRadius: 4, backgroundColor: "#2563eb", color: "#fff", border: "none", cursor: "pointer" }}
                 >
                   Sync IDX
                 </button>
@@ -244,7 +292,7 @@ export default function App() {
                 {teamsData[0] ? (
                   <LeadCapture teamId={teamsData[0]._id} />
                 ) : (
-                  <div className="card">Create a team to enable lead capture.</div>
+                  <div style={{ padding: 12, borderRadius: 6, backgroundColor: "#f3f4f6" }}>Create a team to enable lead capture.</div>
                 )}
               </div>
             </div>
