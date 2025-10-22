@@ -82,6 +82,7 @@ export default function App() {
   return (
     <div className="container">
       <h1>CRM + IDX (cloud)</h1>
+
       {!user ? (
         <div style={{ maxWidth: 420 }}>
           {message && (
@@ -99,7 +100,7 @@ export default function App() {
           )}
 
           {/* Login Form */}
-          <form onSubmit={handleLogin} className="card">
+          <form onSubmit={handleLogin} className="card" style={{ marginBottom: 16 }}>
             <h3>Login</h3>
             <input name="email" className="input" placeholder="Email" />
             <div style={{ height: 8 }} />
@@ -111,7 +112,7 @@ export default function App() {
           </form>
 
           {/* Register Form */}
-          <form onSubmit={handleRegister} className="card" style={{ marginTop: 16 }}>
+          <form onSubmit={handleRegister} className="card">
             <h3>Register</h3>
             <input name="name" className="input" placeholder="Name" />
             <div style={{ height: 8 }} />
@@ -166,4 +167,18 @@ export default function App() {
               <PropertySearch onResults={setPropertiesData} />
               <PropertyList properties={propertiesData} />
 
-              <d
+              <div style={{ marginTop: 18 }}>
+                <h3>Lead capture</h3>
+                {teamsData[0] ? (
+                  <LeadCapture teamId={teamsData[0]._id} />
+                ) : (
+                  <div className="card">Create a team to enable lead capture.</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
