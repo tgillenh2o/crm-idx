@@ -1,5 +1,5 @@
 services:
-  # Backend (CRM Express API)
+  # Backend Web Service
   - type: web
     name: crm-idx-backend
     env: node
@@ -11,7 +11,7 @@ services:
     buildCommand: "npm install"
     startCommand: "node src/index.js"
 
-  # Frontend (Vite/React app)
+  # Frontend Static Site
   - type: static
     name: crm-idx-frontend
     env: node
