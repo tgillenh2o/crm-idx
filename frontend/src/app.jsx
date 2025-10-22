@@ -52,8 +52,31 @@ export default function App() {
     <div className="container">
       <h1>CRM + IDX (cloud)</h1>
       {!user ? (
+        <div className="card" style={{ marginTop: 20 }}>
+  <h3>Register</h3>
+  <form
+    onSubmit={async (e) => {
+      e.preventDefault();
+      const name = e.target.name.value;
+      const email = e.target.email.value;
+      const password = e.target.password.value;
+      const res = await auth.register({ name, email, password });
+      alert(res.message || "User registered!");
+    }}
+  >
+    <input name="name" className="input" placeholder="name" />
+    <div style={{ height: 8 }} />
+    <input name="email" className="input" placeholder="email" />
+    <div style={{ height: 8 }} />
+    <input name="password" type="password" className="input" placeholder="password" />
+    <div style={{ height: 12 }} />
+    <button className="btn btn-secondary" type="submit">Register</button>
+  </form>
+</div>
+
         <div style={{ maxWidth: 420 }}>
           <form onSubmit={handleLogin} className="card">
+            
             <h3>Login</h3>
             <input name="email" className="input" placeholder="email" />
             <div style={{ height: 8 }} />
@@ -62,6 +85,28 @@ export default function App() {
             <button className="btn btn-primary" type="submit">Login</button>
           </form>
         </div>
+        <div className="card" style={{ marginTop: 20 }}>
+  <h3>Register</h3>
+  <form
+    onSubmit={async (e) => {
+      e.preventDefault();
+      const name = e.target.name.value;
+      const email = e.target.email.value;
+      const password = e.target.password.value;
+      const res = await auth.register({ name, email, password });
+      alert(res.message || "User registered!");
+    }}
+  >
+    <input name="name" className="input" placeholder="name" />
+    <div style={{ height: 8 }} />
+    <input name="email" className="input" placeholder="email" />
+    <div style={{ height: 8 }} />
+    <input name="password" type="password" className="input" placeholder="password" />
+    <div style={{ height: 12 }} />
+    <button className="btn btn-secondary" type="submit">Register</button>
+  </form>
+</div>
+
       ) : (
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
