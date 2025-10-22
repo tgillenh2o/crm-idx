@@ -10,6 +10,9 @@ services:
     autoDeploy: true
     buildCommand: "npm install"
     startCommand: "node src/index.js"
+    envVars:
+      - key: MONGO_URI
+        value: mongodb://mongo:27017/crmidx
 
   # Frontend Static Site
   - type: static
@@ -22,3 +25,11 @@ services:
     autoDeploy: true
     buildCommand: "npm install && npm run build"
     publishPath: dist
+
+  # MongoDB Private Service
+  - type: private_service
+    name: mongo
+    env: docker
+    region: oregon
+    plan: free
+    dockerfilePath: Dockerfile.mongo
