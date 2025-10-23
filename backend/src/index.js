@@ -27,9 +27,12 @@ app.use("/api/teams", teamRoutes);
 app.use("/api/invites", inviteRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/leads", leadRoutes);
-App.use(cors({
+
+// CORS configuration (move outside of app.use(cors()) if needed)
+app.use(cors({
   origin: ["https://crm-idx-frontend.onrender.com"],
   credentials: true
+}));
 
 // Health check
 app.get("/", (req, res) => res.json({ ok: true, service: "crm-idx-backend" }));
