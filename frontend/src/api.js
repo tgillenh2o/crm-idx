@@ -18,4 +18,14 @@ export const setAuthToken = (token) => {
   }
 };
 
+// Define auth methods
+export const auth = {
+  login: async ({ email, password }) => {
+    const response = await api.post('/auth/login', { email, password });
+    // Expect response data to contain user and token
+    return response.data;
+  },
+  // You can add other auth methods here (register, logout, etc.)
+};
+
 export default api;
