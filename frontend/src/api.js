@@ -1,31 +1,34 @@
-import axios from "axios";
+// src/api.js
 
-const API_URL = "https://crm-idx-backend.onrender.com/api";
-
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// Function to set or remove the auth token dynamically
-export const setAuthToken = (token) => {
-  if (token) {
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  } else {
-    delete api.defaults.headers.common['Authorization'];
-  }
+// Fetch list of teams
+export const fetchTeams = () => {
+  return fetch('/api/teams')
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`Error fetching teams: ${res.status} ${res.statusText}`);
+      }
+      return res.json();
+    });
 };
 
-// Define auth methods
-export const auth = {
-  login: async ({ email, password }) => {
-    const response = await api.post('/auth/login', { email, password });
-    // Expect response data to contain user and token
-    return response.data;
-  },
-  // You can add other auth methods here (register, logout, etc.)
+// Fetch list of agents
+export const fetchAgents = () => {
+  return fetch('/api/agents')
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`Error fetching agents: ${res.status} ${res.statusText}`);
+      }
+      return res.json();
+    });
 };
 
-export default api;
+// Fetch list of admins
+export const fetchAdmins = () => {
+  return fetch('/api/admins')
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`Error fetching admins: ${res.status} ${res.statusText}`);
+      }
+      return res.json();
+    });
+};
