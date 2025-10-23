@@ -1,62 +1,58 @@
-// src/api.js
+const API_URL = "https://crm-idx-backend.onrender.com/api"; // Replace with your backend URL
 
-// Fetch list of teams
-export const fetchTeams = () => {
-  return fetch('/api/teams')
-    .then(res => {
-      if (!res.ok) {
-        throw new Error(`Error fetching teams: ${res.status} ${res.statusText}`);
-      }
-      return res.json();
-    });
-};
-
-// Fetch list of agents
-export const fetchAgents = () => {
-  return fetch('/api/agents')
-    .then(res => {
-      if (!res.ok) {
-        throw new Error(`Error fetching agents: ${res.status} ${res.statusText}`);
-      }
-      return res.json();
-    });
-};
-
-// Fetch list of admins
-export const fetchAdmins = () => {
-  return fetch('/api/admins')
-    .then(res => {
-      if (!res.ok) {
-        throw new Error(`Error fetching admins: ${res.status} ${res.statusText}`);
-      }
-      return res.json();
-    });
-};
-
-// Set authentication token for future requests
+// Helper to store/remove token
 export const setAuthToken = (token) => {
-  localStorage.setItem('authToken', token);
+  if (token) localStorage.setItem("crm_token", token);
+  else localStorage.removeItem("crm_token");
 };
 
-// Authentication related functions
+// Generic fetch wrapper to handle JSON and errors
+async function fetchJson(url, options = {}) {
+  const res = await fetch(url, {
+    headers: { "Content-Type": "application/json", ...options.headers },
+    ...options,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "API request failed");
+  return data;
+}
+
+// ----- AUTH -----
 export const auth = {
-  login: async (credentials) => {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
+  login: async (payload) => {
+    return fetchJson(`${API_URL}/auth/login`, {
+      method: "POST",
+      body: JSON.stringify(payload),
     });
-    if (!res.ok) {
-      throw new Error(`Login failed: ${res.status} ${res.statusText}`);
-    }
-    const data = await res.json();
-    // Save token for future requests
-    setAuthToken(data.token);
-    return data;
   },
-  logout: () => {
-    localStorage.removeItem('authToken');
+  register: async (payload) => {
+    return fetchJson(`${API_URL}/auth/register`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
   },
 };
+
+// ----- PROPERTIES -----
+export const properties = {
+  list: async () => {
+    const token = localStorage.getItem("crm_token");
+    return fetchJson(`${API_URL}/properties`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+  sync: async () => {
+    const token = localStorage.getItem("crm_token");
+    return fetchJson(`${API_URL}/properties/sync`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+};
+
+// ----- INVITES -----
+export const invites = {
+  list: async () => {
+    const token = localStorage.getItem("crm_token");
+    return fetchJson(`${API_URL}/invites`, {
+      headers: { Authorization:
