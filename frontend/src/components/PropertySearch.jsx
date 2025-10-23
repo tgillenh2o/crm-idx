@@ -1,27 +1,26 @@
-import React, { useState } from 'react';
-import { properties } from '../api';
+import React, { useState } from "react";
 
 export default function PropertySearch({ onResults }) {
-  const [city, setCity] = useState('');
-  const [minPrice, setMinPrice] = useState('');
+  const [query, setQuery] = useState("");
 
-  async function search(e) {
-    e.preventDefault();
+  const handleSearch = async () => {
     try {
-      const res = await properties.list({ city: city || undefined, minPrice: minPrice || undefined });
-      onResults && onResults(res.data);
+      const token = localStorage.getItem("crm_token");
+      const res = await fetch(`https://crm-idx-backend.onrender.com/api/properties/search?q=${encodeURIComponent(query)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      onResults(data.data || []);
     } catch (err) {
-      alert('Search error');
+      alert("Search failed: " + err.message);
     }
-  }
+  };
 
   return (
-    <form onSubmit={search} style={{ marginBottom: 12 }}>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <input className="input" placeholder="City" value={city} onChange={e => setCity(e.target.value)} />
-        <input className="input" placeholder="Min price" type="number" value={minPrice} onChange={e => setMinPrice(e.target.value)} style={{ width: 140 }} />
-        <button className="btn btn-primary" type="submit">Search</button>
-      </div>
-    </form>
+    <div className="card" style={{ marginTop: 8 }}>
+      <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search properties..." className="input" />
+      <button onClick={handleSearch} className="btn btn-primary" style={{ marginTop: 8 }}>Search</button>
+    </div>
   );
 }

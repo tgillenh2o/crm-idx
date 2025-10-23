@@ -1,36 +1,29 @@
-import React, { useState } from 'react';
-import { invites } from '../api';
+import React, { useState } from "react";
 
 export default function InvitePanel({ user, onInvitesCreated }) {
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState('agent');
+  const [email, setEmail] = useState("");
 
-  async function createInvite(e) {
-    e.preventDefault();
-    if (!user?.team) return alert('You must be part of a team to invite');
+  const handleInvite = async () => {
+    const token = localStorage.getItem("crm_token");
     try {
-      const res = await invites.create({ email, teamId: user.team, role });
-      alert('Invite created. Link: ' + res.data.inviteLink);
-      setEmail('');
-      onInvitesCreated && onInvitesCreated();
+      const res = await fetch("https://crm-idx-backend.onrender.com/api/invites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setEmail("");
+      onInvitesCreated();
     } catch (err) {
-      alert('Error creating invite');
+      alert("Failed to send invite: " + err.message);
     }
-  }
+  };
 
   return (
-    <div className="card" style={{ marginTop: 8 }}>
-      <h4>Invite Member</h4>
-      <form onSubmit={createInvite}>
-        <input className="input" value={email} onChange={e => setEmail(e.target.value)} placeholder="email" />
-        <div style={{ height: 8 }} />
-        <select className="input" value={role} onChange={e => setRole(e.target.value)}>
-          <option value="agent">Agent</option>
-          <option value="teamAdmin">Team Admin</option>
-        </select>
-        <div style={{ height: 8 }} />
-        <button className="btn btn-primary" type="submit">Create Invite</button>
-      </form>
+    <div className="card" style={{ marginTop: 12 }}>
+      <h4>Invite Agent</h4>
+      <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Agent Email" className="input" />
+      <button onClick={handleInvite} className="btn btn-secondary" style={{ marginTop: 8 }}>Send Invite</button>
     </div>
   );
 }

@@ -1,33 +1,32 @@
-import React, { useState } from 'react';
-import { leads } from '../api';
+import React, { useState } from "react";
 
 export default function LeadCapture({ teamId }) {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
 
-  async function submit(e) {
-    e.preventDefault();
+  const handleCapture = async () => {
+    const token = localStorage.getItem("crm_token");
     try {
-      await leads.capture({ ...form, teamId });
-      alert('Lead captured');
-      setForm({ name: '', email: '', phone: '', message: '' });
+      const res = await fetch("https://crm-idx-backend.onrender.com/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name, email, phone, team: teamId }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setName(""); setEmail(""); setPhone("");
+      alert("Lead captured!");
     } catch (err) {
-      alert('Error capturing lead');
+      alert("Failed to capture lead: " + err.message);
     }
-  }
+  };
 
   return (
-    <div className="card">
-      <form onSubmit={submit}>
-        <input className="input" placeholder="Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-        <div style={{ height: 8 }} />
-        <input className="input" placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-        <div style={{ height: 8 }} />
-        <input className="input" placeholder="Phone" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
-        <div style={{ height: 8 }} />
-        <textarea className="input" placeholder="Message" value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} />
-        <div style={{ height: 8 }} />
-        <button className="btn btn-primary" type="submit">Send</button>
-      </form>
+    <div className="card" style={{ marginTop: 8 }}>
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" className="input" />
+      <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className="input" />
+      <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone" className="input" />
+      <button onClick={handleCapture} className="btn btn-primary" style={{ marginTop: 8 }}>Capture Lead</button>
     </div>
   );
 }

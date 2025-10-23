@@ -1,15 +1,15 @@
-import React from 'react';
+import React from "react";
 
 export default function AgentLeads({ leads }) {
-  if (!leads || leads.length === 0) return <div>No leads yet.</div>;
-
+  if (!leads.length) return <div>No leads assigned</div>;
   return (
-    <div>
-      {leads.map((lead) => (
-        <div key={lead._id} style={{ padding: 8, borderBottom: "1px solid #ccc" }}>
-          <strong>{lead.name}</strong> ({lead.email}) - {lead.status}
-        </div>
-      ))}
+    <div className="card" style={{ marginBottom: 12 }}>
+      <h4>Your Leads</h4>
+      <ul>
+        {leads.map((l) => (
+          <li key={l._id}>{l.name} - {l.email} - {l.phone} ({l.status})</li>
+        ))}
+      </ul>
     </div>
   );
 }
