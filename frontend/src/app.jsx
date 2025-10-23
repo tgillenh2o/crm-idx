@@ -1,244 +1,181 @@
-// frontend/src/app.jsx
-import React, { useContext, useEffect, useState } from "react";
-import { AuthProvider, AuthContext } from "./context/AuthContext";
-import Login from "./components/Login";
-import Register from "./components/Register";
+import React, { useEffect, useState } from "react";
+import { auth, properties, invites, leads, setAuthToken } from "./api";
 import TeamList from "./components/TeamList";
 import TeamAdminPanel from "./components/TeamAdminPanel";
 import InvitePanel from "./components/InvitePanel";
 import LeadCapture from "./components/LeadCapture";
 import PropertySearch from "./components/PropertySearch";
 import PropertyList from "./components/PropertyList";
-import AgentLeads from "./components/AgentLeads";
-import { teams, properties, leads } from "./api";
 
-function AppInner() {
-  const { user, logout } = useContext(AuthContext);
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
-  const [darkMode, setDarkMode] = useState(
-    localStorage.getItem("crm_dark") === "true"
-  );
-
-  const [teamsData, setTeamsData] = useState([]);
   const [propertiesData, setPropertiesData] = useState([]);
-  const [leadsData, setLeadsData] = useState([]);
 
-  // Dark mode effect
   useEffect(() => {
-    document.body.style.background = darkMode ? "#111827" : "#f3f4f6";
-    document.body.style.color = darkMode ? "#f3f4f6" : "#111827";
-    localStorage.setItem("crm_dark", darkMode);
+    const stored = localStorage.getItem("crm_user");
+    const token = localStorage.getItem("crm_token");
+    const theme = localStorage.getItem("crm_theme");
+    if (theme === "dark") setDarkMode(true);
+    if (stored && token) {
+      setUser(JSON.parse(stored));
+      setAuthToken(token);
+      loadData();
+    }
+  }, []);
+
+  useEffect(() => {
+    document.body.className = darkMode ? "dark" : "";
+    localStorage.setItem("crm_theme", darkMode ? "dark" : "light");
   }, [darkMode]);
-
-  // Load dashboard data
-  useEffect(() => {
-    if (user) loadData();
-  }, [user]);
 
   async function loadData() {
     try {
-      const [tRes, pRes, lRes] = await Promise.all([
-        teams.list(),
-        properties.list(),
-        leads.list(),
-      ]);
-      setTeamsData(tRes.data || []);
+      const pRes = await properties.list();
       setPropertiesData(pRes.data || []);
-      setLeadsData(lRes.data || []);
     } catch (err) {
-      console.error("loadData:", err);
+      console.error("Load data error:", err);
     }
   }
 
-  // ---------- AUTH SCREENS ----------
-  if (!user) {
-    return (
-      <div
-        style={{
-          maxWidth: 500,
-          margin: "60px auto",
-          textAlign: "center",
-          transition: "all 0.3s ease",
-        }}
-      >
-        <div style={{ marginBottom: 20 }}>
-          <button
-            onClick={() => setDarkMode((d) => !d)}
-            className="btn"
-            style={{
-              background: darkMode ? "#1f2937" : "#e5e7eb",
-              color: darkMode ? "#f9fafb" : "#111827",
-            }}
-          >
-            {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
-          </button>
-        </div>
-
-        <div
-          className="card"
-          style={{
-            padding: 20,
-            background: darkMode ? "#1f2937" : "#fff",
-            boxShadow: darkMode
-              ? "0 0 20px rgba(255,255,255,0.1)"
-              : "0 0 12px rgba(0,0,0,0.1)",
-            borderRadius: 12,
-            transition: "all 0.3s ease",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
-            <button
-              className={`btn ${
-                !showRegister ? "btn-primary" : ""
-              }`}
-              onClick={() => setShowRegister(false)}
-            >
-              Login
-            </button>
-            <button
-              className={`btn ${showRegister ? "btn-primary" : ""}`}
-              onClick={() => setShowRegister(true)}
-            >
-              Register
-            </button>
-          </div>
-
-          <div
-            style={{
-              marginTop: 20,
-              transition: "transform 0.5s ease, opacity 0.5s ease",
-            }}
-          >
-            {showRegister ? (
-              <Register switchToLogin={() => setShowRegister(false)} />
-            ) : (
-              <Login switchToRegister={() => setShowRegister(true)} />
-            )}
-          </div>
-        </div>
-      </div>
-    );
+  async function handleLogin(e) {
+    e.preventDefault();
+    try {
+      const email = e.target.email.value;
+      const password = e.target.password.value;
+      const res = await auth.login({ email, password });
+      if (res.success === false || res.error) throw new Error(res.message);
+      setUser(res.data.user);
+      localStorage.setItem("crm_user", JSON.stringify(res.data.user));
+      localStorage.setItem("crm_token", res.data.token);
+      setAuthToken(res.data.token);
+      loadData();
+    } catch (err) {
+      alert("Login failed: " + err.message);
+    }
   }
 
-  // ---------- DASHBOARD ----------
+  async function handleRegister(e) {
+    e.preventDefault();
+    try {
+      const name = e.target.name.value;
+      const email = e.target.email.value;
+      const password = e.target.password.value;
+      const role = e.target.role.value;
+      const res = await auth.register({ name, email, password, role });
+      if (res.success === false || res.error) throw new Error(res.message);
+      alert("Registration successful. You can now log in.");
+      setShowRegister(false);
+    } catch (err) {
+      alert("Registration failed: " + err.message);
+    }
+  }
+
+  function logout() {
+    localStorage.clear();
+    setAuthToken(null);
+    setUser(null);
+  }
+
   return (
     <div
-      className="container"
+      className={`container ${darkMode ? "dark-mode" : "light-mode"}`}
       style={{
-        maxWidth: 1100,
-        margin: "24px auto",
-        transition: "all 0.3s ease",
+        minHeight: "100vh",
+        padding: 24,
+        background: darkMode ? "#1f2937" : "#f9fafb",
+        color: darkMode ? "#f9fafb" : "#111827",
       }}
     >
-      <div
+      <header
         style={{
           display: "flex",
           justifyContent: "space-between",
-          marginBottom: 12,
+          alignItems: "center",
+          marginBottom: 20,
         }}
       >
-        <div>
-          <strong>{user.name}</strong>{" "}
-          <small style={{ color: darkMode ? "#9ca3af" : "#6b7280" }}>
-            ({user.role})
-          </small>
-          <div style={{ color: darkMode ? "#9ca3af" : "#6b7280" }}>
-            {user.email}
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button
-            className="btn"
-            onClick={() => {
-              navigator.clipboard.writeText(
-                localStorage.getItem("crm_token") || ""
-              );
-              alert("Token copied");
-            }}
-          >
-            Copy Token
-          </button>
-          <button className="btn" onClick={logout}>
-            Logout
-          </button>
-          <button
-            onClick={() => setDarkMode((d) => !d)}
-            className="btn"
-            style={{
-              background: darkMode ? "#1f2937" : "#e5e7eb",
-              color: darkMode ? "#f9fafb" : "#111827",
-            }}
-          >
-            {darkMode ? "☀️" : "🌙"}
-          </button>
-        </div>
-      </div>
+        <h1>CRM + IDX Dashboard</h1>
+        <button className="btn" onClick={() => setDarkMode(!darkMode)}>
+          {darkMode ? "☀️ Light" : "🌙 Dark"}
+        </button>
+      </header>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 2fr",
-          gap: 16,
-          transition: "all 0.3s ease",
-        }}
-      >
-        <div>
-          <h3>Teams</h3>
-          <TeamList teams={teamsData} />
-          {user.role === "teamAdmin" && (
-            <TeamAdminPanel user={user} onTeamsUpdated={loadData} />
-          )}
-          {user.role === "teamAdmin" && (
-            <InvitePanel user={user} onInvitesCreated={loadData} />
+      {!user ? (
+        <div
+          style={{
+            maxWidth: 420,
+            margin: "0 auto",
+            background: darkMode ? "#374151" : "#fff",
+            padding: 24,
+            borderRadius: 12,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          }}
+        >
+          {showRegister ? (
+            <form onSubmit={handleRegister}>
+              <h2>Register</h2>
+              <input name="name" className="input" placeholder="Full Name" required />
+              <input name="email" className="input" placeholder="Email" required />
+              <input
+                name="password"
+                className="input"
+                type="password"
+                placeholder="Password"
+                required
+              />
+              <select name="role" className="input" defaultValue="agent" required>
+                <option value="agent">Agent</option>
+                <option value="teamAdmin">Team Admin</option>
+              </select>
+              <button className="btn btn-primary" type="submit" style={{ marginTop: 10 }}>
+                Register
+              </button>
+              <p style={{ marginTop: 12 }}>
+                Already have an account?{" "}
+                <span
+                  style={{ color: "#3b82f6", cursor: "pointer" }}
+                  onClick={() => setShowRegister(false)}
+                >
+                  Log in
+                </span>
+              </p>
+            </form>
+          ) : (
+            <form onSubmit={handleLogin}>
+              <h2>Login</h2>
+              <input name="email" className="input" placeholder="Email" required />
+              <input
+                name="password"
+                type="password"
+                className="input"
+                placeholder="Password"
+                required
+              />
+              <button className="btn btn-primary" type="submit" style={{ marginTop: 10 }}>
+                Login
+              </button>
+              <p style={{ marginTop: 12 }}>
+                Don’t have an account?{" "}
+                <span
+                  style={{ color: "#3b82f6", cursor: "pointer" }}
+                  onClick={() => setShowRegister(true)}
+                >
+                  Register
+                </span>
+              </p>
+            </form>
           )}
         </div>
-
+      ) : (
         <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              marginBottom: 12,
-            }}
-          >
-            <button
-              className="btn btn-primary"
-              onClick={() => properties.sync().then(loadData)}
-            >
-              Sync IDX
-            </button>
-            <div style={{ color: darkMode ? "#9ca3af" : "#6b7280" }}>
-              Background worker auto-syncs every X minutes
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+            <div>
+              <strong>{user.name}</strong> <small>({user.role})</small>
+              <div style={{ color: darkMode ? "#d1d5db" : "#6b7280" }}>{user.email}</div>
             </div>
-          </div>
-
-          <PropertySearch onResults={setPropertiesData} />
-          <PropertyList properties={propertiesData} />
-
-          <div style={{ marginTop: 18 }}>
-            <h3>Lead capture</h3>
-            {teamsData[0] ? (
-              <LeadCapture teamId={teamsData[0]._id} />
-            ) : (
-              <div className="card">Create a team to enable lead capture.</div>
-            )}
-          </div>
-
-          <div style={{ marginTop: 18 }}>
-            <h3>Your Leads</h3>
-            <AgentLeads leads={leadsData} />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function App() {
-  return (
-    <AuthProvider>
-      <AppInner />
-    </AuthProvider>
-  );
-}
+            <div>
+              <button onClick={logout} className="btn">
+                Logout
+              </button>
