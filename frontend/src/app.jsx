@@ -88,6 +88,7 @@ export default function App() {
         color: darkMode ? "#f9fafb" : "#111827",
       }}
     >
+      {/* Header */}
       <header
         style={{
           display: "flex",
@@ -102,6 +103,7 @@ export default function App() {
         </button>
       </header>
 
+      {/* Login / Register */}
       {!user ? (
         <div
           style={{
@@ -169,6 +171,7 @@ export default function App() {
           )}
         </div>
       ) : (
+        /* Dashboard */
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
             <div>
@@ -179,3 +182,41 @@ export default function App() {
               <button onClick={logout} className="btn">
                 Logout
               </button>
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 16 }}>
+            <div>
+              <h3>Team Management</h3>
+              <TeamList />
+              {user.role === "teamAdmin" && <TeamAdminPanel user={user} />}
+              {user.role === "teamAdmin" && <InvitePanel user={user} />}
+            </div>
+
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => properties.sync().then(loadData)}
+                >
+                  Sync IDX
+                </button>
+                <div style={{ color: darkMode ? "#d1d5db" : "#6b7280" }}>
+                  Auto-syncs every few minutes
+                </div>
+              </div>
+
+              <PropertySearch onResults={setPropertiesData} />
+              <PropertyList properties={propertiesData} />
+
+              <div style={{ marginTop: 20 }}>
+                <h3>Lead Capture</h3>
+                <LeadCapture />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
