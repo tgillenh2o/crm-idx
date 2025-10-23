@@ -35,6 +35,28 @@ export const fetchAdmins = () => {
 
 // Set authentication token for future requests
 export const setAuthToken = (token) => {
-  // Store token in localStorage
   localStorage.setItem('authToken', token);
+};
+
+// Authentication related functions
+export const auth = {
+  login: async (credentials) => {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
+    if (!res.ok) {
+      throw new Error(`Login failed: ${res.status} ${res.statusText}`);
+    }
+    const data = await res.json();
+    // Save token for future requests
+    setAuthToken(data.token);
+    return data;
+  },
+  logout: () => {
+    localStorage.removeItem('authToken');
+  },
 };
