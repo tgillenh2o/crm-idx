@@ -1,4 +1,3 @@
-// frontend/src/context/AuthContext.jsx
 import React, { createContext, useEffect, useState } from "react";
 import { setAuthToken } from "../api";
 
@@ -22,8 +21,8 @@ export function AuthProvider({ children }) {
 
   function logout() {
     localStorage.removeItem("crm_user");
-    setAuthToken(null);
     localStorage.removeItem("crm_token");
+    setAuthToken(null);
     setUser(null);
   }
 

@@ -1,6 +1,5 @@
 import axios from "axios";
 
-// ✅ Your deployed backend URL on Render
 const API_URL = "https://crm-idx-backend.onrender.com/api";
 
 const api = axios.create({
@@ -10,13 +9,13 @@ const api = axios.create({
   },
 });
 
-// ✅ Automatically include JWT token if it exists
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("crm_token");
+// Function to set or remove the auth token dynamically
+export const setAuthToken = (token) => {
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common['Authorization'];
   }
-  return config;
-});
+};
 
 export default api;
