@@ -32,3 +32,9 @@ export const fetchAdmins = () => {
       return res.json();
     });
 };
+
+// Set authentication token for future requests
+export const setAuthToken = (token) => {
+  // Store token in localStorage
+  localStorage.setItem('authToken', token);
+};
