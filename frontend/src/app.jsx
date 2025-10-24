@@ -11,19 +11,25 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [teamsData, setTeamsData] = useState([]);
   const [propertiesData, setPropertiesData] = useState([]);
-  const [isLogin, setIsLogin] = useState(true); // toggle between login/register
-  const [errorMsg, setErrorMsg] = useState(""); // show backend errors
-  const [darkMode, setDarkMode] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [darkMode, setDarkMode] = useState(
+    localStorage.getItem("crm_darkMode") === "true"
+  );
 
   useEffect(() => {
-    const stored = localStorage.getItem("crm_user");
+    const storedUser = localStorage.getItem("crm_user");
     const token = localStorage.getItem("crm_token");
-    if (stored && token) {
-      setUser(JSON.parse(stored));
+    if (storedUser && token) {
+      setUser(JSON.parse(storedUser));
       setAuthToken(token);
       loadData();
     }
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("crm_darkMode", darkMode);
+  }, [darkMode]);
 
   async function loadData() {
     try {
@@ -57,28 +63,39 @@ export default function App() {
       setAuthToken(res.token);
       loadData();
     } catch (err) {
-      setErrorMsg(err.message);
+      setErrorMsg(err.message || "Registration/Login failed");
     }
   }
 
   return (
     <div className={darkMode ? "dark container" : "container"}>
       <h1>CRM + IDX (cloud)</h1>
+
       {!user ? (
-        <div style={{ maxWidth: 400 }}>
-          <div className="card">
+        <div style={{ maxWidth: 400, margin: "auto" }}>
+          <div className="card" style={{ padding: 20 }}>
             <h3>{isLogin ? "Login" : "Register"}</h3>
-            {errorMsg && <div style={{ color: "red", marginBottom: 8 }}>{errorMsg}</div>}
+            {errorMsg && (
+              <div style={{ color: "white", background: "red", padding: 8, marginBottom: 12 }}>
+                {errorMsg}
+              </div>
+            )}
             <form onSubmit={handleSubmit}>
               {!isLogin && (
                 <>
-                  <input name="name" placeholder="Name" className="input" />
+                  <input name="name" placeholder="Name" className="input" required />
                   <div style={{ height: 8 }} />
                 </>
               )}
-              <input name="email" placeholder="Email" className="input" />
+              <input name="email" placeholder="Email" className="input" required />
               <div style={{ height: 8 }} />
-              <input name="password" type="password" placeholder="Password" className="input" />
+              <input
+                name="password"
+                type="password"
+                placeholder="Password"
+                className="input"
+                required
+              />
               <div style={{ height: 12 }} />
               <button type="submit" className="btn btn-primary">
                 {isLogin ? "Login" : "Register"}
@@ -90,7 +107,10 @@ export default function App() {
               </button>
             </div>
             <div style={{ marginTop: 12 }}>
-              <button onClick={() => setDarkMode(!darkMode)} className="btn btn-secondary">
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="btn btn-secondary"
+              >
                 {darkMode ? "Light Mode" : "Dark Mode"}
               </button>
             </div>
@@ -121,8 +141,12 @@ export default function App() {
             <div>
               <h3>Teams</h3>
               <TeamList teams={teamsData} />
-              {user.role === "teamAdmin" && <TeamAdminPanel user={user} onTeamsUpdated={loadData} />}
-              {user.role === "teamAdmin" && <InvitePanel user={user} onInvitesCreated={loadData} />}
+              {user.role === "teamAdmin" && (
+                <>
+                  <TeamAdminPanel user={user} onTeamsUpdated={loadData} />
+                  <InvitePanel user={user} onInvitesCreated={loadData} />
+                </>
+              )}
             </div>
 
             <div>
@@ -130,7 +154,9 @@ export default function App() {
                 <button className="btn btn-primary" onClick={() => properties.sync().then(loadData)}>
                   Sync IDX
                 </button>
-                <div style={{ color: "#6b7280" }}>Background worker auto-syncs every X minutes</div>
+                <div style={{ color: "#6b7280" }}>
+                  Background worker auto-syncs every X minutes
+                </div>
               </div>
 
               <PropertySearch onResults={setPropertiesData} />
@@ -138,7 +164,11 @@ export default function App() {
 
               <div style={{ marginTop: 18 }}>
                 <h3>Lead capture</h3>
-                {teamsData[0] ? <LeadCapture teamId={teamsData[0]._id} /> : <div className="card">Create a team to enable lead capture.</div>}
+                {teamsData[0] ? (
+                  <LeadCapture teamId={teamsData[0]._id} />
+                ) : (
+                  <div className="card">Create a team to enable lead capture.</div>
+                )}
               </div>
             </div>
           </div>
