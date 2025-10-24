@@ -1,50 +1,36 @@
-const API_URL = "https://crm-idx.onrender.com/api"; // Render backend
+const API_URL = "https://crm-idx.onrender.com/api";
 
 export const setAuthToken = (token) => {
   if (token) localStorage.setItem("crm_token", token);
   else localStorage.removeItem("crm_token");
 };
 
-const handleFetch = async (res) => {
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || `Request failed with status ${res.status}`);
-  return data;
-};
-
-// Auth
 export const auth = {
-  login: async (data) => handleFetch(await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  })),
-  
-  register: async (data) => handleFetch(await fetch(`${API_URL}/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  }))
+  register: async (data) => {
+    const res = await fetch(`${API_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Registration failed");
+    return res.json();
+  },
+  login: async (data) => {
+    const res = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Login failed");
+    return res.json();
+  },
 };
 
-// Protected endpoints
-const getHeaders = () => {
-  const token = localStorage.getItem("crm_token");
-  return { Authorization: `Bearer ${token}` };
-};
+const getHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem("crm_token")}` });
 
-export const teams = {
-  list: async () => handleFetch(await fetch(`${API_URL}/teams`, { headers: getHeaders() }))
-};
-
-export const invites = {
-  list: async () => handleFetch(await fetch(`${API_URL}/invites`, { headers: getHeaders() }))
-};
-
-export const properties = {
-  list: async () => handleFetch(await fetch(`${API_URL}/properties`, { headers: getHeaders() })),
-  sync: async () => handleFetch(await fetch(`${API_URL}/properties/sync`, { method: "POST", headers: getHeaders() }))
-};
-
-export const leads = {
-  list: async () => handleFetch(await fetch(`${API_URL}/leads`, { headers: getHeaders() }))
+export const users = {
+  all: async () => {
+    const res = await fetch(`${API_URL}/auth/all-users`, { headers: getHeaders() });
+    return res.json();
+  },
 };
