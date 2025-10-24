@@ -1,6 +1,26 @@
-body { font-family: Inter, Arial, sans-serif; margin: 0; padding: 0; }
-.container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
-.btn { display: inline-block; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
-.btn-primary { background: #2563eb; color: white; }
-.card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; background: white; }
-.input { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; }
+.app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #f0f0f0;
+  color: #000;
+}
+
+.app-container.dark {
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+}
+
+button {
+  margin-right: 10px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+button.active {
+  font-weight: bold;
+  border-bottom: 2px solid #007bff;
+}
