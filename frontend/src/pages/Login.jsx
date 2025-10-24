@@ -1,57 +1,34 @@
-import React, { useState } from "react";
-import { auth, setAuthToken } from "../api";
+import React, { useContext, useState } from "react";
+import { auth } from "../api";
+import { AuthContext } from "../context/AuthContext";
 
-export default function Login({ onLoginSuccess, switchToRegister }) {
+export default function LoginForm({ onToggle }) {
+  const { loginUser } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
     try {
       const res = await auth.login({ email, password });
-      setAuthToken(res.token);
-      localStorage.setItem("crm_user", JSON.stringify(res.user));
-      onLoginSuccess(res.user);
+      loginUser(res.user, res.token);
     } catch (err) {
       setError("Login failed");
-    } finally {
-      setLoading(false);
+      console.error(err);
     }
   };
 
   return (
-    <div className="card" style={{ maxWidth: 400, margin: "auto" }}>
+    <form onSubmit={handleSubmit} className="card">
       <h3>Login</h3>
       {error && <div style={{ color: "red" }}>{error}</div>}
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="input"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="input"
-        />
-        <button type="submit" className="btn btn-primary" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
-      <div style={{ marginTop: 8 }}>
-        Don't have an account?{" "}
-        <button className="btn-link" onClick={switchToRegister}>
-          Register
-        </button>
-      </div>
-    </div>
+      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
+      <input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="Password" />
+      <button type="submit">Login</button>
+      <p>
+        No account? <span onClick={onToggle} style={{ cursor: "pointer", color: "blue" }}>Register</span>
+      </p>
+    </form>
   );
 }
