@@ -1,33 +1,64 @@
-import { useState } from "react";
-import { auth } from "../api";
+import React, { useState } from "react";
+import { auth, setAuthToken } from "../api";
 
-export default function Register() {
-  const [message, setMessage] = useState("");
+export default function Register({ onRegisterSuccess, switchToLogin }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const { name, email, password } = e.target.elements;
+    setError("");
     try {
-      const res = await auth.register({ name: name.value, email: email.value, password: password.value });
-      setMessage(res.message);
+      const res = await auth.register({ name, email, password });
+      setAuthToken(res.token);
+      localStorage.setItem("crm_user", JSON.stringify(res.user));
+      onRegisterSuccess(res.user);
     } catch (err) {
-      setMessage(err.message);
+      setError("Registration failed");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div>
-      <h2>Register</h2>
-      {message && <div>{message}</div>}
-      <form onSubmit={handleSubmit}>
-        <input name="name" placeholder="Name" />
-        <input name="email" placeholder="Email" />
-        <input name="password" type="password" placeholder="Password" />
-        <button type="submit" disabled={loading}>Register</button>
+    <div className="card" style={{ maxWidth: 400, margin: "auto" }}>
+      <h3>Register</h3>
+      {error && <div style={{ color: "red" }}>{error}</div>}
+      <form onSubmit={handleRegister}>
+        <input
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="input"
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="input"
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="input"
+        />
+        <button type="submit" className="btn btn-primary" disabled={loading}>
+          {loading ? "Registering..." : "Register"}
+        </button>
       </form>
+      <div style={{ marginTop: 8 }}>
+        Already have an account?{" "}
+        <button className="btn-link" onClick={switchToLogin}>
+          Login
+        </button>
+      </div>
     </div>
   );
 }
