@@ -1,26 +1,60 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f0f0f0;
+}
+
 .app-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 20px;
-  background-color: #f0f0f0;
-  color: #000;
+  padding: 40px 20px;
 }
 
-.app-container.dark {
-  background-color: #1a1a1a;
-  color: #f0f0f0;
+header {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
-button {
-  margin-right: 10px;
+header button {
   padding: 6px 12px;
   cursor: pointer;
 }
 
-button.active {
+header button.active {
   font-weight: bold;
   border-bottom: 2px solid #007bff;
+}
+
+.auth-container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.auth-container.dark {
+  background: #1a1a1a;
+  color: #eee;
+}
+
+.auth-container input {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+}
+
+.auth-container button {
+  padding: 8px 16px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.message {
+  margin-top: 10px;
+  color: red;
 }
