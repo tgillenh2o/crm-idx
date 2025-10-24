@@ -1,5 +1,7 @@
-const API_URL = "https://crm-idx.onrender.com/api"; // Render backend URL
+// src/api.js
+const API_URL = "https://crm-idx.onrender.com/api";
 
+// Save/remove token
 export const setAuthToken = (token) => {
   if (token) localStorage.setItem("crm_token", token);
   else localStorage.removeItem("crm_token");
@@ -14,8 +16,9 @@ export const auth = {
       body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error(`Login failed: ${res.status}`);
-    return await res.json();
+    return res.json();
   },
+
   register: async (data) => {
     const res = await fetch(`${API_URL}/auth/register`, {
       method: "POST",
@@ -23,7 +26,7 @@ export const auth = {
       body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error(`Register failed: ${res.status}`);
-    return await res.json();
+    return res.json();
   },
 };
 
@@ -36,6 +39,13 @@ const getHeaders = () => {
 export const teams = {
   list: async () => {
     const res = await fetch(`${API_URL}/teams`, { headers: getHeaders() });
+    return res.json();
+  },
+};
+
+export const invites = {
+  list: async () => {
+    const res = await fetch(`${API_URL}/invites`, { headers: getHeaders() });
     return res.json();
   },
 };
@@ -56,4 +66,7 @@ export const properties = {
 
 export const leads = {
   list: async () => {
-    const res = a
+    const res = await fetch(`${API_URL}/leads`, { headers: getHeaders() });
+    return res.json();
+  },
+};
