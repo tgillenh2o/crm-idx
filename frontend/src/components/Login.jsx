@@ -1,55 +1,38 @@
-// frontend/src/components/Login.jsx
-import React, { useState, useContext } from "react";
-import { auth } from "../api";
-import { AuthContext } from "../context/AuthContext";
+import React, { useState } from "react";
+import { auth, setAuthToken } from "../api";
 
-export default function Login({ switchToRegister }) {
-  const { setUser } = useContext(AuthContext);
+export default function Login({ switchPage, setUser }) {
   const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
 
-  async function handleSubmit(e) {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setErr("");
     setLoading(true);
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+
     try {
-      const email = e.target.email.value.trim();
-      const password = e.target.password.value;
       const res = await auth.login({ email, password });
-      // res expected: { success: true, user: {...}, token: "..." } OR error thrown
-      if (res && res.user && res.token) {
-        localStorage.setItem("crm_user", JSON.stringify(res.user));
-        localStorage.setItem("crm_token", res.token);
-        setUser(res.user);
-      } else {
-        setErr("Unexpected response from server");
-      }
-    } catch (error) {
-      setErr(error.message || "Login failed");
+      setUser(res.user);
+      localStorage.setItem("crm_user", JSON.stringify(res.user));
+      setAuthToken(res.token);
+    } catch (err) {
+      alert("Login failed: " + err.message);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="card">
+    <form onSubmit={handleLogin} className="card auth-form">
       <h3>Login</h3>
-      {err && <div style={{ color: "#991b1b", marginBottom: 8 }}>{err}</div>}
-      <form onSubmit={handleSubmit}>
-        <input name="email" className="input" placeholder="Email" required />
-        <div style={{ position: "relative", marginTop: 8 }}>
-          <input name="password" className="input" placeholder="Password" type={showPassword ? "text" : "password"} required />
-          <button type="button" onClick={() => setShowPassword(v => !v)} style={{ position: "absolute", right: 8, top: 8 }}>
-            {showPassword ? "Hide" : "Show"}
-          </button>
-        </div>
-
-        <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-          <button className="btn btn-primary" type="submit" disabled={loading}>{loading ? "Logging in..." : "Login"}</button>
-          <button type="button" className="btn" onClick={switchToRegister}>Register</button>
-        </div>
-      </form>
-    </div>
+      <input name="email" type="email" placeholder="Email" required />
+      <input name="password" type="password" placeholder="Password" required />
+      <button type="submit" className="btn btn-primary" disabled={loading}>
+        {loading ? "Logging in..." : "Login"}
+      </button>
+      <p>
+        No account? <span className="link" onClick={switchPage}>Register here</span>
+      </p>
+    </form>
   );
 }

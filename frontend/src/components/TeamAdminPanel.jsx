@@ -1,29 +1,31 @@
 import React, { useState } from "react";
 
 export default function TeamAdminPanel({ user, onTeamsUpdated }) {
-  const [name, setName] = useState("");
+  const [teamName, setTeamName] = useState("");
 
   const handleCreateTeam = async () => {
-    const token = localStorage.getItem("crm_token");
+    if (!teamName) return;
     try {
-      const res = await fetch("https://crm-idx-backend.onrender.com/api/teams", {
+      await fetch("/api/teams", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ name }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("crm_token")}`,
+        },
+        body: JSON.stringify({ name: teamName }),
       });
-      if (!res.ok) throw new Error(await res.text());
-      setName("");
+      setTeamName("");
       onTeamsUpdated();
     } catch (err) {
-      alert("Failed to create team: " + err.message);
+      alert("Error creating team: " + err.message);
     }
   };
 
   return (
-    <div className="card" style={{ marginTop: 12 }}>
-      <h4>Create Team</h4>
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Team Name" className="input" />
-      <button onClick={handleCreateTeam} className="btn btn-primary" style={{ marginTop: 8 }}>Create</button>
+    <div className="card team-admin-panel">
+      <h4>Admin Panel</h4>
+      <input value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="New Team Name" />
+      <button className="btn btn-primary" onClick={handleCreateTeam}>Create Team</button>
     </div>
   );
 }

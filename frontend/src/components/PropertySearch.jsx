@@ -5,22 +5,25 @@ export default function PropertySearch({ onResults }) {
 
   const handleSearch = async () => {
     try {
-      const token = localStorage.getItem("crm_token");
-      const res = await fetch(`https://crm-idx-backend.onrender.com/api/properties/search?q=${encodeURIComponent(query)}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch(`/api/properties?search=${encodeURIComponent(query)}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("crm_token")}` },
       });
-      if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
-      onResults(data.data || []);
+      onResults(data);
     } catch (err) {
       alert("Search failed: " + err.message);
     }
   };
 
   return (
-    <div className="card" style={{ marginTop: 8 }}>
-      <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search properties..." className="input" />
-      <button onClick={handleSearch} className="btn btn-primary" style={{ marginTop: 8 }}>Search</button>
+    <div className="property-search">
+      <input
+        type="text"
+        placeholder="Search properties..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+      <button className="btn btn-secondary" onClick={handleSearch}>Search</button>
     </div>
   );
 }

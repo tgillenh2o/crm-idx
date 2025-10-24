@@ -1,34 +1,37 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { setAuthToken } from "../api";
 
-export const AuthContext = createContext({
-  user: null,
-  setUser: () => {},
-  logout: () => {},
-});
+const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("crm_user");
+    const storedUser = localStorage.getItem("crm_user");
     const token = localStorage.getItem("crm_token");
-    if (stored && token) {
-      setUser(JSON.parse(stored));
+    const storedDark = localStorage.getItem("crm_darkMode");
+
+    if (storedUser && token) {
+      setUser(JSON.parse(storedUser));
       setAuthToken(token);
     }
+
+    if (storedDark) setDarkMode(storedDark === "true");
   }, []);
 
-  function logout() {
-    localStorage.removeItem("crm_user");
-    localStorage.removeItem("crm_token");
-    setAuthToken(null);
-    setUser(null);
-  }
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => {
+      localStorage.setItem("crm_darkMode", !prev);
+      return !prev;
+    });
+  };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, logout }}>
+    <AuthContext.Provider value={{ user, setUser, darkMode, toggleDarkMode }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
+
+export const useAuth = () => useContext(AuthContext);

@@ -1,11 +1,14 @@
 import React from "react";
 
 export default function PropertyList({ properties }) {
-  if (!properties.length) return <div>No properties</div>;
+  if (!properties.length) return <div>No properties found.</div>;
+
   return (
-    <ul className="card" style={{ marginTop: 8 }}>
+    <ul className="property-list">
       {properties.map((p) => (
-        <li key={p._id}>{p.address} - ${p.price}</li>
+        <li key={p._id}>
+          <strong>{p.address}</strong> - ${p.price.toLocaleString()}
+        </li>
       ))}
     </ul>
   );

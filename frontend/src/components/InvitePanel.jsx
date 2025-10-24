@@ -4,26 +4,34 @@ export default function InvitePanel({ user, onInvitesCreated }) {
   const [email, setEmail] = useState("");
 
   const handleInvite = async () => {
-    const token = localStorage.getItem("crm_token");
+    if (!email) return;
     try {
-      const res = await fetch("https://crm-idx-backend.onrender.com/api/invites", {
+      await fetch("/api/invites", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ email }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("crm_token")}`,
+        },
+        body: JSON.stringify({ email, teamId: user.teamId }),
       });
-      if (!res.ok) throw new Error(await res.text());
       setEmail("");
       onInvitesCreated();
+      alert("Invite sent!");
     } catch (err) {
-      alert("Failed to send invite: " + err.message);
+      alert("Error sending invite: " + err.message);
     }
   };
 
   return (
-    <div className="card" style={{ marginTop: 12 }}>
-      <h4>Invite Agent</h4>
-      <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Agent Email" className="input" />
-      <button onClick={handleInvite} className="btn btn-secondary" style={{ marginTop: 8 }}>Send Invite</button>
+    <div className="card invite-panel">
+      <h4>Invite Team Member</h4>
+      <input
+        type="email"
+        placeholder="Email address"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <button className="btn btn-primary" onClick={handleInvite}>Send Invite</button>
     </div>
   );
 }
