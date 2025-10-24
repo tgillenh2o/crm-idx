@@ -1,34 +1,40 @@
-import React, { useContext, useState } from "react";
-import { auth } from "../api";
-import { AuthContext } from "../context/AuthContext";
+import { useState } from "react";
+import { auth, setAuthToken } from "../api";
+import { useAuth } from "../context/AuthContext";
 
-export default function LoginForm({ onToggle }) {
-  const { loginUser } = useContext(AuthContext);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+export default function Login() {
+  const { setUser, darkMode, toggleDarkMode } = useAuth();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [message, setMessage] = useState("");
+
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await auth.login({ email, password });
-      loginUser(res.user, res.token);
+      const res = await auth.login(form);
+      if (res.token) {
+        setAuthToken(res.token);
+        setUser(res.user);
+      }
+      setMessage(res.message);
     } catch (err) {
-      setError("Login failed");
-      console.error(err);
+      setMessage(err.message || "Login failed");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="card">
-      <h3>Login</h3>
-      {error && <div style={{ color: "red" }}>{error}</div>}
-      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
-      <input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="Password" />
-      <button type="submit">Login</button>
-      <p>
-        No account? <span onClick={onToggle} style={{ cursor: "pointer", color: "blue" }}>Register</span>
-      </p>
-    </form>
+    <div className={`auth-container ${darkMode ? "dark" : ""}`}>
+      <h2>Login</h2>
+      <form onSubmit={handleSubmit}>
+        <input name="email" placeholder="Email" onChange={handleChange} />
+        <input type="password" name="password" placeholder="Password" onChange={handleChange} />
+        <button type="submit">Login</button>
+      </form>
+      <button onClick={toggleDarkMode}>
+        {darkMode ? "Light Mode" : "Dark Mode"}
+      </button>
+      {message && <p>{message}</p>}
+    </div>
   );
 }

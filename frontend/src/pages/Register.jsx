@@ -1,39 +1,32 @@
-import React, { useContext, useState } from "react";
+import { useState } from "react";
 import { auth } from "../api";
-import { AuthContext } from "../context/AuthContext";
 
-export default function RegisterForm({ onToggle }) {
-  const { loginUser } = useContext(AuthContext);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+export default function Register() {
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [message, setMessage] = useState("");
+
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await auth.register({ name, email, password });
-      setSuccess("Registration successful! Check your email to confirm.");
-      loginUser(res.user, res.token);
+      const res = await auth.register(form);
+      setMessage(res.message || "Check your email to confirm registration.");
     } catch (err) {
-      setError("Registration failed");
-      console.error(err);
+      setMessage(err.message || "Registration failed");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="card">
-      <h3>Register</h3>
-      {error && <div style={{ color: "red" }}>{error}</div>}
-      {success && <div style={{ color: "green" }}>{success}</div>}
-      <input value={name} onChange={e => setName(e.target.value)} placeholder="Name" />
-      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
-      <input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="Password" />
-      <button type="submit">Register</button>
-      <p>
-        Already have an account? <span onClick={onToggle} style={{ cursor: "pointer", color: "blue" }}>Login</span>
-      </p>
-    </form>
+    <div className="auth-container">
+      <h2>Register</h2>
+      <form onSubmit={handleSubmit}>
+        <input name="name" placeholder="Name" onChange={handleChange} />
+        <input name="email" placeholder="Email" onChange={handleChange} />
+        <input type="password" name="password" placeholder="Password" onChange={handleChange} />
+        <button type="submit">Register</button>
+      </form>
+      {message && <p>{message}</p>}
+    </div>
   );
 }
