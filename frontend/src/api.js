@@ -1,58 +1,77 @@
-const API_URL = "https://crm-idx-backend.onrender.com/api"; // Replace with your backend URL
+// src/api.js
 
-// Helper to store/remove token
+import axios from "axios";
+
+// Auto-detect backend base URL (for Render or local dev)
+const API_URL =
+  import.meta.env.VITE_BACKEND_URL ||
+  "https://crm-idx.onrender.com";
+
+// Create axios instance
+const api = axios.create({
+  baseURL: API_URL,
+  headers: { "Content-Type": "application/json" },
+});
+
+// Attach auth token
 export const setAuthToken = (token) => {
-  if (token) localStorage.setItem("crm_token", token);
-  else localStorage.removeItem("crm_token");
+  if (token) {
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common["Authorization"];
+  }
 };
 
-// Generic fetch wrapper to handle JSON and errors
-async function fetchJson(url, options = {}) {
-  const res = await fetch(url, {
-    headers: { "Content-Type": "application/json", ...options.headers },
-    ...options,
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "API request failed");
-  return data;
-}
-
-// ----- AUTH -----
+// ---- AUTH ----
 export const auth = {
-  login: async (payload) => {
-    return fetchJson(`${API_URL}/auth/login`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
+  async login(data) {
+    const res = await api.post("/auth/login", data);
+    return res.data;
   },
-  register: async (payload) => {
-    return fetchJson(`${API_URL}/auth/register`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
+  async register(data) {
+    const res = await api.post("/auth/register", data);
+    return res.data;
+  },
+  async me() {
+    const res = await api.get("/auth/me");
+    return res.data;
   },
 };
 
-// ----- PROPERTIES -----
+// ---- PROPERTIES ----
 export const properties = {
-  list: async () => {
-    const token = localStorage.getItem("crm_token");
-    return fetchJson(`${API_URL}/properties`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  async list() {
+    const res = await api.get("/properties");
+    return res.data;
   },
-  sync: async () => {
-    const token = localStorage.getItem("crm_token");
-    return fetchJson(`${API_URL}/properties/sync`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  async sync() {
+    const res = await api.post("/properties/sync");
+    return res.data;
   },
 };
 
-// ----- INVITES -----
+// ---- INVITES ----
 export const invites = {
-  list: async () => {
-    const token = localStorage.getItem("crm_token");
-    return fetchJson(`${API_URL}/invites`, {
-      headers: { Authorization:
+  async list() {
+    const res = await api.get("/invites");
+    return res.data;
+  },
+  async send(data) {
+    const res = await api.post("/invites", data);
+    return res.data;
+  },
+};
+
+// ---- LEADS ----
+export const leads = {
+  async list() {
+    const res = await api.get("/leads");
+    return res.data;
+  },
+  async add(data) {
+    const res = await api.post("/leads", data);
+    return res.data;
+  },
+};
+
+export default { auth, properties, invites, leads, setAuthToken };
