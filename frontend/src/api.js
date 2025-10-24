@@ -1,5 +1,5 @@
 // src/api.js
-const API_URL = "https://crm-idx.onrender.com/api"; // ✅ Render backend URL
+const API_URL = "https://crm-idx.onrender.com/api"; // Render backend URL
 
 // Save/remove token
 export const setAuthToken = (token) => {
@@ -17,8 +17,14 @@ export const auth = {
         body: JSON.stringify(data),
       });
 
-      if (!res.ok) throw new Error(`Login failed: ${res.status}`);
-      return await res.json();
+      const json = await res.json();
+
+      if (!res.ok) {
+        // Show backend error message in frontend
+        throw new Error(json.message || `Login failed with status ${res.status}`);
+      }
+
+      return json;
     } catch (err) {
       console.error("❌ Login error:", err);
       throw err;
@@ -33,8 +39,13 @@ export const auth = {
         body: JSON.stringify(data),
       });
 
-      if (!res.ok) throw new Error(`Register failed: ${res.status}`);
-      return await res.json();
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json.message || `Register failed with status ${res.status}`);
+      }
+
+      return json;
     } catch (err) {
       console.error("❌ Register error:", err);
       throw err;
@@ -42,12 +53,13 @@ export const auth = {
   },
 };
 
-// Protected endpoints
+// Helper for protected endpoints
 const getHeaders = () => {
   const token = localStorage.getItem("crm_token");
   return { Authorization: `Bearer ${token}` };
 };
 
+// Teams API
 export const teams = {
   list: async () => {
     const res = await fetch(`${API_URL}/teams`, { headers: getHeaders() });
@@ -55,6 +67,7 @@ export const teams = {
   },
 };
 
+// Invites API
 export const invites = {
   list: async () => {
     const res = await fetch(`${API_URL}/invites`, { headers: getHeaders() });
@@ -62,6 +75,7 @@ export const invites = {
   },
 };
 
+// Properties API
 export const properties = {
   list: async () => {
     const res = await fetch(`${API_URL}/properties`, { headers: getHeaders() });
@@ -76,6 +90,7 @@ export const properties = {
   },
 };
 
+// Leads API
 export const leads = {
   list: async () => {
     const res = await fetch(`${API_URL}/leads`, { headers: getHeaders() });
