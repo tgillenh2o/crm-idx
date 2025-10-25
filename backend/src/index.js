@@ -21,10 +21,9 @@ dotenv.config();
 
 const app = express();
 
-// ✅ CORS middleware - allow only your frontend Render URL
+// ✅ TEMP: Open CORS for all requests (for testing)
 app.use(cors({
-  origin: 'https://your-frontend-render-url.onrender.com', // replace with your frontend Render URL
-  credentials: true, // allow cookies or Authorization headers
+  origin: '*',
 }));
 
 app.use(express.json());
@@ -48,6 +47,6 @@ mongoose.connect(process.env.MONGO_URI, {
 })
 .then(() => {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
 })
 .catch((err) => console.error('MongoDB connection error:', err));
