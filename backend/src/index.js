@@ -1,47 +1,51 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const mongoose = require("mongoose");
+// backend/src/index.js
+const express = require('express');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const cors = require('cors');
 
-const authRoutes = require("./routes/auth");
-const teamRoutes = require("./routes/teams");
-const inviteRoutes = require("./routes/invites");
-const propertyRoutes = require("./routes/properties");
-const leadRoutes = require("./routes/leads");
+// ✅ Import models
+const User = require('./models/User');
+const Lead = require('./models/Lead');
+const Property = require('./models/Property');
+const Team = require('./models/Team');
+const Invite = require('./models/Invite');
+
+// ✅ Import routes
+const authRoutes = require('./routes/auth');
+const leadRoutes = require('./routes/leads');
+const propertyRoutes = require('./routes/properties');
+const teamRoutes = require('./routes/teams');
+const inviteRoutes = require('./routes/invites');
+
+dotenv.config();
 
 const app = express();
 
-// ✅ CORS
-app.use(cors({
-  origin: [
-    "https://crm-idx-frontend.onrender.com",
-    "http://localhost:5173"
-  ],
-  credentials: true
-}));
-
+// ✅ Middleware
+app.use(cors());
 app.use(express.json());
 
-// ✅ MongoDB connection
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("✅ Mongo connected"))
-  .catch(err => {
-    console.error("❌ Mongo connection error:", err);
-    process.exit(1);
-  });
+// ✅ API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/leads', leadRoutes);
+app.use('/api/properties', propertyRoutes);
+app.use('/api/teams', teamRoutes);
+app.use('/api/invites', inviteRoutes);
 
-// ✅ Health check
-app.get("/", (req, res) => res.json({ ok: true, service: "crm-idx-backend", time: new Date() }));
+// ✅ Test route
+app.get('/', (req, res) => {
+  res.send('CRM IDX Backend is running!');
+});
 
-// ✅ Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/teams", teamRoutes);
-app.use("/api/invites", inviteRoutes);
-app.use("/api/properties", propertyRoutes);
-app.use("/api/leads", leadRoutes);
-
-// ✅ 404 handler
-app.use((req, res) => res.status(404).json({ error: "Route not found", path: req.originalUrl }));
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Backend running on port ${PORT}`));
+// ✅ Connect to MongoDB and start server
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch((err) => console.error('MongoDB connection error:', err));

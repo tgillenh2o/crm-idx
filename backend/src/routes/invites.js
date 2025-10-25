@@ -1,29 +1,32 @@
-const express = require("express");
+// backend/src/routes/invites.js
+const express = require('express');
 const router = express.Router();
-const auth = require("../middleware/auth");
-const User = require("../models/User");
-const Team = require("../models/Team");
 
-// Only teamAdmin can list invites or invite users
-router.post("/", auth, async (req, res) => {
-  if (req.user.role !== "teamAdmin") return res.status(403).json({ message: "Forbidden" });
+// ✅ Import models
+const Invite = require('../models/Invite');
+const User = require('../models/User');
 
+// Get all invites
+router.get('/', async (req, res) => {
   try {
-    const { email, name } = req.body;
-    const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ message: "User already exists" });
-
-    const team = await Team.findById(req.user.teamId);
-    if (!team) return res.status(400).json({ message: "Team not found" });
-
-    const newUser = await User.create({ name, email, teamId: team._id, role: "agent", password: "changeme123" });
-    team.members.push(newUser._id);
-    await team.save();
-
-    res.json({ message: "Invite created", data: newUser });
+    const invites = await Invite.find().populate('sentBy', 'name email');
+    res.json(invites);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error('Error fetching invites:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Create new invite
+router.post('/', async (req, res) => {
+  try {
+    const { email, sentBy } = req.body;
+    const invite = new Invite({ email, sentBy });
+    await invite.save();
+    res.status(201).json(invite);
+  } catch (err) {
+    console.error('Error creating invite:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

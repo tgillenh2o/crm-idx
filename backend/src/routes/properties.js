@@ -1,28 +1,33 @@
-const express = require("express");
+// backend/src/routes/properties.js
+const express = require('express');
 const router = express.Router();
-const Property = require("../models/Property");
-const auth = require("../middleware/auth");
 
-// Get properties
-router.get("/", auth, async (req, res) => {
+// ✅ Import models
+const Property = require('../models/Property');
+const User = require('../models/User');
+
+// Get all properties
+router.get('/', async (req, res) => {
   try {
-    let props;
-    if (req.user.role === "teamAdmin") {
-      props = await Property.find({ teamId: req.user.teamId });
-    } else {
-      props = await Property.find({ ownerId: req.user._id });
-    }
-    res.json({ data: props });
+    const properties = await Property.find().populate('owner', 'name email');
+    res.json(properties);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error('Error fetching properties:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Sync IDX (mock)
-router.post("/sync", auth, async (req, res) => {
-  // Implement your IDX sync logic here
-  res.json({ message: "Properties synced (mock)" });
+// Create new property
+router.post('/', async (req, res) => {
+  try {
+    const { address, owner } = req.body;
+    const property = new Property({ address, owner });
+    await property.save();
+    res.status(201).json(property);
+  } catch (err) {
+    console.error('Error creating property:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
 module.exports = router;

@@ -1,36 +1,32 @@
-const express = require("express");
+// backend/src/routes/leads.js
+const express = require('express');
 const router = express.Router();
-const Lead = require("../models/Lead");
-const auth = require("../middleware/auth");
 
-// Get leads
-router.get("/", auth, async (req, res) => {
+// ✅ Import models
+const Lead = require('../models/Lead');
+const User = require('../models/User');
+
+// Get all leads
+router.get('/', async (req, res) => {
   try {
-    let leads;
-    if (req.user.role === "teamAdmin") {
-      leads = await Lead.find({ teamId: req.user.teamId });
-    } else {
-      leads = await Lead.find({ ownerId: req.user._id });
-    }
-    res.json({ data: leads });
+    const leads = await Lead.find().populate('assignedTo', 'name email');
+    res.json(leads);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error('Error fetching leads:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Create lead
-router.post("/", auth, async (req, res) => {
+// Create new lead
+router.post('/', async (req, res) => {
   try {
-    const lead = await Lead.create({
-      ...req.body,
-      ownerId: req.user._id,
-      teamId: req.user.teamId,
-    });
-    res.json({ message: "Lead created", data: lead });
+    const { name, email, assignedTo } = req.body;
+    const lead = new Lead({ name, email, assignedTo });
+    await lead.save();
+    res.status(201).json(lead);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error('Error creating lead:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
