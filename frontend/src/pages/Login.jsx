@@ -1,50 +1,44 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { auth, setAuthToken } from "../api";
-import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
-  const { setUser, darkMode, toggleDarkMode } = useAuth();
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [message, setMessage] = useState("");
-
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     try {
-      const res = await auth.login(form);
+      const res = await auth.login({ email, password });
       setAuthToken(res.token);
-      setUser(res.user);
-      setMessage(res.message);
+      alert("Login successful!");
     } catch (err) {
-      setMessage(err.message || "Login failed");
+      setError(err.message);
     }
   };
 
   return (
-    <div className={`auth-container ${darkMode ? "dark" : ""}`}>
+    <div>
       <h2>Login</h2>
+      {error && <p style={{ color: "red" }}>{error}</p>}
       <form onSubmit={handleSubmit}>
         <input
-          name="email"
+          type="email"
           placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
         />
         <input
           type="password"
-          name="password"
           placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
         />
         <button type="submit">Login</button>
       </form>
-      <button onClick={toggleDarkMode}>
-        {darkMode ? "Light Mode" : "Dark Mode"}
-      </button>
-      {message && <p className="message">{message}</p>}
     </div>
   );
 }

@@ -10,24 +10,23 @@ export default function App() {
     <AuthProvider>
       <div className="app-container">
         <header>
-          <div>
-            <button
-              onClick={() => setView("login")}
-              className={view === "login" ? "active" : ""}
-            >
-              Login
-            </button>
-            <button
-              onClick={() => setView("register")}
-              className={view === "register" ? "active" : ""}
-            >
-              Register
-            </button>
-          </div>
+          <button
+            onClick={() => setView("login")}
+            className={view === "login" ? "active" : ""}
+          >
+            Login
+          </button>
+          <button
+            onClick={() => setView("register")}
+            className={view === "register" ? "active" : ""}
+          >
+            Register
+          </button>
         </header>
-        <div>
+
+        <main>
           {view === "login" ? <Login /> : <Register />}
-        </div>
+        </main>
       </div>
     </AuthProvider>
   );
