@@ -1,18 +1,40 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useState, useEffect } from "react";
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [darkMode, setDarkMode] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const toggleDarkMode = () => setDarkMode(!darkMode);
+  // Check localStorage for token on mount
+  useEffect(() => {
+    const token = localStorage.getItem("crm_token");
+    if (token) {
+      // Optionally decode token to get user info
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        setUser({ id: payload.id });
+      } catch (err) {
+        console.error("Invalid token:", err);
+        localStorage.removeItem("crm_token");
+      }
+    }
+    setLoading(false);
+  }, []);
+
+  const login = (token, userData) => {
+    localStorage.setItem("crm_token", token);
+    setUser(userData);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("crm_token");
+    setUser(null);
+  };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, darkMode, toggleDarkMode }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);
