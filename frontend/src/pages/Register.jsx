@@ -1,122 +1,64 @@
 import React, { useState } from "react";
 import axios from "axios";
 export default function Register() {
-const [formData, setFormData] = useState({
-name: "",
-email: "",
-password: "",
-});
-const handleChange = (e) => {
-setFormData({ ...formData, [e.target.name]: e.target.value });
-};
+const [name, setName] = useState("");
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
 const handleSubmit = async (e) => {
 e.preventDefault();
 try {
-const res = await axios.post(${import.meta.env.VITE_API_URL}/auth/register, formData);
+const res = await axios.post(${import.meta.env.VITE_API_URL}/api/auth/register, {
+name,
+email,
+password,
+});
 alert("Registration successful! Please check your email for confirmation.");
 console.log(res.data);
 } catch (err) {
-console.error(err.response?.data || err.message);
-alert(err.response?.data?.message || "Registration failed");
+console.error(err);
+alert("Registration failed. Please try again.");
 }
 };
 return (
-<div
-className="register-container"
-style={{
-color: "white",
-background: "#121212",
-minHeight: "100vh",
-display: "flex",
-alignItems: "center",
-justifyContent: "center",
-}}
->
-<form
-onSubmit={handleSubmit}
-style={{
-display: "flex",
-flexDirection: "column",
-maxWidth: "400px",
-width: "100%",
-background: "#1E1E1E",
-padding: "2rem",
-borderRadius: "12px",
-boxShadow: "0 0 15px rgba(255,255,255,0.05)",
-}}
->
-<h2 style={{ textAlign: "center", marginBottom: "1.5rem", color: "#FF6B6B" }}>
-Create Account
-</h2>
-    <input
-      type="text"
-      name="name"
-      placeholder="Full Name"
-      value={formData.name}
-      onChange={handleChange}
-      required
-      style={{
-        marginBottom: "1rem",
-        padding: "0.8rem",
-        borderRadius: "6px",
-        border: "none",
-        background: "#2C2C2C",
-        color: "white",
-      }}
-    />
-
-    <input
-      type="email"
-      name="email"
-      placeholder="Email Address"
-      value={formData.email}
-      onChange={handleChange}
-      required
-      style={{
-        marginBottom: "1rem",
-        padding: "0.8rem",
-        borderRadius: "6px",
-        border: "none",
-        background: "#2C2C2C",
-        color: "white",
-      }}
-    />
-
-    <input
-      type="password"
-      name="password"
-      placeholder="Password"
-      value={formData.password}
-      onChange={handleChange}
-      required
-      style={{
-        marginBottom: "1.5rem",
-        padding: "0.8rem",
-        borderRadius: "6px",
-        border: "none",
-        background: "#2C2C2C",
-        color: "white",
-      }}
-    />
-
-    <button
-      type="submit"
-      style={{
-        background: "#FF6B6B",
-        color: "white",
-        padding: "0.8rem",
-        border: "none",
-        borderRadius: "6px",
-        cursor: "pointer",
-        fontWeight: "bold",
-        transition: "background 0.3s ease",
-      }}
-      onMouseOver={(e) => (e.target.style.background = "#FF8787")}
-      onMouseOut={(e) => (e.target.style.background = "#FF6B6B")}
-    >
-      Register
-    </button>
-  </form>
+<div className="min-h-screen flex items-center justify-center bg-gray-900">
+<div className="bg-gray-800 p-8 rounded-lg shadow-lg w-96">
+<h2 className="text-2xl font-bold text-white mb-6 text-center">Register</h2>
+<form onSubmit={handleSubmit}>
+<div className="mb-4">
+<label className="block text-gray-300 mb-2">Name</label>
+<input
+type="text"
+className="w-full p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+value={name}
+onChange={(e) => setName(e.target.value)}
+required
+/>
+</div>
+<div className="mb-4">
+<label className="block text-gray-300 mb-2">Email</label>
+<input
+type="email"
+className="w-full p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+value={email}
+onChange={(e) => setEmail(e.target.value)}
+required
+/>
+</div>
+<div className="mb-6">
+<label className="block text-gray-300 mb-2">Password</label>
+<input
+type="password"
+className="w-full p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+value={password}
+onChange={(e) => setPassword(e.target.value)}
+required
+/>
+</div>
+<button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded transition-colors" >
+Register
+</button>
+</form>
+</div>
 </div>
 );
 }
