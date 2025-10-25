@@ -23,12 +23,12 @@ exports.register = async (req, res) => {
     const confirmLink = `${process.env.FRONTEND_URL}/confirm?token=${emailToken}`;
 
     // Send confirmation email
-    await sendEmail(user.email, "Confirm your email", `Click to confirm: ${confirmLink}`);
+    //await sendEmail(user.email, "Confirm your email", `Click to confirm: ${confirmLink}`);
 
     res.status(201).json({ message: "User registered! Please check your email." });
   } catch (err) {
-    console.error("Register error:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error("Register error:", err.message || err);
+    res.status(500).json({ message: err.message || "Server error" });
   }
 };
 
