@@ -23,8 +23,12 @@ const app = express();
 
 // ✅ TEMP: Open CORS for all requests (for testing)
 app.use(cors({
-  origin: '*',
+  origin: ["https://crm-idx.pages.dev", "http://localhost:5173", "http://localhost:3000"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 }));
+
 
 app.use(express.json());
 
