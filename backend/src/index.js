@@ -40,6 +40,11 @@ app.get('/', (req, res) => {
   res.send('CRM IDX Backend is running!');
 });
 
+app.get("/api/test", (req, res) => {
+  res.json({ message: "Backend API is live" });
+});
+
+
 // Connect to MongoDB and start server
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
