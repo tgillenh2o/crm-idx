@@ -11,15 +11,20 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
     try {
-      const res = await axios.post(API_URL + "/auth/login", { email, password });
+      const res = await axios.post(`${API_URL}/auth/login`, { email, password });
+      // Store token
       localStorage.setItem("crm_token", res.data.token);
       alert("Login successful!");
-      console.log(res.data);
-      // Optionally redirect user after login
+      setEmail("");
+      setPassword("");
     } catch (err) {
-      console.error(err.response?.data);
-      setError(err.response?.data?.message || "Login failed. Please try again.");
+      if (err.response && err.response.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Login failed. Please try again.");
+      }
     }
   };
 
@@ -28,7 +33,7 @@ export default function Login() {
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", padding: "2rem", background: "#1E1E1E", borderRadius: "12px", width: "400px" }}>
         <h2 style={{ textAlign: "center", marginBottom: "1.5rem", color: "#FF6B6B" }}>Login</h2>
 
-        {error && <div style={{ marginBottom: "1rem", color: "#FF6B6B", fontWeight: "bold" }}>{error}</div>}
+        {error && <p style={{ color: "red", marginBottom: "1rem" }}>{error}</p>}
 
         <input
           type="email"
