@@ -1,21 +1,28 @@
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // true for 465, false for 587
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: process.env.EMAIL_USER, // your gmail address
+    pass: process.env.EMAIL_PASS, // your Gmail app password
   },
 });
 
-const sendEmail = async (to, subject, text) => {
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM,
+const sendConfirmationEmail = async (to, confirmUrl) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
     to,
-    subject,
-    text,
-  });
+    subject: "Confirm your email - CRM IDX",
+    html: `
+      <h2>Welcome to CRM IDX!</h2>
+      <p>Please confirm your email by clicking the link below:</p>
+      <a href="${confirmUrl}" target="_blank">Confirm Email</a>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
 };
 
-module.exports = sendEmail;
+module.exports = { sendConfirmationEmail };
