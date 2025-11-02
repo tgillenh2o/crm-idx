@@ -1,28 +1,38 @@
-// src/services/email.js
-const { Resend } = require("resend");
+import { Resend } from "resend";
+import dotenv from "dotenv";
+dotenv.config();
+
+// Initialize Resend with your API key from Render environment variables
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-async function sendConfirmationEmail(to, url) {
+/**
+ * Send an email via Resend
+ * @param {string} to - recipient email
+ * @param {string} subject - email subject line
+ * @param {string} html - HTML body content
+ */
+export const sendEmail = async (to, subject, html) => {
   try {
-    console.log(`📨 Sending Resend email to: ${to}`);
-    const data = await resend.emails.send({
-      from: process.env.EMAIL_FROM || "onboarding@resend.dev",
-      to,
-      subject: "Confirm your email",
-      html: `
-        <div style="font-family:sans-serif;line-height:1.6">
-          <h2>Welcome to CRM IDX</h2>
-          <p>Please confirm your email by clicking the button below:</p>
-          <p><a href="${url}" style="background:#007bff;color:white;padding:10px 15px;border-radius:5px;text-decoration:none;">Confirm Email</a></p>
-          <p>Or copy this link: <a href="${url}">${url}</a></p>
-        </div>
-      `,
-    });
-    console.log("✅ Email sent successfully:", data);
-  } catch (error) {
-    console.error("❌ Error sending email:", error);
-    throw error;
-  }
-}
+    console.log("📨 Sending email via Resend...");
+    console.log("➡️ To:", to);
+    console.log("➡️ From: noreply@findingathome.com");
 
-module.exports = { sendConfirmationEmail };
+    const { data, error } = await resend.emails.send({
+      from: "CRM IDX <noreply@findingathome.com>", // verified domain sender
+      to,
+      subject,
+      html,
+    });
+
+    if (error) {
+      console.error("❌ Resend API error:", error);
+      throw new Error(error.message || "Resend email error");
+    }
+
+    console.log("✅ Email sent successfully:", data);
+    return data;
+  } catch (err) {
+    console.error("🚨 Failed to send email:", err);
+    throw err;
+  }
+};
