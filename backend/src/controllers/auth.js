@@ -1,18 +1,17 @@
-// src/controllers/auth.js
+const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const User = require("../models/User");
-const { sendConfirmationEmail } = require("../services/email");
+const { sendEmail } = require("../services/email");
 
-// ✅ Register
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Check for existing user
-    const existingUser = await User.findOne({ email });
-    if (existingUser)
-      return res.status(400).json({ message: "Email already registered" });
+    // Check if user exists
+    let existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -24,71 +23,50 @@ exports.register = async (req, res) => {
       password: hashedPassword,
       isVerified: false,
     });
+
     await user.save();
 
-    // Create confirmation token + link
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
-    const confirmUrl = `${process.env.CLIENT_URL}/confirm/${token}`;
+    // Create verification token
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
 
-    // Send confirmation email
-    await sendConfirmationEmail(user.email, confirmUrl);
+    const confirmUrl = `${process.env.FRONTEND_URL}/verify/${token}`;
 
-    res.status(200).json({
-      message: "Registration successful. Please check your email to confirm.",
+    // ✅ Use Resend email service
+    await sendEmail(
+      email,
+      "Confirm your email",
+      `<p>Welcome, ${name}! Please confirm your email by clicking <a href="${confirmUrl}">here</a>.</p>`
+    );
+
+    console.log("✅ Confirmation email sent to:", email);
+
+    res.status(201).json({
+      message: "User registered successfully. Please check your email to confirm your account.",
     });
-  } catch (err) {
-    console.error("Register error:", err);
-    res.status(500).json({ message: "Server error" });
+  } catch (error) {
+    console.error("Register error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-// ✅ Confirm Email
-exports.confirmEmail = async (req, res) => {
+// ✅ Example of email verification endpoint
+exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id);
 
-    if (!user) return res.status(400).json({ message: "Invalid token" });
-    if (user.isVerified)
-      return res.status(400).json({ message: "Email already confirmed" });
+    const user = await User.findById(decoded.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     user.isVerified = true;
     await user.save();
 
-    res.status(200).json({ message: "Email confirmed successfully!" });
-  } catch (err) {
-    console.error("Email confirmation error:", err);
+    res.json({ message: "Email verified successfully!" });
+  } catch (error) {
     res.status(400).json({ message: "Invalid or expired token" });
-  }
-};
-
-// ✅ Login
-exports.login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({ message: "Invalid credentials" });
-
-    if (!user.isVerified) {
-      return res
-        .status(401)
-        .json({ message: "Please verify your email before logging in" });
-    }
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
-
-    res.status(200).json({ token, user });
-  } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({ message: "Server error" });
   }
 };
