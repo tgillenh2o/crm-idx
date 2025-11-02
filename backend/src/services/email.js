@@ -1,33 +1,20 @@
-// backend/src/services/email.js
-require("dotenv").config();
-const { Resend } = require("resend"); // destructured import
-
-// initialize client
+// src/services/email.js
+const Resend = require("resend");
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// send confirmation email
-async function sendEmail(to, subject, html) {
+async function sendEmail(to, url) {
   try {
     const response = await resend.emails.send({
-      from: "verified@yourdomain.com", // must be a verified Resend sender
+      from: "verified@yourdomain.com",
       to,
-      subject,
-      html,
+      subject: "Confirm your email",
+      html: `<p>Click <a href="${url}">here</a> to verify your email.</p>`
     });
-    console.log("✅ Email sent successfully:", response);
-    return response;
+    console.log("✅ Email sent:", response);
   } catch (err) {
     console.error("Error sending email:", err);
     throw err;
   }
 }
 
-async function sendConfirmationEmail(to, url) {
-  return sendEmail(
-    to,
-    "Confirm your email",
-    `<p>Please confirm your email by clicking <a href="${url}">here</a></p>`
-  );
-}
-
-module.exports = { sendConfirmationEmail };
+module.exports = { sendEmail };

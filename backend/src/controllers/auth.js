@@ -1,39 +1,32 @@
 // src/controllers/auth.js
 const User = require("../models/User");
+const bcrypt = require("bcryptjs");
 const { sendEmail } = require("../services/email");
 
 exports.register = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
+  const { name, email, password } = req.body;
 
+  try {
+    // check if user exists
     const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: "Email already in use" });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already registered" });
+    }
 
-    const newUser = await User.create({ name, email, password, confirmed: false });
+    // hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    const confirmUrl = `${process.env.FRONTEND_URL}/verified?token=${newUser._id}`;
-    await sendEmail(email, confirmUrl);
-
-    res.status(200).json({ message: "Registration successful, check your email" });
-  } catch (err) {
-    console.error("Register error:", err);
-    res.status(500).json({ message: "Register failed" });
-  }
-};
-
-exports.confirmEmail = async (req, res) => {
-  try {
-    const { token } = req.query;
-
-    const user = await User.findById(token);
-    if (!user) return res.status(400).send("Invalid token");
-
-    user.confirmed = true;
+    // create user
+    const user = new User({ name, email, password: hashedPassword, verified: false });
     await user.save();
 
-    res.redirect(`${process.env.FRONTEND_URL}/verified`);
+    // send verification email
+    const verificationUrl = `https://crm-idx-frontend.onrender.com/verified?email=${encodeURIComponent(email)}`;
+    await sendEmail(email, verificationUrl);
+
+    res.status(201).json({ message: "Registered successfully! Check your email to verify." });
   } catch (err) {
-    console.error("Email confirmation error:", err);
-    res.status(500).send("Server error");
+    console.error("Register error:", err);
+    res.status(500).json({ message: "Registration failed. Please try again." });
   }
 };
