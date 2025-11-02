@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+Import Verified from "./pages/Verified";
 
 function AppContent() {
   const { user, logout } = useContext(AuthContext);
