@@ -1,37 +1,37 @@
-// src/index.js
+// backend/src/index.js
+
 const express = require("express");
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
 const cors = require("cors");
-
-// Routes
-const authRoutes = require("./routes/auth");
-
-dotenv.config();
+require("dotenv").config();
 
 const app = express();
 
-// CORS
-app.use(cors({
-  origin: process.env.FRONTEND_URL,
-  credentials: true,
-}));
+// -----------------------------
+// MIDDLEWARE
+// -----------------------------
 
+// Enable CORS for your frontend domain
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "https://crm-idx-frontend.onrender.com",
+    credentials: true,
+  })
+);
+
+// Parse incoming JSON requests
 app.use(express.json());
 
-// API Routes
+// -----------------------------
+// ROUTES
+// -----------------------------
+const authRoutes = require("./routes/auth");
 app.use("/api/auth", authRoutes);
 
-// Test route
-app.get("/", (req, res) => res.send("CRM IDX Backend is running!"));
+// -----------------------------
+// START SERVER
+// -----------------------------
+const PORT = process.env.PORT || 5000;
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-})
-.catch((err) => console.error("MongoDB connection error:", err));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
