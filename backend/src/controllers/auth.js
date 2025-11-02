@@ -1,59 +1,80 @@
-// src/controllers/auth.js
 const User = require("../models/User");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const { sendEmail } = require("../services/email");
 
+// Register a new user
 exports.register = async (req, res) => {
-  const { name, email, password } = req.body;
-
   try {
-    // Check if user exists
+    const { name, email, password } = req.body;
+
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: "Email already registered" });
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
-    const newUser = await User.create({
+    // Create new user
+    const user = await User.create({
       name,
       email,
       password: hashedPassword,
       verified: false,
     });
 
-    // Generate verification token (JWT)
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-
     // Build verification URL
-    const verifyUrl = `https://crm-idx.onrender.com/api/auth/verify/${token}`;
+    const verifyUrl = `${process.env.FRONTEND_URL}/verified?email=${encodeURIComponent(email)}`;
 
     // Send verification email
     await sendEmail(email, verifyUrl);
 
-    res.status(200).json({ message: "Registration successful. Check your email to verify your account." });
+    return res.status(201).json({ message: "Registration successful! Check your email to verify." });
   } catch (err) {
     console.error("Register error:", err);
-    res.status(500).json({ message: "Registration failed. Please try again." });
+    return res.status(500).json({ message: "Registration failed. Please try again." });
   }
 };
 
-exports.verifyEmail = async (req, res) => {
-  const { token } = req.params;
+// Login existing user
+exports.login = async (req, res) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id);
+    const { email, password } = req.body;
+
+    // Check user exists
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+
+    // Check if verified
+    if (!user.verified) return res.status(403).json({ message: "Please verify your email first." });
+
+    return res.status(200).json({ message: "Login successful!" });
+  } catch (err) {
+    console.error("Login error:", err);
+    return res.status(500).json({ message: "Login failed. Please try again." });
+  }
+};
+
+// Verify user email
+exports.verify = async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) return res.status(400).send("Invalid verification link");
+
+    const user = await User.findOne({ email });
     if (!user) return res.status(404).send("User not found");
 
     user.verified = true;
     await user.save();
 
-    res.redirect("https://crm-idx-frontend.onrender.com/verified"); // redirect to frontend verified page
+    return res.redirect(`${process.env.FRONTEND_URL}/verified`);
   } catch (err) {
-    console.error("Email verification error:", err);
-    res.status(400).send("Invalid or expired token");
+    console.error("Verification error:", err);
+    return res.status(500).send("Verification failed. Try again.");
   }
 };
