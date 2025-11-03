@@ -24,7 +24,7 @@ exports.register = async (req, res) => {
 
     return res.status(201).json({ message: "Registration successful! Check your email to verify." });
   } catch (err) {
-    console.error("Register error:", err);
+    console.error("Register error:", err.message, err.stack);
     return res.status(500).json({ message: "Registration failed. Please try again." });
   }
 };
