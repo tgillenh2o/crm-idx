@@ -1,18 +1,21 @@
-const Resend = require("resend"); // Ensure this is the latest version
-const resend = new Resend({ apiKey: process.env.RESEND_API_KEY });
+// src/services/email.js
+const { Resend } = require("resend"); // Use destructuring
+const resend = new Resend(process.env.RESEND_API_KEY); // no `new` here
 
 async function sendEmail(to, verifyUrl) {
   try {
-    await resend.emails.send({
-      from: `noreply@findingathome.com`,  // Must be your verified domain
+    const response = await resend.emails.send({
+      from: "noreply@findingathome.com",  // Must match your verified domain
       to,
       subject: "Verify your email",
-      html: `<p>Click the link to verify your account:</p>
-             <a href="${verifyUrl}">Verify Email</a>`
+      html: `
+        <p>Click the link below to verify your account:</p>
+        <a href="${verifyUrl}" target="_blank">Verify Email</a>
+      `
     });
-    console.log("Verification email sent to:", to);
+    console.log("Verification email sent:", response);
   } catch (err) {
-    console.error("Error sending email:", err);
+    console.error("Error sending verification email:", err);
     throw err;
   }
 }
