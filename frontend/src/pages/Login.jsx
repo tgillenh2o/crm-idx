@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom"; // 👈 make sure this line exists
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -45,9 +45,16 @@ export default function Login() {
           width: "400px",
         }}
       >
-        <h2 style={{ textAlign: "center", marginBottom: "1.5rem", color: "#FF6B6B" }}>
+        <h2
+          style={{
+            textAlign: "center",
+            marginBottom: "1.5rem",
+            color: "#FF6B6B",
+          }}
+        >
           Login
         </h2>
+
         {error && <p style={{ color: "red", marginBottom: "1rem" }}>{error}</p>}
 
         <input
@@ -80,6 +87,7 @@ export default function Login() {
             color: "white",
           }}
         />
+
         <button
           type="submit"
           style={{
@@ -95,10 +103,13 @@ export default function Login() {
           Login
         </button>
 
-        {/* 👇 Added Register link */}
+        {/* 👇 Register link */}
         <p style={{ textAlign: "center", marginTop: "1rem" }}>
           Don’t have an account?{" "}
-          <Link to="/register" style={{ color: "#FF6B6B", textDecoration: "none" }}>
+          <Link
+            to="/register"
+            style={{ color: "#FF6B6B", textDecoration: "none", fontWeight: "bold" }}
+          >
             Register
           </Link>
         </p>
