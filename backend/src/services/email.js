@@ -4,16 +4,23 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendEmail(to, verifyUrl) {
   try {
-    const response = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL, // e.g., "noreply@yourdomain.com"
+    const data = await resend.emails.send({
+      from: "CRM IDX <noreply@findingathome.com>", // ✅ use your verified domain
       to,
-      subject: "Verify your email",
-      html: `<p>Click <a href="${verifyUrl}">here</a> to verify your email.</p>`,
+      subject: "Verify your CRM IDX account",
+      html: `
+        <h2>Welcome to CRM IDX!</h2>
+        <p>Click below to verify your account:</p>
+        <a href="${verifyUrl}" target="_blank"
+           style="display:inline-block;padding:10px 15px;background:#ff6b6b;color:white;border-radius:6px;text-decoration:none;">
+           Verify Email
+        </a>
+      `,
     });
-    console.log("Email sent successfully:", response);
-  } catch (err) {
-    console.error("Error sending email:", err);
-    throw new Error("Failed to send verification email.");
+
+    console.log("✅ Email sent:", data);
+  } catch (error) {
+    console.error("❌ Error sending email:", error);
   }
 }
 
