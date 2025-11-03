@@ -10,8 +10,8 @@ const app = express();
 // -----------------------------
 // ENVIRONMENT CHECK
 // -----------------------------
-if (!process.env.MONGODB_URI) {
-  console.error("Error: MONGODB_URI not set in environment variables");
+if (!process.env.MONGO_URI) {
+  console.error("Error: MONGO_URI not set in environment variables");
   process.exit(1);
 }
 
@@ -23,7 +23,7 @@ if (!process.env.FRONTEND_URL) {
 // -----------------------------
 // MONGODB CONNECTION
 // -----------------------------
-mongoose.connect(process.env.MONGODB_URI, {
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
