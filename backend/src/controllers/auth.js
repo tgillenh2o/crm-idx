@@ -1,56 +1,64 @@
-const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 const { sendEmail } = require("../services/email");
-const crypto = require("crypto");
 
-// Register new user
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    console.log("📩 Register request received:", req.body);
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "Email already registered" });
+      return res.status(400).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
-    // Create verification token
-    const verifyToken = crypto.randomBytes(32).toString("hex");
-
-    const user = await User.create({
+    const newUser = new User({
       name,
       email,
       password: hashedPassword,
       verified: false,
-      verifyToken,   // store token in DB
+      verificationToken: token,
     });
 
-    await sendEmail(email, verifyToken);
+    await newUser.save();
 
-    return res.status(201).json({ message: "Registration successful! Check your email to verify." });
+    const verifyUrl = `${process.env.FRONTEND_URL}/verify/${token}`;
+    await sendEmail(email, verifyUrl);
+
+    res.status(201).json({ message: "Registration successful! Please check your email to verify." });
   } catch (err) {
-    console.error("Register error:", err);
-    return res.status(500).json({ message: "Registration failed. Please try again." });
+    console.error("❌ Register error:", err);
+    res.status(500).json({ message: "Registration failed. Please try again." });
   }
 };
 
-// Verify user email
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
-    if (!token) return res.status(400).send("Invalid verification link");
+    console.log("🔍 Verifying token:", token);
 
-    const user = await User.findOne({ verifyToken: token });
-    if (!user) return res.status(404).send("User not found");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findOne({ email: decoded.email });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid token" });
+    }
+
+    if (user.verified) {
+      return res.status(400).json({ message: "Email already verified" });
+    }
 
     user.verified = true;
-    user.verifyToken = undefined; // remove token after verification
+    user.verificationToken = null;
     await user.save();
 
-    return res.redirect(`${process.env.FRONTEND_URL}/verified`);
+    res.status(200).json({ message: "Email verified successfully!" });
   } catch (err) {
-    console.error("Verification error:", err);
-    return res.status(500).send("Verification failed. Try again.");
+    console.error("❌ Verification error:", err);
+    res.status(400).json({ message: "Invalid or expired token" });
   }
 };
