@@ -26,7 +26,8 @@ exports.register = async (req, res) => {
 
     await newUser.save();
 
-    const verifyUrl = `${process.env.FRONTEND_URL}/verify/${token}`;
+    const verifyUrl = `${process.env.BACKEND_URL}/api/auth/verify/${token}`;
+
     await sendEmail(email, verifyUrl);
 
     res.status(201).json({ message: "Registration successful! Please check your email to verify." });
