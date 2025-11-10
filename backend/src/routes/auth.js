@@ -1,11 +1,15 @@
+// src/routes/auth.js
 const express = require("express");
 const router = express.Router();
-const { register, verifyEmail } = require("../controllers/auth");
+const { register, verifyEmail, login } = require("../controllers/auth");
 
-// POST /api/auth/register
+// Register
 router.post("/register", register);
 
-// GET /api/auth/verify/:token
+// Verify email
 router.get("/verify/:token", verifyEmail);
+
+// Login
+router.post("/login", login);
 
 module.exports = router;
