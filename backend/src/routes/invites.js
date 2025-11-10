@@ -1,33 +1,13 @@
-// backend/src/routes/invites.js
-const express = require('express');
+// src/routes/invites.js
+const express = require("express");
 const router = express.Router();
+const { createInvite, acceptInvite } = require("../controllers/invites");
+const { authMiddleware } = require("../middleware/auth");
 
-// ✅ Import models
-const Invite = require('../models/Invite');
-const User = require('../models/User');
+// Only admins can create invites
+router.post("/", authMiddleware(["teamAdmin"]), createInvite);
 
-// Get all invites
-router.get('/', async (req, res) => {
-  try {
-    const invites = await Invite.find().populate('sentBy', 'name email');
-    res.json(invites);
-  } catch (err) {
-    console.error('Error fetching invites:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Create new invite
-router.post('/', async (req, res) => {
-  try {
-    const { email, sentBy } = req.body;
-    const invite = new Invite({ email, sentBy });
-    await invite.save();
-    res.status(201).json(invite);
-  } catch (err) {
-    console.error('Error creating invite:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+// Endpoint for user to accept invite
+router.get("/accept/:token", acceptInvite);
 
 module.exports = router;

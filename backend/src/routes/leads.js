@@ -1,33 +1,19 @@
-// backend/src/routes/leads.js
-const express = require('express');
+const express = require("express");
 const router = express.Router();
+const authMiddleware = require("../middleware/auth"); // should populate req.user
+const {
+  createLead,
+  getLeads,
+  getLeadPond,
+  updateLead,
+  assignLead
+} = require("../controllers/leads");
 
-// ✅ Import models
-const Lead = require('../models/Lead');
-const User = require('../models/User');
-
-// Get all leads
-router.get('/', async (req, res) => {
-  try {
-    const leads = await Lead.find().populate('assignedTo', 'name email');
-    res.json(leads);
-  } catch (err) {
-    console.error('Error fetching leads:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Create new lead
-router.post('/', async (req, res) => {
-  try {
-    const { name, email, assignedTo } = req.body;
-    const lead = new Lead({ name, email, assignedTo });
-    await lead.save();
-    res.status(201).json(lead);
-  } catch (err) {
-    console.error('Error creating lead:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+// All routes require authentication
+router.post("/", authMiddleware(), createLead);
+router.get("/", authMiddleware(), getLeads);
+router.get("/pond", authMiddleware(["teamAdmin", "teamMember"]), getLeadPond);
+router.put("/:id", authMiddleware(), updateLead);
+router.put("/:id/assign", authMiddleware(["teamAdmin"]), assignLead);
 
 module.exports = router;
