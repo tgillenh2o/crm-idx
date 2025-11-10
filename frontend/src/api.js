@@ -1,27 +1,24 @@
 import axios from "axios";
 
-// Create a central axios instance
+// Hardcode your deployed backend URL here
+const BASE_URL = "https://crm-idx.onrender.com/api";
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api", 
-  withCredentials: true, // send cookies if using sessions
-  headers: {
-    "Content-Type": "application/json",
-  },
+  baseURL: BASE_URL,
+  headers: { "Content-Type": "application/json" },
 });
 
-// Optional: Add a request interceptor to attach auth token
+// Attach JWT token if exists
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("crm_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Optional: Add a response interceptor for global error handling
+// Global response logging
 api.interceptors.response.use(
   (response) => response,
   (error) => {

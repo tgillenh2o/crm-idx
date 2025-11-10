@@ -1,79 +1,57 @@
-// src/pages/Login.jsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import api from "../api";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const Login = () => {
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
-
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) return setError(data.message || "Login failed");
-
-      login(data.token, data.user);
-
-      switch (data.user.role) {
-        case "teamAdmin":
-          navigate("/dashboard/admin");
-          break;
-        case "teamMember":
-          navigate("/dashboard/member");
-          break;
-        default:
-          navigate("/dashboard");
-      }
+      const res = await api.post("/auth/login", { email, password });
+      login(res.data.token, res.data.user);
+      navigate("/dashboard");
     } catch (err) {
-      console.error("Login error:", err);
-      setError("Server error during login");
+      setError(err.response?.data?.message || "Login failed");
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <div className="bg-white shadow-lg rounded-2xl p-10 w-full max-w-md">
-        <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">Login to CRM</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+        {error && <div className="text-red-500 mb-4 text-center">{error}</div>}
+        <form onSubmit={handleLogin} className="space-y-4">
           <input
             type="email"
             placeholder="Email"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
+            className="w-full border p-3 rounded-lg"
           />
           <input
             type="password"
             placeholder="Password"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
+            className="w-full border p-3 rounded-lg"
           />
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-          >
+          <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
             Login
           </button>
         </form>
-        {error && <p className="text-red-500 text-center mt-4">{error}</p>}
+        <p className="mt-4 text-center text-sm text-gray-600">
+          Don’t have an account?{" "}
+          <Link to="/register" className="text-blue-600 font-medium hover:underline">
+            Register here
+          </Link>
+        </p>
       </div>
     </div>
   );
-};
-
-export default Login;
+}
