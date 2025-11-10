@@ -18,3 +18,13 @@ userSchema.pre("save", function(next) {
 });
 
 module.exports = mongoose.model("User", userSchema);
+
+role: {
+  type: String,
+  enum: ["independent", "teamMember", "teamAdmin"],
+  default: "independent",
+},
+teamId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Team",
+},

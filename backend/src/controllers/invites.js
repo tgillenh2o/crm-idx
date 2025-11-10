@@ -1,25 +1,22 @@
-// src/controllers/invites.js
 const Invite = require("../models/Invite");
 const User = require("../models/User");
 const Team = require("../models/Team");
 const crypto = require("crypto");
 const { sendEmail } = require("../services/email");
 
+// Create an invite (admin only)
 exports.createInvite = async (req, res) => {
   try {
     const { email, role, teamId } = req.body;
 
-    // Ensure team exists
     const team = await Team.findById(teamId);
     if (!team) return res.status(404).json({ message: "Team not found" });
 
-    // Generate a unique token
     const token = crypto.randomBytes(32).toString("hex");
 
     const invite = new Invite({ email, role, teamId, token });
     await invite.save();
 
-    // Send invite email
     const inviteUrl = `${process.env.FRONTEND_URL}/accept-invite/${token}`;
     await sendEmail(email, `You are invited! Click here to join: ${inviteUrl}`);
 
@@ -30,6 +27,7 @@ exports.createInvite = async (req, res) => {
   }
 };
 
+// Accept an invite
 exports.acceptInvite = async (req, res) => {
   try {
     const { token } = req.params;

@@ -1,4 +1,3 @@
-// src/routes/invites.js
 const express = require("express");
 const router = express.Router();
 const { createInvite, acceptInvite } = require("../controllers/invites");
