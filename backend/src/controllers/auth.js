@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { sendEmail } = require("../services/email");
 
+// Registration
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -12,14 +13,16 @@ exports.register = async (req, res) => {
     if (existingUser) return res.status(400).json({ message: "User already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    const token = jwt.sign({ email, role: "independent" }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
 
     const newUser = new User({
       name,
       email,
       password: hashedPassword,
       verified: false,
-      verificationToken: token,
+      verifyToken: token,
       role: "independent", // default role
     });
 
@@ -35,6 +38,7 @@ exports.register = async (req, res) => {
   }
 };
 
+// Email verification
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
@@ -47,7 +51,7 @@ exports.verifyEmail = async (req, res) => {
     if (user.verified) return res.status(400).json({ message: "Email already verified" });
 
     user.verified = true;
-    user.verificationToken = null;
+    user.verifyToken = null;
     await user.save();
 
     res.status(200).json({ message: "Email verified successfully!" });
