@@ -10,8 +10,9 @@ import TeamMemberPond from "./pages/dashboard/team-member/LeadPond";
 import TeamAdminAllLeads from "./pages/dashboard/team-admin/AllLeads";
 import TeamAdminLeadPond from "./pages/dashboard/team-admin/LeadPond";
 
-// Optional: Login page
+// Auth pages
 import Login from "./pages/Login";
+import Register from "./pages/Register"; // <-- import register page
 
 function ProtectedRoute({ element, roles }) {
   const { user } = useAuth();
@@ -29,6 +30,9 @@ function App() {
         <Routes>
           {/* Login */}
           <Route path="/login" element={<Login />} />
+
+          {/* Register */}
+          <Route path="/register" element={<Register />} />
 
           {/* Independent Agent Dashboard */}
           <Route
