@@ -3,6 +3,9 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { sendEmail } = require("../services/email");
 
+// -----------------------------
+// REGISTER
+// -----------------------------
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -27,7 +30,6 @@ exports.register = async (req, res) => {
     await newUser.save();
 
     const verifyUrl = `${process.env.BACKEND_URL}/api/auth/verify/${token}`;
-
     await sendEmail(email, verifyUrl);
 
     res.status(201).json({ message: "Registration successful! Please check your email to verify." });
@@ -37,6 +39,9 @@ exports.register = async (req, res) => {
   }
 };
 
+// -----------------------------
+// EMAIL VERIFICATION
+// -----------------------------
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
@@ -46,20 +51,58 @@ exports.verifyEmail = async (req, res) => {
     const user = await User.findOne({ email: decoded.email });
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid token" });
+      return res.redirect(`${process.env.FRONTEND_URL}/verify-failed`);
     }
 
     if (user.verified) {
-      return res.status(400).json({ message: "Email already verified" });
+      return res.redirect(`${process.env.FRONTEND_URL}/already-verified`);
     }
 
     user.verified = true;
     user.verificationToken = null;
     await user.save();
 
-    res.status(200).json({ message: "Email verified successfully!" });
+    // Redirect to frontend success page
+    res.redirect(`${process.env.FRONTEND_URL}/verified-success`);
   } catch (err) {
     console.error("❌ Verification error:", err);
-    res.status(400).json({ message: "Invalid or expired token" });
+    res.redirect(`${process.env.FRONTEND_URL}/verify-failed`);
+  }
+};
+
+// -----------------------------
+// LOGIN
+// -----------------------------
+exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    console.log("🔑 Login request received:", req.body);
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Login failed: user not found" });
+    }
+
+    if (!user.verified) {
+      return res.status(400).json({ message: "Login failed: email not verified" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Login failed: incorrect password" });
+    }
+
+    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      user: { id: user._id, name: user.name, email: user.email },
+    });
+  } catch (err) {
+    console.error("❌ Login error:", err);
+    res.status(500).json({ message: "Login failed. Please try again." });
   }
 };
