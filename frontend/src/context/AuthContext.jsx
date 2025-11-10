@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 
 export const AuthContext = createContext();
 
@@ -12,13 +12,7 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split(".")[1]));
-        // Make sure the payload has role
-        setUser({
-          id: payload.id,
-          name: payload.name,
-          email: payload.email,
-          role: payload.role || "independent",
-        });
+        setUser({ id: payload.id, role: payload.role }); // make sure role is stored in token
       } catch (err) {
         console.error("Invalid token:", err);
         localStorage.removeItem("crm_token");
@@ -27,13 +21,9 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // Login: store token and user data
   const login = (token, userData) => {
     localStorage.setItem("crm_token", token);
-    setUser({
-      ...userData,
-      role: userData.role || "independent", // ensure role exists
-    });
+    setUser(userData);
   };
 
   const logout = () => {
@@ -47,3 +37,6 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+// ✅ Add this custom hook
+export const useAuth = () => useContext(AuthContext);
