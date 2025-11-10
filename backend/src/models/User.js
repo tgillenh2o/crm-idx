@@ -6,11 +6,23 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   verified: { type: Boolean, default: false },
-  verifyToken: { type: String }
+  verifyToken: { type: String },
+
+  // ✅ Add role and teamId inside schema
+  role: {
+    type: String,
+    enum: ["independent", "teamMember", "teamAdmin"],
+    default: "independent",
+  },
+  teamId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Team",
+    default: null,
+  },
 });
 
 // Generate a verification token before saving a new user
-userSchema.pre("save", function(next) {
+userSchema.pre("save", function (next) {
   if (!this.verifyToken) {
     this.verifyToken = crypto.randomBytes(32).toString("hex");
   }
@@ -18,13 +30,3 @@ userSchema.pre("save", function(next) {
 });
 
 module.exports = mongoose.model("User", userSchema);
-
-role: {
-  type: String,
-  enum: ["independent", "teamMember", "teamAdmin"],
-  default: "independent",
-},
-teamId: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "Team",
-},
