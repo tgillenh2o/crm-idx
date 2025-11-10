@@ -1,195 +1,33 @@
-const API_URL = "https://crm-idx.onrender.com/api"; // your deployed backend URL
+import axios from "axios";
 
-// Store or remove token
-export const setAuthToken = (token) => {
-  if (token) localStorage.setItem("crm_token", token);
-  else localStorage.removeItem("crm_token");
-};
-
-// Build headers with optional auth token
-const getHeaders = () => {
-  const token = localStorage.getItem("crm_token");
-  return {
+// Create a central axios instance
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api", 
+  withCredentials: true, // send cookies if using sessions
+  headers: {
     "Content-Type": "application/json",
-    ...(token && { Authorization: `Bearer ${token}` }),
-  };
-};
-
-// ---------- Auth ----------
-export const auth = {
-  login: async (data) => {
-    try {
-      const res = await fetch(`${API_URL}/auth/login`, {
-        method: "POST",
-        headers: getHeaders(),
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Login failed");
-      }
-      return res.json();
-    } catch (err) {
-      console.error("Login error:", err);
-      throw err;
-    }
   },
+});
 
-  register: async (data) => {
-    try {
-      const res = await fetch(`${API_URL}/auth/register`, {
-        method: "POST",
-        headers: getHeaders(),
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Registration failed");
-      }
-      return res.json();
-    } catch (err) {
-      console.error("Registration error:", err);
-      throw err;
+// Optional: Add a request interceptor to attach auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("crm_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    return config;
   },
-};
+  (error) => Promise.reject(error)
+);
 
-// ---------- Teams ----------
-export const teams = {
-  list: async () => {
-    try {
-      const res = await fetch(`${API_URL}/teams`, { headers: getHeaders() });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Failed to fetch teams");
-      }
-      return res.json();
-    } catch (err) {
-      console.error("Teams fetch error:", err);
-      throw err;
-    }
-  },
+// Optional: Add a response interceptor for global error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error("API error:", error.response?.data || error.message);
+    return Promise.reject(error);
+  }
+);
 
-  create: async (data) => {
-    try {
-      const res = await fetch(`${API_URL}/teams`, {
-        method: "POST",
-        headers: getHeaders(),
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Failed to create team");
-      }
-      return res.json();
-    } catch (err) {
-      console.error("Team create error:", err);
-      throw err;
-    }
-  },
-};
-
-// ---------- Leads ----------
-export const leads = {
-  list: async () => {
-    try {
-      const res = await fetch(`${API_URL}/leads`, { headers: getHeaders() });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Failed to fetch leads");
-      }
-      return res.json();
-    } catch (err) {
-      console.error("Leads fetch error:", err);
-      throw err;
-    }
-  },
-
-  create: async (data) => {
-    try {
-      const res = await fetch(`${API_URL}/leads`, {
-        method: "POST",
-        headers: getHeaders(),
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Failed to create lead");
-      }
-      return res.json();
-    } catch (err) {
-      console.error("Lead create error:", err);
-      throw err;
-    }
-  },
-};
-
-// ---------- Properties ----------
-export const properties = {
-  list: async () => {
-    try {
-      const res = await fetch(`${API_URL}/properties`, { headers: getHeaders() });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Failed to fetch properties");
-      }
-      return res.json();
-    } catch (err) {
-      console.error("Properties fetch error:", err);
-      throw err;
-    }
-  },
-
-  create: async (data) => {
-    try {
-      const res = await fetch(`${API_URL}/properties`, {
-        method: "POST",
-        headers: getHeaders(),
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Failed to create property");
-      }
-      return res.json();
-    } catch (err) {
-      console.error("Property create error:", err);
-      throw err;
-    }
-  },
-};
-
-// ---------- Invites ----------
-export const invites = {
-  list: async () => {
-    try {
-      const res = await fetch(`${API_URL}/invites`, { headers: getHeaders() });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Failed to fetch invites");
-      }
-      return res.json();
-    } catch (err) {
-      console.error("Invites fetch error:", err);
-      throw err;
-    }
-  },
-
-  create: async (data) => {
-    try {
-      const res = await fetch(`${API_URL}/invites`, {
-        method: "POST",
-        headers: getHeaders(),
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Failed to create invite");
-      }
-      return res.json();
-    } catch (err) {
-      console.error("Invite create error:", err);
-      throw err;
-    }
-  },
-};
+export default api;
