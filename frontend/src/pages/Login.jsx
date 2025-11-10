@@ -1,76 +1,64 @@
+// src/pages/Login.jsx
 import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate, Link } from "react-router-dom"; // 👈 make sure this line exists
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-export default function Login() {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  const API_URL = "https://crm-idx.onrender.com/api";
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      const res = await axios.post(`${API_URL}/auth/login`, { email, password });
-      localStorage.setItem("user", email);
-      navigate("/");
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Login failed");
+        return;
+      }
+
+      // Save token and user data in context
+      login(data.token, data.user);
+
+      // Redirect based on role
+      switch (data.user.role) {
+        case "teamAdmin":
+          navigate("/dashboard/admin");
+          break;
+        case "teamMember":
+          navigate("/dashboard/member");
+          break;
+        default:
+          navigate("/dashboard");
+          break;
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Please try again.");
+      console.error("Login error:", err);
+      setError("Server error during login");
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "#121212",
-        color: "white",
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          padding: "2rem",
-          background: "#1E1E1E",
-          borderRadius: "12px",
-          width: "400px",
-        }}
-      >
-        <h2
-          style={{
-            textAlign: "center",
-            marginBottom: "1.5rem",
-            color: "#FF6B6B",
-          }}
-        >
-          Login
-        </h2>
-
-        {error && <p style={{ color: "red", marginBottom: "1rem" }}>{error}</p>}
-
+    <div className="login-container">
+      <h2>Login</h2>
+      <form onSubmit={handleSubmit}>
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={{
-            marginBottom: "1rem",
-            padding: "0.8rem",
-            borderRadius: "6px",
-            border: "none",
-            background: "#2C2C2C",
-            color: "white",
-          }}
         />
         <input
           type="password"
@@ -78,42 +66,12 @@ export default function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          style={{
-            marginBottom: "1.5rem",
-            padding: "0.8rem",
-            borderRadius: "6px",
-            border: "none",
-            background: "#2C2C2C",
-            color: "white",
-          }}
         />
-
-        <button
-          type="submit"
-          style={{
-            background: "#FF6B6B",
-            color: "white",
-            padding: "0.8rem",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-        >
-          Login
-        </button>
-
-        {/* 👇 Register link */}
-        <p style={{ textAlign: "center", marginTop: "1rem" }}>
-          Don’t have an account?{" "}
-          <Link
-            to="/register"
-            style={{ color: "#FF6B6B", textDecoration: "none", fontWeight: "bold" }}
-          >
-            Register
-          </Link>
-        </p>
+        <button type="submit">Login</button>
+        {error && <p style={{ color: "red" }}>{error}</p>}
       </form>
     </div>
   );
-}
+};
+
+export default Login;
