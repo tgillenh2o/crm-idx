@@ -1,63 +1,115 @@
 import React, { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import api from "../api";
 
 export default function Register() {
-  const { register } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
+
     try {
-      await register(name, email, password);
-      setMessage("Registration successful! Please check your email to verify.");
-      setError("");
+      const res = await api.post("/auth/register", { name, email, password });
+      if (res.data?.message) {
+        setSuccess(res.data.message);
+      } else {
+        setSuccess("Registration successful! Check your email for verification.");
+      }
     } catch (err) {
-      setError("Registration failed. Try again.");
-      setMessage("");
+      setError(err.response?.data?.error || "Registration failed.");
     }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>Create Account</h2>
-        <p style={styles.subtitle}>Join the platform today</p>
-        {message && <p style={styles.success}>{message}</p>}
-        {error && <p style={styles.error}>{error}</p>}
-        <form onSubmit={handleSubmit} style={styles.form}>
+    <div
+      style={{
+        background: "linear-gradient(135deg, #0f172a, #1e293b)",
+        height: "100vh",
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
+      <div
+        style={{
+          background: "white",
+          borderRadius: "10px",
+          padding: "40px",
+          width: "90%",
+          maxWidth: "400px",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.3)",
+          textAlign: "center",
+        }}
+      >
+        <h2 style={{ marginBottom: "10px", color: "#111" }}>Create Account</h2>
+        <p style={{ marginBottom: "20px", color: "#555" }}>Register to get started</p>
+
+        {error && (
+          <div
+            style={{
+              backgroundColor: "#fee2e2",
+              color: "#b91c1c",
+              padding: "10px",
+              borderRadius: "6px",
+              marginBottom: "15px",
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div
+            style={{
+              backgroundColor: "#dcfce7",
+              color: "#166534",
+              padding: "10px",
+              borderRadius: "6px",
+              marginBottom: "15px",
+            }}
+          >
+            {success}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           <input
             type="text"
             placeholder="Full Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            style={inputStyle}
             required
-            style={styles.input}
           />
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            style={inputStyle}
             required
-            style={styles.input}
           />
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            style={inputStyle}
             required
-            style={styles.input}
           />
-          <button type="submit" style={styles.button}>Register</button>
+          <button type="submit" style={buttonStyle}>Register</button>
         </form>
-        <p style={styles.footer}>
+
+        <p style={{ marginTop: "18px", color: "#555" }}>
           Already have an account?{" "}
-          <a href="/login" style={styles.link}>
+          <a href="/login" style={{ color: "#2563eb", fontWeight: "bold", textDecoration: "none" }}>
             Login
           </a>
         </p>
@@ -66,82 +118,21 @@ export default function Register() {
   );
 }
 
-const styles = {
-  ...JSON.parse(JSON.stringify((() => ({
-    container: {
-      background: "linear-gradient(135deg, #111827, #1f2937, #111827)",
-      height: "100vh",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontFamily: "Inter, sans-serif",
-    },
-    card: {
-      background: "#fff",
-      borderRadius: "12px",
-      boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
-      padding: "40px",
-      width: "100%",
-      maxWidth: "400px",
-      textAlign: "center",
-    },
-    title: {
-      fontSize: "1.8rem",
-      fontWeight: "700",
-      color: "#111827",
-      marginBottom: "8px",
-    },
-    subtitle: {
-      color: "#6b7280",
-      marginBottom: "20px",
-    },
-    success: {
-      color: "#065f46",
-      backgroundColor: "#d1fae5",
-      borderRadius: "6px",
-      padding: "8px",
-      marginBottom: "12px",
-      fontSize: "0.9rem",
-    },
-    error: {
-      color: "#dc2626",
-      backgroundColor: "#fee2e2",
-      borderRadius: "6px",
-      padding: "8px",
-      marginBottom: "12px",
-      fontSize: "0.9rem",
-    },
-    form: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "12px",
-    },
-    input: {
-      padding: "12px",
-      borderRadius: "6px",
-      border: "1px solid #d1d5db",
-      fontSize: "1rem",
-    },
-    button: {
-      backgroundColor: "#2563eb",
-      color: "white",
-      border: "none",
-      padding: "12px",
-      borderRadius: "6px",
-      fontSize: "1rem",
-      fontWeight: "600",
-      cursor: "pointer",
-      transition: "0.2s",
-    },
-    footer: {
-      marginTop: "18px",
-      fontSize: "0.9rem",
-      color: "#6b7280",
-    },
-    link: {
-      color: "#2563eb",
-      textDecoration: "none",
-      fontWeight: "600",
-    },
-  }))())),
+const inputStyle = {
+  padding: "12px",
+  borderRadius: "6px",
+  border: "1px solid #ccc",
+  fontSize: "1rem",
+};
+
+const buttonStyle = {
+  backgroundColor: "#2563eb",
+  color: "white",
+  border: "none",
+  padding: "12px",
+  borderRadius: "6px",
+  fontSize: "1rem",
+  fontWeight: "bold",
+  cursor: "pointer",
+  transition: "background-color 0.2s ease",
 };
