@@ -1,101 +1,147 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import api from "../api";
+import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
-  const navigate = useNavigate();
-
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+  const { register } = useAuth();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleRegister = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
-    setLoading(true);
     try {
-      const res = await api.post("/auth/register", formData);
-      setSuccess(res.data.message || "Registration successful! Please check your email to verify your account.");
-      setTimeout(() => navigate("/login"), 2500);
+      await register(name, email, password);
+      setMessage("Registration successful! Please check your email to verify.");
+      setError("");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
-    } finally {
-      setLoading(false);
+      setError("Registration failed. Try again.");
+      setMessage("");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-600">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">Create Account ✨</h1>
-        <p className="text-gray-500 mb-6">Join the CRM IDX platform</p>
-
-        {error && <div className="bg-red-100 text-red-600 p-2 rounded mb-4">{error}</div>}
-        {success && <div className="bg-green-100 text-green-700 p-2 rounded mb-4">{success}</div>}
-
-        <form onSubmit={handleRegister} className="space-y-4 text-left">
-          <div>
-            <label className="block text-sm text-gray-600">Full Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-600">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-600">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-200 font-semibold"
-          >
-            {loading ? "Registering..." : "Create Account"}
-          </button>
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <h2 style={styles.title}>Create Account</h2>
+        <p style={styles.subtitle}>Join the platform today</p>
+        {message && <p style={styles.success}>{message}</p>}
+        {error && <p style={styles.error}>{error}</p>}
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <input
+            type="text"
+            placeholder="Full Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            style={styles.input}
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={styles.input}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={styles.input}
+          />
+          <button type="submit" style={styles.button}>Register</button>
         </form>
-
-        <p className="mt-6 text-gray-500">
+        <p style={styles.footer}>
           Already have an account?{" "}
-          <Link to="/login" className="text-indigo-600 hover:underline">
+          <a href="/login" style={styles.link}>
             Login
-          </Link>
+          </a>
         </p>
       </div>
     </div>
   );
 }
+
+const styles = {
+  ...JSON.parse(JSON.stringify((() => ({
+    container: {
+      background: "linear-gradient(135deg, #111827, #1f2937, #111827)",
+      height: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontFamily: "Inter, sans-serif",
+    },
+    card: {
+      background: "#fff",
+      borderRadius: "12px",
+      boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
+      padding: "40px",
+      width: "100%",
+      maxWidth: "400px",
+      textAlign: "center",
+    },
+    title: {
+      fontSize: "1.8rem",
+      fontWeight: "700",
+      color: "#111827",
+      marginBottom: "8px",
+    },
+    subtitle: {
+      color: "#6b7280",
+      marginBottom: "20px",
+    },
+    success: {
+      color: "#065f46",
+      backgroundColor: "#d1fae5",
+      borderRadius: "6px",
+      padding: "8px",
+      marginBottom: "12px",
+      fontSize: "0.9rem",
+    },
+    error: {
+      color: "#dc2626",
+      backgroundColor: "#fee2e2",
+      borderRadius: "6px",
+      padding: "8px",
+      marginBottom: "12px",
+      fontSize: "0.9rem",
+    },
+    form: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "12px",
+    },
+    input: {
+      padding: "12px",
+      borderRadius: "6px",
+      border: "1px solid #d1d5db",
+      fontSize: "1rem",
+    },
+    button: {
+      backgroundColor: "#2563eb",
+      color: "white",
+      border: "none",
+      padding: "12px",
+      borderRadius: "6px",
+      fontSize: "1rem",
+      fontWeight: "600",
+      cursor: "pointer",
+      transition: "0.2s",
+    },
+    footer: {
+      marginTop: "18px",
+      fontSize: "0.9rem",
+      color: "#6b7280",
+    },
+    link: {
+      color: "#2563eb",
+      textDecoration: "none",
+      fontWeight: "600",
+    },
+  }))())),
+};

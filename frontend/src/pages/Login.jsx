@@ -1,86 +1,123 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import api from "../api";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
-  const navigate = useNavigate();
-  const { setUser } = useAuth();
-
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
     try {
-      const res = await api.post("/auth/login", { email, password });
-      const user = res.data.user;
-      localStorage.setItem("crm_token", res.data.token);
-      setUser(user);
-
-      if (user.role === "teamAdmin") navigate("/dashboard/admin");
-      else if (user.role === "teamMember") navigate("/dashboard/member");
-      else navigate("/dashboard");
+      await login(email, password);
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
-    } finally {
-      setLoading(false);
+      setError("Login failed. Please check your credentials.");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">Welcome Back 👋</h1>
-        <p className="text-gray-500 mb-6">Login to your CRM IDX dashboard</p>
-
-        {error && (
-          <div className="bg-red-100 text-red-600 p-2 rounded mb-4">{error}</div>
-        )}
-
-        <form onSubmit={handleLogin} className="space-y-4 text-left">
-          <div>
-            <label className="block text-sm text-gray-600">Email</label>
-            <input
-              type="email"
-              className="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-600">Password</label>
-            <input
-              type="password"
-              className="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200 font-semibold"
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <h2 style={styles.title}>Welcome Back</h2>
+        <p style={styles.subtitle}>Login to your account</p>
+        {error && <p style={styles.error}>{error}</p>}
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={styles.input}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={styles.input}
+          />
+          <button type="submit" style={styles.button}>Login</button>
         </form>
-
-        <p className="mt-6 text-gray-500">
+        <p style={styles.footer}>
           Don’t have an account?{" "}
-          <Link to="/register" className="text-blue-600 hover:underline">
+          <a href="/register" style={styles.link}>
             Register
-          </Link>
+          </a>
         </p>
       </div>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    background: "linear-gradient(135deg, #111827, #1f2937, #111827)",
+    height: "100vh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontFamily: "Inter, sans-serif",
+  },
+  card: {
+    background: "#fff",
+    borderRadius: "12px",
+    boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
+    padding: "40px",
+    width: "100%",
+    maxWidth: "400px",
+    textAlign: "center",
+  },
+  title: {
+    fontSize: "1.8rem",
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: "8px",
+  },
+  subtitle: {
+    color: "#6b7280",
+    marginBottom: "20px",
+  },
+  error: {
+    color: "#dc2626",
+    backgroundColor: "#fee2e2",
+    borderRadius: "6px",
+    padding: "8px",
+    marginBottom: "12px",
+    fontSize: "0.9rem",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+  },
+  input: {
+    padding: "12px",
+    borderRadius: "6px",
+    border: "1px solid #d1d5db",
+    fontSize: "1rem",
+  },
+  button: {
+    backgroundColor: "#2563eb",
+    color: "white",
+    border: "none",
+    padding: "12px",
+    borderRadius: "6px",
+    fontSize: "1rem",
+    fontWeight: "600",
+    cursor: "pointer",
+    transition: "0.2s",
+  },
+  footer: {
+    marginTop: "18px",
+    fontSize: "0.9rem",
+    color: "#6b7280",
+  },
+  link: {
+    color: "#2563eb",
+    textDecoration: "none",
+    fontWeight: "600",
+  },
+};
