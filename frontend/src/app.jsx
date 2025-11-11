@@ -43,6 +43,14 @@ export default function App() {
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </Router>
+<Route element={<DashboardLayout />}>
+  <Route path="/dashboard" element={<ProtectedRoute element={<IndependentMyLeads />} roles={['independent']} />} />
+  <Route path="/dashboard/member" element={<ProtectedRoute element={<TeamMemberMyLeads />} roles={['teamMember']} />} />
+  <Route path="/dashboard/member/pond" element={<ProtectedRoute element={<TeamMemberPond />} roles={['teamMember']} />} />
+  <Route path="/dashboard/admin" element={<ProtectedRoute element={<TeamAdminAllLeads />} roles={['teamAdmin']} />} />
+  <Route path="/dashboard/admin/pond" element={<ProtectedRoute element={<TeamAdminLeadPond />} roles={['teamAdmin']} />} />
+</Route>
+
     </AuthProvider>
   );
 }

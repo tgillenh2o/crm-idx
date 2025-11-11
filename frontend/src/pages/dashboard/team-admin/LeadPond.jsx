@@ -1,50 +1,31 @@
 // src/pages/dashboard/team-admin/LeadPond.jsx
 import React, { useEffect, useState } from "react";
 import api from "../../../api";
-import LeadList from "../../../components/LeadList";
-import AssignLeadModal from "./AssignLeadModal";
 
-const LeadPond = () => {
-  const [pondLeads, setPondLeads] = useState([]);
-  const [selectedLead, setSelectedLead] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
+export default function LeadPond() {
+  const [leads, setLeads] = useState([]);
 
   useEffect(() => {
-    fetchPond();
+    api.get("/leads/pond").then((res) => setLeads(res.data)).catch(console.error);
   }, []);
 
-  const fetchPond = async () => {
-    try {
-      const res = await api.get("/leads/pond");
-      setPondLeads(res.data.leads);
-    } catch (err) {
-      console.error("❌ Failed to fetch pond leads:", err);
-    }
-  };
-
-  const openAssignModal = (lead) => {
-    setSelectedLead(lead);
-    setModalOpen(true);
-  };
-
-  const handleAssigned = () => {
-    fetchPond();
-  };
-
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Lead Pond</h2>
-      <LeadList leads={pondLeads} onAssignLead={openAssignModal} />
-      {selectedLead && (
-        <AssignLeadModal
-          isOpen={modalOpen}
-          onClose={() => setModalOpen(false)}
-          lead={selectedLead}
-          onAssigned={handleAssigned}
-        />
+    <div>
+      <h1 className="text-2xl font-bold mb-4">Lead Pond</h1>
+      {leads.length === 0 ? (
+        <p>No leads in pond.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {leads.map((lead) => (
+            <div key={lead._id} className="bg-white p-4 rounded-lg shadow-md">
+              <p className="font-bold">{lead.name}</p>
+              <p>Email: {lead.email}</p>
+              <p>Type: {lead.type}</p>
+              <p>Assigned To: {lead.assignedTo?.name || "Unassigned"}</p>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
-};
-
-export default LeadPond;
+}
