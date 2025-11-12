@@ -1,54 +1,58 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
-
-// Dashboards
-import IndependentMyLeads from "./pages/dashboard/independent/MyLeads";
-import TeamMemberMyLeads from "./pages/dashboard/team-member/MyLeads";
-import TeamAdminAllLeads from "./pages/dashboard/team-admin/AllLeads";
-
-// Auth pages
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
-function ProtectedRoute({ element, roles }) {
+// Import dashboards from the Dashboard folder
+import AdminDashboard from "./pages/Dashboard/AdminDashboard";
+import MemberDashboard from "./pages/Dashboard/MemberDashboard";
+import IndependentDashboard from "./pages/Dashboard/IndependentDashboard";
+
+function PrivateRoute({ children }) {
   const { user } = useAuth();
-
-  if (!user) return <Navigate to="/login" />;
-  if (!roles.includes(user.role)) return <Navigate to="/login" />;
-
-  return element;
+  return user ? children : <Navigate to="/login" />;
 }
 
-function App() {
+export default function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Auth Pages */}
+          {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Dashboards */}
+          {/* Private routes */}
           <Route
-            path="/dashboard"
-            element={<ProtectedRoute element={<IndependentMyLeads />} roles={['independent']} />}
+            path="/dashboard/admin"
+            element={
+              <PrivateRoute>
+                <AdminDashboard />
+              </PrivateRoute>
+            }
           />
           <Route
             path="/dashboard/member"
-            element={<ProtectedRoute element={<TeamMemberMyLeads />} roles={['teamMember']} />}
+            element={
+              <PrivateRoute>
+                <MemberDashboard />
+              </PrivateRoute>
+            }
           />
           <Route
-            path="/dashboard/admin"
-            element={<ProtectedRoute element={<TeamAdminAllLeads />} roles={['teamAdmin']} />}
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <IndependentDashboard />
+              </PrivateRoute>
+            }
           />
 
-          {/* Catch-all */}
+          {/* Catch all */}
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </Router>
     </AuthProvider>
   );
 }
-
-export default App;
