@@ -1,48 +1,70 @@
-:root {
-  --bg-color: #121212;
-  --text-color: #e0e0e0;
-  --primary-color: #bb86fc;
-  --secondary-color: #03dac6;
-}
-
 body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  font-family: sans-serif;
   margin: 0;
-  padding: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
 }
 
-.app-container {
-  max-width: 400px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background-color: #1e1e1e;
-  border-radius: 10px;
-  box-shadow: 0 0 10px #000;
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
-button {
-  background-color: var(--primary-color);
-  color: var(--text-color);
-  border: none;
-  padding: 0.5rem 1rem;
-  margin: 0.5rem;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-button.active {
-  border: 2px solid var(--secondary-color);
-}
-
-input {
-  display: block;
+.auth-card {
+  background: white;
+  color: black;
+  padding: 40px;
+  border-radius: 12px;
   width: 100%;
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  border-radius: 5px;
-  border: 1px solid #444;
-  background-color: #222;
-  color: var(--text-color);
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.auth-card h2 {
+  margin-bottom: 20px;
+}
+
+.auth-card input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.auth-card button {
+  width: 100%;
+  padding: 10px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.auth-card button:hover {
+  background-color: #1d4ed8;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 15px;
+}
+
+.error {
+  color: #b91c1c;
+  background: #fee2e2;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
 }
