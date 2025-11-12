@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// Hardcode your deployed backend URL here
+// Use your Render backend URL
 const BASE_URL = "https://crm-idx.onrender.com/api";
 
 const api = axios.create({
@@ -8,17 +8,17 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Attach JWT token if exists
+// Attach JWT token if it exists
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("crm_token");
+    const token = localStorage.getItem("token"); // ← matches your login.js
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Global response logging
+// Log API errors globally
 api.interceptors.response.use(
   (response) => response,
   (error) => {
