@@ -1,6 +1,8 @@
 // src/pages/dashboard/team-admin/InviteUserModal.jsx
 import React, { useState } from "react";
 import api from "../../../api";
+import DashboardLayout from "../../../components/DashboardLayout";
+
 
 const InviteUserModal = ({ isOpen, onClose, teamId, onInviteSent }) => {
   const [email, setEmail] = useState("");

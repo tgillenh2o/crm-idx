@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../../../api";
+import DashboardLayout from "../../../components/DashboardLayout";
+
 
 export default function IndependentMyLeads() {
   const [leads, setLeads] = useState([]);
