@@ -4,6 +4,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // <-- added
 
   // Load saved login on refresh
   useEffect(() => {
@@ -12,7 +13,7 @@ export const AuthProvider = ({ children }) => {
     if (token && role) {
       setUser({ token, role });
     }
-    setLoading(false);
+    setLoading(false); // now this is defined
   }, []);
 
   // Login — called after successful API response
@@ -31,7 +32,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
