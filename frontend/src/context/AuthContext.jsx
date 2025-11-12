@@ -1,36 +1,40 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
+  // Load saved login on refresh
   useEffect(() => {
-    const token = localStorage.getItem("crm_token");
-    const storedUser = localStorage.getItem("crm_user");
-    if (token && storedUser) setUser(JSON.parse(storedUser));
-    setLoading(false);
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    if (token && role) {
+      setUser({ token, role });
+    }
   }, []);
 
-  const login = (token, userData) => {
-    localStorage.setItem("crm_token", token);
-    localStorage.setItem("crm_user", JSON.stringify(userData));
-    setUser(userData);
+  // Login — called after successful API response
+  const login = (token, role) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("role", role);
+    setUser({ token, role });
   };
 
+  // Logout
   const logout = () => {
-    localStorage.removeItem("crm_token");
-    localStorage.removeItem("crm_user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
     setUser(null);
+    window.location.href = "/login";
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook
+// Hook to use in components
 export const useAuth = () => useContext(AuthContext);

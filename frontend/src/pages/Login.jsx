@@ -11,8 +11,19 @@ export default function Login({ switchToRegister }) {
     setError("");
     try {
       const res = await api.post("/auth/login", { email, password });
-      localStorage.setItem("token", res.data.token);
-      window.location.href = "/dashboard";
+      // After successful login
+localStorage.setItem("token", res.data.token);
+localStorage.setItem("role", res.data.role);
+
+// Redirect based on role
+if (res.data.role === "teamAdmin") {
+  window.location.href = "/dashboard/admin";
+} else if (res.data.role === "teamMember") {
+  window.location.href = "/dashboard/member";
+} else {
+  window.location.href = "/dashboard";
+}
+
     } catch (err) {
       setError("Invalid email or password");
     }
