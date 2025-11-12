@@ -13,12 +13,12 @@ export default function Login({ switchToRegister }) {
       const res = await api.post("/auth/login", { email, password });
       // After successful login
 localStorage.setItem("token", res.data.token);
-localStorage.setItem("role", res.data.role);
+localStorage.setItem("role", res.data.user.role);
 
 // Redirect based on role
-if (res.data.role === "teamAdmin") {
+if (res.data.user.role === "teamAdmin") {
   window.location.href = "/dashboard/admin";
-} else if (res.data.role === "teamMember") {
+} else if (res.data.user.role === "teamMember") {
   window.location.href = "/dashboard/member";
 } else {
   window.location.href = "/dashboard";

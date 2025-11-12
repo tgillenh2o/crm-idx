@@ -12,6 +12,7 @@ export const AuthProvider = ({ children }) => {
     if (token && role) {
       setUser({ token, role });
     }
+    setLoading(false);
   }, []);
 
   // Login — called after successful API response
