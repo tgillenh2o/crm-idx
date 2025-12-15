@@ -1,7 +1,13 @@
 const jwt = require("jsonwebtoken");
 
-exports.signToken = (payload) =>
-  jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
+exports.signToken = (user) => {
+  return jwt.sign(
+    { id: user._id, role: user.role, teamId: user.teamId },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+};
 
-exports.verifyToken = (token) =>
-  jwt.verify(token, process.env.JWT_SECRET);
+exports.verifyToken = (token) => {
+  return jwt.verify(token, process.env.JWT_SECRET);
+};

@@ -6,16 +6,25 @@ const leadSchema = new mongoose.Schema(
     email: String,
     phone: String,
 
+    type: {
+      type: String,
+      enum: ["buyer", "seller"],
+    },
+
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      default: null, // null = in pond
     },
 
-    status: {
-      type: String,
-      enum: ["assigned", "pond"],
-      default: "pond",
+    teamId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Team",
+      required: true,
+    },
+
+    inPond: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }
