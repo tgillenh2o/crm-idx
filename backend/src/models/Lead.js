@@ -1,13 +1,24 @@
 const mongoose = require("mongoose");
 
-const LeadSchema = new mongoose.Schema({
-  name: String,
-  email: String,
-  phone: String,
-  status: { type: String, default: "new" },
-  team: { type: mongoose.Schema.Types.ObjectId, ref: "Team" },
-  agent: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-}, { timestamps: true });
+const leadSchema = new mongoose.Schema(
+  {
+    name: String,
+    email: String,
+    phone: String,
 
-module.exports = mongoose.model("Lead", LeadSchema);
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null, // null = in pond
+    },
 
+    status: {
+      type: String,
+      enum: ["assigned", "pond"],
+      default: "pond",
+    },
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("Lead", leadSchema);
