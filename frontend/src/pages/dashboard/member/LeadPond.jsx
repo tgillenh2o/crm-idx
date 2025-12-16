@@ -1,16 +1,6 @@
-import React, { useEffect, useState } from "react";
-import api from "../../../api";
-import LeadTable from "../../../components/LeadTable";
+// src/pages/dashboard/member/LeadPond.jsx
+import React from "react";
 
-export default function LeadPond() {
-  const [leads, setLeads] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api.get("/leads/pond").then(res => setLeads(res.data)).finally(() => setLoading(false));
-  }, []);
-
-  if (loading) return <p>Loading...</p>;
-
-  return <LeadTable leads={leads} />;
+export default function TeamMemberLeadPond() {
+  return <div style={{ padding: "40px" }}><h1>Member Lead Pond</h1></div>;
 }
