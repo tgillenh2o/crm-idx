@@ -1,63 +1,41 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import api from "../api";
+import { useAuth } from "../context/AuthContext";
 
-export default function Login({ switchToRegister }) {
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { login } = useAuth();
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     try {
       const res = await api.post("/auth/login", { email, password });
-      // After successful login
-localStorage.setItem("token", res.data.token);
-localStorage.setItem("role", res.data.user.role);
+      login(res.data.token, res.data.user.role);
 
-// Redirect based on role
-if (res.data.user.role === "teamAdmin") {
-  window.location.href = "/dashboard/admin";
-} else if (res.data.user.role === "teamMember") {
-  window.location.href = "/dashboard/member";
-} else {
-  window.location.href = "/dashboard";
-}
-
-    } catch (err) {
-      setError("Invalid email or password");
+      window.location.href =
+        res.data.user.role === "admin"
+          ? "/dashboard/admin"
+          : "/dashboard/member";
+    } catch {
+      setError("Invalid credentials");
     }
   };
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
+      <form onSubmit={handleSubmit} className="auth-card">
         <h2>Login</h2>
         {error && <p className="error">{error}</p>}
-        <form onSubmit={handleLogin}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button type="submit">Login</button>
-        </form>
-        <p>
-          Don’t have an account?{" "}
-          <button onClick={switchToRegister} className="link-btn">
-            Register
-          </button>
-        </p>
-      </div>
+        <input placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
+        <input
+          type="password"
+          placeholder="Password"
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button>Login</button>
+      </form>
     </div>
   );
 }

@@ -1,48 +1,62 @@
 const Lead = require("../models/Lead");
 
-// Get leads
-exports.getLeads = async (req, res) => {
-  const filter =
-    req.user.role === "teamAdmin"
-      ? {}
-      : { owner: req.user._id };
+// CREATE LEAD
+exports.createLead = async (req, res) => {
+  try {
+    const lead = await Lead.create({
+      ...req.body,
+      owner: req.user.id,
+      status: "assigned",
+    });
 
-  const leads = await Lead.find(filter);
+    res.status(201).json(lead);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to create lead" });
+  }
+};
+
+// GET MY LEADS
+exports.getMyLeads = async (req, res) => {
+  const leads = await Lead.find({
+    owner: req.user.id,
+    status: "assigned",
+  });
   res.json(leads);
 };
 
-// Get lead pond
-exports.getPond = async (req, res) => {
+// GET LEAD POND
+exports.getLeadPond = async (req, res) => {
   const leads = await Lead.find({ status: "pond" });
   res.json(leads);
 };
 
-// Move lead to pond
+// MOVE LEAD TO POND
 exports.moveToPond = async (req, res) => {
   const lead = await Lead.findById(req.params.id);
-  if (!lead) return res.status(404).json({ message: "Not found" });
 
-  lead.owner = null;
+  if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+  // Team members can only move THEIR leads
+  if (
+    req.user.role !== "admin" &&
+    lead.owner.toString() !== req.user.id
+  ) {
+    return res.status(403).json({ message: "Not allowed" });
+  }
+
   lead.status = "pond";
+  lead.owner = null;
   await lead.save();
 
-  res.json({ message: "Moved to pond" });
+  res.json(lead);
 };
 
-// Assign lead (admin only)
-exports.assignLead = async (req, res) => {
-  const { userId } = req.body;
-  const lead = await Lead.findById(req.params.id);
-
-  lead.owner = userId;
-  lead.status = "assigned";
-  await lead.save();
-
-  res.json({ message: "Lead assigned" });
-};
-
-// Delete lead (admin only)
+// DELETE LEAD (ADMIN ONLY)
 exports.deleteLead = async (req, res) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ message: "Admins only" });
+  }
+
   await Lead.findByIdAndDelete(req.params.id);
   res.json({ message: "Lead deleted" });
 };

@@ -1,26 +1,16 @@
-// src/components/LeadCard.jsx
-import React from "react";
+import api from "../api";
 
-const LeadCard = ({ lead, onUpdate }) => {
-  const handleTypeChange = (e) => {
-    onUpdate({ ...lead, type: e.target.value });
+export default function LeadCard({ lead, pond }) {
+  const moveToPond = async () => {
+    await api.put(`/leads/${lead._id}/pond`);
+    window.location.reload();
   };
 
   return (
-    <div className="border p-4 rounded mb-2 shadow-sm">
-      <h3 className="font-bold">{lead.firstName} {lead.lastName}</h3>
-      <p>Email: {lead.email}</p>
-      <p>Phone: {lead.phone}</p>
-      <label>
-        Type:
-        <select value={lead.type} onChange={handleTypeChange} className="ml-2 border rounded px-1">
-          <option value="buyer">Buyer</option>
-          <option value="seller">Seller</option>
-        </select>
-      </label>
-      <p>Status: {lead.status}</p>
+    <div className="lead-card">
+      <h4>{lead.name}</h4>
+      <p>{lead.email}</p>
+      {!pond && <button onClick={moveToPond}>Move to Pond</button>}
     </div>
   );
-};
-
-export default LeadCard;
+}

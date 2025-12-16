@@ -3,6 +3,12 @@ const cors = require("cors");
 require("dotenv").config();
 require("./db");
 
+
+const leadRoutes = require("./routes/leadRoutes");
+
+app.use("/api/leads", leadRoutes);
+
+
 const app = express();
 app.use(cors());
 app.use(express.json());
