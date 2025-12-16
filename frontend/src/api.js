@@ -1,7 +1,10 @@
 import axios from "axios";
 
+const BASE_URL = "https://crm-idx.onrender.com/api"; // replace with deployed backend
+
 const api = axios.create({
-  baseURL: "https://crm-idx.onrender.com/api",
+  baseURL: BASE_URL,
+  headers: { "Content-Type": "application/json" },
 });
 
 api.interceptors.request.use((config) => {

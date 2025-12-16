@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
@@ -18,8 +18,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.clear();
-    window.location.href = "/";
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    setUser(null);
+    window.location.href = "/login";
   };
 
   return (

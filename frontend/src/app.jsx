@@ -1,55 +1,45 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "./context/AuthContext";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
+// Dashboards
+import MyLeads from "./pages/dashboard/member/MyLeads";
+import MemberLeadPond from "./pages/dashboard/member/LeadPond";
+import AllLeads from "./pages/dashboard/admin/AllLeads";
+import AdminLeadPond from "./pages/dashboard/admin/LeadPond";
+
+// Auth
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import AdminDashboard from "./pages/dashboard/AdminDashboard";
-import MemberDashboard from "./pages/dashboard/MemberDashboard";
-import LeadPond from "./pages/dashboard/LeadPond";
 
-function Protected({ children, role }) {
+function ProtectedRoute({ element, roles }) {
   const { user } = useAuth();
-  if (!user) return <Navigate to="/" />;
-  if (role && user.role !== role) return <Navigate to="/" />;
-  return children;
+  if (!user) return <Navigate to="/login" />;
+  if (!roles.includes(user.role)) return <Navigate to="/login" />;
+  return element;
 }
 
-export default function App() {
+function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        <Route
-          path="/dashboard/admin"
-          element={
-            <Protected role="admin">
-              <AdminDashboard />
-            </Protected>
-          }
-        />
+          {/* Member */}
+          <Route path="/dashboard/member" element={<ProtectedRoute element={<MyLeads />} roles={['teamMember']} />} />
+          <Route path="/dashboard/member/pond" element={<ProtectedRoute element={<MemberLeadPond />} roles={['teamMember']} />} />
 
-        <Route
-          path="/dashboard/member"
-          element={
-            <Protected role="member">
-              <MemberDashboard />
-            </Protected>
-          }
-        />
+          {/* Admin */}
+          <Route path="/dashboard/admin" element={<ProtectedRoute element={<AllLeads />} roles={['teamAdmin']} />} />
+          <Route path="/dashboard/admin/pond" element={<ProtectedRoute element={<AdminLeadPond />} roles={['teamAdmin']} />} />
 
-        <Route
-          path="/dashboard/pond"
-          element={
-            <Protected>
-              <LeadPond />
-            </Protected>
-          }
-        />
-
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </BrowserRouter>
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
+
+export default App;

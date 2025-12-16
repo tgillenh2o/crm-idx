@@ -5,17 +5,19 @@ export default function Register({ switchToLogin }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
+    setMessage("");
+
     try {
-      await api.post("/auth/register", { name, email, password });
-      alert("Registration successful! Please log in.");
-      switchToLogin();
+      const res = await api.post("/auth/register", { name, email, password });
+      setMessage(res.data.message);
     } catch (err) {
-      setError("Failed to register");
+      setError(err.response?.data?.message || "Registration failed");
     }
   };
 
@@ -24,10 +26,11 @@ export default function Register({ switchToLogin }) {
       <div className="auth-card">
         <h2>Register</h2>
         {error && <p className="error">{error}</p>}
+        {message && <p className="success">{message}</p>}
         <form onSubmit={handleRegister}>
           <input
             type="text"
-            placeholder="Name"
+            placeholder="Full Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required

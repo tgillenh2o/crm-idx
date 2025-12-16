@@ -1,41 +1,63 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import api from "../api";
 import { useAuth } from "../context/AuthContext";
 
-export default function Login() {
+export default function Login({ switchToRegister }) {
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login } = useAuth();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
+
     try {
       const res = await api.post("/auth/login", { email, password });
-      login(res.data.token, res.data.user.role);
 
-      window.location.href =
-        res.data.user.role === "admin"
-          ? "/dashboard/admin"
-          : "/dashboard/member";
-    } catch {
-      setError("Invalid credentials");
+      const { token, user } = res.data;
+      login(token, user.role);
+
+      // Redirect based on role
+      if (user.role === "teamAdmin") {
+        window.location.href = "/dashboard/admin";
+      } else {
+        window.location.href = "/dashboard/member";
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Login failed");
     }
   };
 
   return (
     <div className="auth-container">
-      <form onSubmit={handleSubmit} className="auth-card">
+      <div className="auth-card">
         <h2>Login</h2>
         {error && <p className="error">{error}</p>}
-        <input placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
-        <input
-          type="password"
-          placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button>Login</button>
-      </form>
+        <form onSubmit={handleLogin}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button type="submit">Login</button>
+        </form>
+        <p>
+          Don’t have an account?{" "}
+          <button onClick={switchToRegister} className="link-btn">
+            Register
+          </button>
+        </p>
+      </div>
     </div>
   );
 }
