@@ -1,4 +1,3 @@
-// src/App.jsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -17,8 +16,7 @@ function ProtectedRoute({ element, roles }) {
   const { user } = useAuth();
 
   if (!user) return <Navigate to="/login" replace />;
-  if (roles && !roles.includes(user.role))
-    return <Navigate to="/login" replace />;
+  if (!roles.includes(user.role)) return <Navigate to="/login" replace />;
 
   return element;
 }
@@ -28,51 +26,28 @@ export default function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Default */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-
           {/* Auth */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Team Member (agent) */}
+          {/* Team Member */}
           <Route
             path="/dashboard/member"
-            element={
-              <ProtectedRoute
-                element={<TeamMemberDashboard />}
-                roles={["agent"]}
-              />
-            }
+            element={<ProtectedRoute element={<TeamMemberDashboard />} roles={["teamMember"]} />}
           />
           <Route
             path="/dashboard/member/pond"
-            element={
-              <ProtectedRoute
-                element={<TeamMemberLeadPond />}
-                roles={["agent"]}
-              />
-            }
+            element={<ProtectedRoute element={<TeamMemberLeadPond />} roles={["teamMember"]} />}
           />
 
           {/* Team Admin */}
           <Route
             path="/dashboard/admin"
-            element={
-              <ProtectedRoute
-                element={<TeamAdminDashboard />}
-                roles={["admin"]}
-              />
-            }
+            element={<ProtectedRoute element={<TeamAdminDashboard />} roles={["teamAdmin"]} />}
           />
           <Route
             path="/dashboard/admin/pond"
-            element={
-              <ProtectedRoute
-                element={<TeamAdminLeadPond />}
-                roles={["admin"]}
-              />
-            }
+            element={<ProtectedRoute element={<TeamAdminLeadPond />} roles={["teamAdmin"]} />}
           />
 
           {/* Catch-all */}
