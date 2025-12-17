@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../api/axios";
 
 const AuthContext = createContext();
 
@@ -11,8 +11,11 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      setLoading(false);
-      return;
+  setUser(null);
+  setLoading(false);
+  return;
+}
+
     }
 
     try {
@@ -44,6 +47,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     setUser(null);
   };
+  
+  if (loading) {
+  console.log("Auth loading...");
+  return <div>Loading...</div>;
+}
+
 
   if (loading) return null; // prevents black screen flash
 
