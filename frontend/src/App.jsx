@@ -5,22 +5,29 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 function Login() {
   return (
     <div style={{ padding: 40 }}>
-      <h1>Login Page</h1>
-      <p>If you see this, Auth + Router are stable.</p>
+      <h1>Login</h1>
     </div>
   );
 }
+
 
 function ProtectedRoute({ children }) {
-  const auth = useAuth();
+  const { user, loading } = useAuth();
 
-  return (
-    <div style={{ padding: 40 }}>
-      <h2>ProtectedRoute Debug</h2>
-      <pre>{JSON.stringify(auth, null, 2)}</pre>
-    </div>
-  );
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  // Allow if token exists (even before /me call)
+  const hasToken = !!localStorage.getItem("token");
+
+  if (!user && !hasToken) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
 }
+
 
 
 export default function App() {
