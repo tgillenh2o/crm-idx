@@ -12,13 +12,16 @@ function Login() {
 }
 
 function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
+  const auth = useAuth();
 
-  if (loading) return <div>Loading...</div>;
-  if (!user) return <Navigate to="/login" replace />;
-
-  return children;
+  return (
+    <div style={{ padding: 40 }}>
+      <h2>ProtectedRoute Debug</h2>
+      <pre>{JSON.stringify(auth, null, 2)}</pre>
+    </div>
+  );
 }
+
 
 export default function App() {
   return (
