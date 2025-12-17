@@ -20,6 +20,12 @@ function ProtectedRoute({ element, roles }) {
   return element;
 }
 
+<Route
+  path="/"
+  element={<Navigate to="/login" />}
+/>
+
+
 export default function App() {
   return (
     <AuthProvider>

@@ -1,23 +1,24 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../api";
 
-export default function Register({ switchToLogin }) {
+export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
-    setMessage("");
+    setSuccess("");
 
     try {
-      const res = await api.post("/auth/register", { name, email, password });
-      setMessage(res.data.message);
+      await api.post("/auth/register", { name, email, password });
+      setSuccess("Registration successful! Check your email.");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+      setError("Registration failed");
     }
   };
 
@@ -25,16 +26,18 @@ export default function Register({ switchToLogin }) {
     <div className="auth-container">
       <div className="auth-card">
         <h2>Register</h2>
+
         {error && <p className="error">{error}</p>}
-        {message && <p className="success">{message}</p>}
+        {success && <p className="success">{success}</p>}
+
         <form onSubmit={handleRegister}>
           <input
-            type="text"
-            placeholder="Full Name"
+            placeholder="Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
+
           <input
             type="email"
             placeholder="Email"
@@ -42,6 +45,7 @@ export default function Register({ switchToLogin }) {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
+
           <input
             type="password"
             placeholder="Password"
@@ -49,13 +53,15 @@ export default function Register({ switchToLogin }) {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+
           <button type="submit">Register</button>
         </form>
+
         <p>
           Already have an account?{" "}
-          <button onClick={switchToLogin} className="link-btn">
+          <Link to="/login" className="link-btn">
             Login
-          </button>
+          </Link>
         </p>
       </div>
     </div>
