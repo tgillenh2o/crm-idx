@@ -7,15 +7,14 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ✅ MUST be async
   const loadUser = async () => {
     const token = localStorage.getItem("token");
 
     if (!token) {
-  setUser(null);
-  setLoading(false);
-  return;
-}
-
+      setUser(null);
+      setLoading(false);
+      return;
     }
 
     try {
@@ -27,6 +26,7 @@ export const AuthProvider = ({ children }) => {
 
       setUser(res.data);
     } catch (err) {
+      console.error("Auth load error:", err);
       localStorage.removeItem("token");
       setUser(null);
     } finally {
@@ -40,6 +40,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = (token) => {
     localStorage.setItem("token", token);
+    setLoading(true);
     loadUser();
   };
 
@@ -47,14 +48,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     setUser(null);
   };
-  
+
   if (loading) {
-  console.log("Auth loading...");
-  return <div>Loading...</div>;
-}
-
-
-  if (loading) return null; // prevents black screen flash
+    return <div>Loading...</div>; // prevents white screen
+  }
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
