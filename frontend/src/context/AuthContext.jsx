@@ -7,54 +7,45 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ MUST be async
-  const loadUser = async () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const res = await axios.get("/api/auth/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setUser(res.data);
-    } catch (err) {
-      console.error("Auth load error:", err);
-      localStorage.removeItem("token");
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const loadUser = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await axios.get("/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setUser(res.data);
+      } catch {
+        localStorage.removeItem("token");
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadUser();
   }, []);
 
   const login = (token) => {
     localStorage.setItem("token", token);
-    setLoading(true);
-    loadUser();
+    window.location.href = "/"; // force clean reload
   };
 
   const logout = () => {
     localStorage.removeItem("token");
-    setUser(null);
+    window.location.href = "/login";
   };
 
-  if (loading) {
-    return <div>Loading...</div>; // prevents white screen
-  }
-
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
