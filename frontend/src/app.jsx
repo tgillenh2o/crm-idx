@@ -1,22 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-
-function Login() {
-  return (
-    <div style={{ padding: 40 }}>
-      <h1>Login Page</h1>
-      <button
-        onClick={() => {
-          localStorage.setItem("token", "test");
-          window.location.href = "/dashboard";
-        }}
-      >
-        Fake Login
-      </button>
-    </div>
-  );
-}
+import Login from "./pages/Login"; // real login page
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
