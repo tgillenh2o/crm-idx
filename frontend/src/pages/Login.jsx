@@ -19,7 +19,7 @@ export default function Login() {
 
     try {
       const res = await axios.post(
-        "https://your-backend.onrender.com/api/auth/login",
+        "https://crm-idx.onrender.com/api/auth/login",
         form
       );
 
@@ -42,6 +42,7 @@ export default function Login() {
   return (
     <div style={{ padding: 40, maxWidth: 400, margin: "0 auto" }}>
       <h1>Login</h1>
+      {error && <p style={{ color: "red" }}>{error}</p>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Email:</label>
@@ -53,3 +54,26 @@ export default function Login() {
             required
           />
         </div>
+
+        <div style={{ marginTop: 10 }}>
+          <label>Password:</label>
+          <input
+            type="password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <button type="submit" disabled={loading} style={{ marginTop: 20 }}>
+          {loading ? "Logging in..." : "Login"}
+        </button>
+      </form>
+
+      <p style={{ marginTop: 10 }}>
+        Don't have an account? <Link to="/register">Register here</Link>
+      </p>
+    </div>
+  );
+}
