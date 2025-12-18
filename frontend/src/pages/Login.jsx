@@ -1,18 +1,30 @@
 import React, { useState } from "react";
-import axios from "../api/axios"; // make sure this points to your API
+import axios from "axios"; // Make sure you have axios installed
+import { useAuth } from "../context/AuthContext";
+import { useNavigate, Link } from "react-router-dom";
 
-function Login() {
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
+
     try {
-      const res = await axios.post("/api/auth/login", { email, password });
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("role", res.data.role);
-      window.location.href = "/dashboard"; // redirect after login
+      const res = await axios.post(
+        "/api/auth/login", // Your backend route
+        { email, password }
+      );
+
+      // Store token & role in context + localStorage
+      login(res.data.token, res.data.role);
+
+      // Redirect to dashboard
+      navigate("/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     }
@@ -43,8 +55,10 @@ function Login() {
         <button type="submit">Login</button>
       </form>
       {error && <p style={{ color: "red" }}>{error}</p>}
+
+      <p>
+        Don't have an account? <Link to="/register">Register</Link>
+      </p>
     </div>
   );
 }
-
-export default Login;

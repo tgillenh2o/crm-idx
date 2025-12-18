@@ -1,43 +1,40 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import api from "../api";
+import axios from "axios";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
 
     try {
-      await api.post("/auth/register", { name, email, password });
-      setSuccess("Registration successful! Check your email.");
+      await axios.post("/api/auth/register", { name, email, password });
+      navigate("/login"); // Redirect to login after successful registration
     } catch (err) {
-      setError("Registration failed");
+      setError(err.response?.data?.message || "Registration failed");
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2>Register</h2>
-
-        {error && <p className="error">{error}</p>}
-        {success && <p className="success">{success}</p>}
-
-        <form onSubmit={handleRegister}>
+    <div style={{ padding: 40 }}>
+      <h1>Register</h1>
+      <form onSubmit={handleRegister}>
+        <div>
           <input
+            type="text"
             placeholder="Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
-
+        </div>
+        <div>
           <input
             type="email"
             placeholder="Email"
@@ -45,7 +42,8 @@ export default function Register() {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-
+        </div>
+        <div>
           <input
             type="password"
             placeholder="Password"
@@ -53,17 +51,15 @@ export default function Register() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+        </div>
+        <button type="submit">Register</button>
+      </form>
 
-          <button type="submit">Register</button>
-        </form>
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
-        <p>
-          Already have an account?{" "}
-          <Link to="/login" className="link-btn">
-            Login
-          </Link>
-        </p>
-      </div>
+      <p>
+        Already have an account? <Link to="/login">Login</Link>
+      </p>
     </div>
   );
 }
