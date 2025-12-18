@@ -1,69 +1,80 @@
-// src/pages/Register.jsx
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = async (e) => {
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
-      // Send registration request to backend
-      await axios.post("/api/auth/register", { name, email, password });
+      const res = await axios.post(
+        "https://crm-idx.onrender.com/api/auth/register", // <-- FULL backend URL
+        form
+      );
+      console.log("Register response:", res.data);
+      // Optionally store token
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("role", res.data.role);
 
-      // Redirect to login page after successful registration
-      navigate("/login");
+      navigate("/dashboard"); // redirect to dashboard after registration
     } catch (err) {
+      console.error(err.response?.data || err.message);
       setError(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: 40 }}>
+    <div style={{ padding: 40, maxWidth: 400, margin: "0 auto" }}>
       <h1>Register</h1>
-      <form onSubmit={handleRegister}>
+      <form onSubmit={handleSubmit}>
         <div>
+          <label>Name:</label>
           <input
             type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            name="name"
+            value={form.name}
+            onChange={handleChange}
             required
           />
         </div>
         <div>
+          <label>Email:</label>
           <input
             type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            name="email"
+            value={form.email}
+            onChange={handleChange}
             required
           />
         </div>
         <div>
+          <label>Password:</label>
           <input
             type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            name="password"
+            value={form.password}
+            onChange={handleChange}
             required
           />
         </div>
-        <button type="submit">Register</button>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        <button type="submit" disabled={loading}>
+          {loading ? "Registering..." : "Register"}
+        </button>
       </form>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      <p>
-        Already have an account? <Link to="/login">Login</Link>
-      </p>
     </div>
   );
 }

@@ -1,28 +1,16 @@
-// src/App.jsx
-import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-
-// Dashboards
 import TeamAdminDashboard from "./pages/dashboard/admin/Dashboard";
-import TeamAdminLeadPond from "./pages/dashboard/admin/LeadPond";
 import TeamMemberDashboard from "./pages/dashboard/member/Dashboard";
-import TeamMemberLeadPond from "./pages/dashboard/member/LeadPond";
+import { AuthProvider } from "./context/AuthContext";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-// ProtectedRoute component
 function ProtectedRoute({ children, roles }) {
-  const { user } = useAuth();
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (roles && !roles.includes(user.role)) {
-    return <Navigate to="/login" replace />;
-  }
-
+  if (!token) return <Navigate to="/login" replace />;
+  if (roles && !roles.includes(role)) return <Navigate to="/login" replace />;
   return children;
 }
 
@@ -31,14 +19,11 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Default redirect */}
           <Route path="/" element={<Navigate to="/login" replace />} />
-
-          {/* Auth pages */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Team Admin routes */}
+          {/* Dashboards */}
           <Route
             path="/dashboard/admin"
             element={
@@ -48,16 +33,6 @@ export default function App() {
             }
           />
           <Route
-            path="/dashboard/admin/pond"
-            element={
-              <ProtectedRoute roles={["teamAdmin"]}>
-                <TeamAdminLeadPond />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Team Member routes */}
-          <Route
             path="/dashboard/member"
             element={
               <ProtectedRoute roles={["teamMember"]}>
@@ -65,16 +40,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/dashboard/member/pond"
-            element={
-              <ProtectedRoute roles={["teamMember"]}>
-                <TeamMemberLeadPond />
-              </ProtectedRoute>
-            }
-          />
 
-          {/* Fallback */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>

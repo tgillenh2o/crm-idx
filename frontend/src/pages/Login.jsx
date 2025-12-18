@@ -1,69 +1,77 @@
-// src/pages/Login.jsx
 import React, { useState } from "react";
 import axios from "axios";
-import { useAuth } from "../context/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const { login } = useAuth();
   const navigate = useNavigate();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
-      const res = await axios.post("/api/auth/login", { email, password });
+      const res = await axios.post(
+        "https://crm-idx.onrender.com/api/auth/login", // <-- full backend URL
+        form
+      );
 
-      // Save token and role in context/localStorage
-      login(res.data.token, res.data.role);
+      console.log("Login response:", res.data);
+
+      // Store token and role
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("role", res.data.role);
 
       // Redirect based on role
       if (res.data.role === "teamAdmin") {
         navigate("/dashboard/admin");
-      } else if (res.data.role === "teamMember") {
-        navigate("/dashboard/member");
       } else {
-        navigate("/login"); // fallback
+        navigate("/dashboard/member");
       }
     } catch (err) {
+      console.error(err.response?.data || err.message);
       setError(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: 40 }}>
+    <div style={{ padding: 40, maxWidth: 400, margin: "0 auto" }}>
       <h1>Login</h1>
-      <form onSubmit={handleLogin}>
+      <form onSubmit={handleSubmit}>
         <div>
+          <label>Email:</label>
           <input
             type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            name="email"
+            value={form.email}
+            onChange={handleChange}
             required
           />
         </div>
         <div>
+          <label>Password:</label>
           <input
             type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            name="password"
+            value={form.password}
+            onChange={handleChange}
             required
           />
         </div>
-        <button type="submit">Login</button>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        <button type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </button>
       </form>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      <p>
-        Don't have an account? <Link to="/register">Register</Link>
-      </p>
     </div>
   );
 }
