@@ -1,14 +1,17 @@
 const mongoose = require("mongoose");
 const crypto = require("crypto");
 
+const mongoose = require("mongoose");
+
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  name: String,
+  email: { type: String, unique: true },
+  password: String,
   role: { type: String, enum: ["teamAdmin", "teamMember"], default: "teamMember" },
-  verified: { type: Boolean, default: false },
-  verificationToken: { type: String },
+  teamId: { type: mongoose.Schema.Types.ObjectId, ref: "Team" },
 });
+
+
 
 userSchema.pre("save", function (next) {
   if (!this.verificationToken) {
