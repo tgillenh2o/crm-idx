@@ -5,6 +5,9 @@ const Team = require("../models/Team");
 const { signToken } = require("../utils/jwt");
 
 exports.register = async (req, res) => {
+  console.log("Register endpoint hit!");
+  console.log("Request body:", req.body);
+
   const { name, email, password } = req.body;
   console.log("Register request:", req.body);
 
