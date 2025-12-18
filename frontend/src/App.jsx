@@ -1,26 +1,29 @@
+// src/App.jsx
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import Login from "./pages/Login"; // real login page
-import Register from "./pages/Register"; // import at top
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
-function ProtectedRoute({ children }) {
+// Dashboards
+import TeamAdminDashboard from "./pages/dashboard/admin/Dashboard";
+import TeamAdminLeadPond from "./pages/dashboard/admin/LeadPond";
+import TeamMemberDashboard from "./pages/dashboard/member/Dashboard";
+import TeamMemberLeadPond from "./pages/dashboard/member/LeadPond";
+
+// ProtectedRoute component
+function ProtectedRoute({ children, roles }) {
   const { user } = useAuth();
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
-}
+  if (roles && !roles.includes(user.role)) {
+    return <Navigate to="/login" replace />;
+  }
 
-function Dashboard() {
-  return (
-    <div style={{ padding: 40 }}>
-      <h1>Dashboard</h1>
-      <p>If you see this, protection works.</p>
-    </div>
-  );
+  return children;
 }
 
 export default function App() {
@@ -28,17 +31,50 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          {/* Default redirect */}
           <Route path="/" element={<Navigate to="/login" replace />} />
+
+          {/* Auth pages */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
+          {/* Team Admin routes */}
           <Route
-            path="/dashboard"
+            path="/dashboard/admin"
             element={
-              <ProtectedRoute>
-                <Dashboard />
+              <ProtectedRoute roles={["teamAdmin"]}>
+                <TeamAdminDashboard />
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/dashboard/admin/pond"
+            element={
+              <ProtectedRoute roles={["teamAdmin"]}>
+                <TeamAdminLeadPond />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Team Member routes */}
+          <Route
+            path="/dashboard/member"
+            element={
+              <ProtectedRoute roles={["teamMember"]}>
+                <TeamMemberDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/member/pond"
+            element={
+              <ProtectedRoute roles={["teamMember"]}>
+                <TeamMemberLeadPond />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>

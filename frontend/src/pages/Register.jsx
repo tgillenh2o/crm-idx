@@ -1,3 +1,4 @@
+// src/pages/Register.jsx
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
@@ -14,8 +15,11 @@ export default function Register() {
     setError("");
 
     try {
+      // Send registration request to backend
       await axios.post("/api/auth/register", { name, email, password });
-      navigate("/login"); // Redirect to login after successful registration
+
+      // Redirect to login page after successful registration
+      navigate("/login");
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
     }

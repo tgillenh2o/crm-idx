@@ -1,5 +1,6 @@
+// src/pages/Login.jsx
 import React, { useState } from "react";
-import axios from "axios"; // Make sure you have axios installed
+import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -15,16 +16,19 @@ export default function Login() {
     setError("");
 
     try {
-      const res = await axios.post(
-        "/api/auth/login", // Your backend route
-        { email, password }
-      );
+      const res = await axios.post("/api/auth/login", { email, password });
 
-      // Store token & role in context + localStorage
+      // Save token and role in context/localStorage
       login(res.data.token, res.data.role);
 
-      // Redirect to dashboard
-      navigate("/dashboard");
+      // Redirect based on role
+      if (res.data.role === "teamAdmin") {
+        navigate("/dashboard/admin");
+      } else if (res.data.role === "teamMember") {
+        navigate("/dashboard/member");
+      } else {
+        navigate("/login"); // fallback
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     }
@@ -54,6 +58,7 @@ export default function Login() {
         </div>
         <button type="submit">Login</button>
       </form>
+
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       <p>
