@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -19,17 +19,13 @@ export default function Login() {
 
     try {
       const res = await axios.post(
-        "https://crm-idx.onrender.com/api/auth/login", // <-- full backend URL
+        "https://your-backend.onrender.com/api/auth/login",
         form
       );
 
-      console.log("Login response:", res.data);
-
-      // Store token and role
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
 
-      // Redirect based on role
       if (res.data.role === "teamAdmin") {
         navigate("/dashboard/admin");
       } else {
@@ -56,22 +52,4 @@ export default function Login() {
             onChange={handleChange}
             required
           />
-        </div>
-        <div>
-          <label>Password:</label>
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
-    </div>
-  );
-}
+        </di
