@@ -1,10 +1,60 @@
 import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+
+function Login() {
+  return (
+    <div style={{ padding: 40 }}>
+      <h1>Login Page</h1>
+      <button
+        onClick={() => {
+          localStorage.setItem("token", "test");
+          window.location.href = "/dashboard";
+        }}
+      >
+        Fake Login
+      </button>
+    </div>
+  );
+}
+
+function ProtectedRoute({ children }) {
+  const { user } = useAuth();
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
+function Dashboard() {
+  return (
+    <div style={{ padding: 40 }}>
+      <h1>Dashboard</h1>
+      <p>If you see this, protection works.</p>
+    </div>
+  );
+}
 
 export default function App() {
   return (
-    <div style={{ padding: 40, background: "red", color: "white" }}>
-      <h1>VERSION CHECK</h1>
-      <p>If you see this red screen, the new build is live.</p>
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
