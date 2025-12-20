@@ -1,3 +1,10 @@
+export const register = async (req, res) => {
+  console.log("REGISTER HIT", req.body);
+  ...
+};
+
+
+
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
