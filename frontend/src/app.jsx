@@ -1,7 +1,7 @@
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import TeamAdminDashboard from "./pages/dashboard/admin/Dashboard";
-import TeamMemberDashboard from "./pages/dashboard/member/Dashboard";
+import TeamAdminDashboard from "./pages/dashboard/admin/AdminDashboard";
+import TeamMemberDashboard from "./pages/dashboard/member/MemberDashboard";
 import { AuthProvider } from "./context/AuthContext";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
