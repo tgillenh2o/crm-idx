@@ -1,10 +1,24 @@
+// src/App.jsx
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import ProtectedRoute from "./components/ProtectedRoute";
-import AdminDashboard from "./pages/dashboard/admin/AdminDashboard";
-import MemberDashboard from "./pages/dashboard/member/MemberDashboard";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+
+function Login() {
+  return (
+    <div>
+      <h1>Login Page</h1>
+      <Link to="/register">Go to Register</Link>
+    </div>
+  );
+}
+
+function Register() {
+  return (
+    <div>
+      <h1>Register Page</h1>
+      <Link to="/login">Go to Login</Link>
+    </div>
+  );
+}
 
 export default function App() {
   return (
@@ -12,24 +26,6 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
-        <Route
-          path="/dashboard/admin"
-          element={
-            <ProtectedRoute role="teamAdmin">
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/dashboard/member"
-          element={
-            <ProtectedRoute role="member">
-              <MemberDashboard />
-            </ProtectedRoute>
-          }
-        />
       </Routes>
     </BrowserRouter>
   );
