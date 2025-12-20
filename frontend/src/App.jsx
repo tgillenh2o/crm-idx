@@ -1,7 +1,8 @@
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import TeamAdminDashboard from "./pages/dashboard/admin/AdminDashboard";
-import TeamMemberDashboard from "./pages/dashboard/member/MemberDashboard";
+import AdminDashboard from "./pages/dashboard/admin/AdminDashboard";
+import MemberDashboard from "./pages/dashboard/member/MemberDashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
@@ -24,22 +25,25 @@ export default function App() {
           <Route path="/register" element={<Register />} />
 
           {/* Dashboards */}
-          <Route
-            path="/dashboard/admin"
-            element={
-              <ProtectedRoute roles={["teamAdmin"]}>
-                <TeamAdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/member"
-            element={
-              <ProtectedRoute roles={["teamMember"]}>
-                <TeamMemberDashboard />
-              </ProtectedRoute>
-            }
-          />
+      // Admin route
+<Route
+  path="/dashboard/admin"
+  element={
+    <ProtectedRoute role="admin">
+      <AdminDashboard />
+    </ProtectedRoute>
+  }
+/>
+
+// Member route
+<Route
+  path="/dashboard/member"
+  element={
+    <ProtectedRoute role="member">
+      <MemberDashboard />
+    </ProtectedRoute>
+  }
+/>
 
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
