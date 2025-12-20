@@ -23,7 +23,7 @@ export default function Register() {
 
     try {
       const res = await axios.post(
-        "https://crm-idx.onrender.com/api/auth/register",
+        "https://your-backend.onrender.com/api/auth/register",
         form
       );
 
@@ -79,4 +79,9 @@ export default function Register() {
         </form>
 
         <p className="switch">
-          Already have an account? <Link to="/login">Sign
+          Already have an account? <Link to="/login">Sign in</Link>
+        </p>
+      </div>
+    </div>
+  );
+}
