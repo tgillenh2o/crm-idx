@@ -7,7 +7,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 
-}
+
 
 export default function App() {
   return (
