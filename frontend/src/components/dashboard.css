@@ -1,0 +1,30 @@
+.dashboard {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 240px;
+  background: white;
+  border-right: 1px solid var(--border);
+  padding: 24px;
+}
+
+.sidebar h2 {
+  margin-bottom: 32px;
+}
+
+.sidebar nav p {
+  color: var(--muted);
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.sidebar nav p:hover {
+  color: var(--primary);
+}
+
+.content {
+  flex: 1;
+  padding: 32px;
+}

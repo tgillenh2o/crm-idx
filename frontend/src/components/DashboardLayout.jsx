@@ -1,9 +1,11 @@
-export default function DashboardLayout({ children, title }) {
+import "./dashboard.css";
+
+export default function DashboardLayout({ title, children }) {
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      <aside style={{ width: 220, background: "#111", color: "#fff" }}>
-        <h3 style={{ padding: 20 }}>CRM IDX</h3>
-        <nav style={{ padding: 20 }}>
+    <div className="dashboard">
+      <aside className="sidebar">
+        <h2>CRM IDX</h2>
+        <nav>
           <p>Dashboard</p>
           <p>Leads</p>
           <p>Listings</p>
@@ -11,7 +13,7 @@ export default function DashboardLayout({ children, title }) {
         </nav>
       </aside>
 
-      <main style={{ flex: 1, padding: 30 }}>
+      <main className="content">
         <h1>{title}</h1>
         {children}
       </main>
