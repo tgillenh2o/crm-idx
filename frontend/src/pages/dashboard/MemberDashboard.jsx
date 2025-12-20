@@ -1,20 +1,12 @@
-import { useEffect, useState } from "react";
-import api from "../../api";
-import LeadCard from "../../components/LeadCard";
+import DashboardLayout from "../../components/DashboardLayout";
 
 export default function MemberDashboard() {
-  const [leads, setLeads] = useState([]);
-
-  useEffect(() => {
-    api.get("/leads/mine").then((res) => setLeads(res.data));
-  }, []);
-
   return (
-    <>
-      <h1>My Leads</h1>
-      {leads.map((lead) => (
-        <LeadCard key={lead._id} lead={lead} />
-      ))}
-    </>
+    <DashboardLayout title="Agent Dashboard">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 20 }}>
+        <div className="card">My Leads</div>
+        <div className="card">Saved Listings</div>
+      </div>
+    </DashboardLayout>
   );
 }

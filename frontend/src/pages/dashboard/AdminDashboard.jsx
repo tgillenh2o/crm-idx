@@ -1,18 +1,13 @@
-// src/pages/dashboard/admin/Dashboard.jsx
-import React from "react";
-import { useAuth } from "../../../context/AuthContext";
+import DashboardLayout from "../../components/DashboardLayout";
 
-export default function TeamAdminDashboard() {
-  const { user, logout } = useAuth();
-
+export default function AdminDashboard() {
   return (
-    <div style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
-        <h1>Team Admin Dashboard</h1>
-        <button onClick={logout}>Logout</button>
-      </header>
-      <p>Welcome, {user?.role}!</p>
-      <p>Here you can view all leads and manage your team.</p>
-    </div>
+    <DashboardLayout title="Admin Dashboard">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+        <div className="card">Team Members</div>
+        <div className="card">Total Leads</div>
+        <div className="card">IDX Listings</div>
+      </div>
+    </DashboardLayout>
   );
 }
