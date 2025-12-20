@@ -1,18 +1,20 @@
-
-
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
+import "./auth.css";
 
 export default function Register() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "", name: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,23 +22,20 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // Optional: add role here if needed, e.g., role: "member"
       const res = await axios.post(
         "https://crm-idx.onrender.com/api/auth/register",
         form
       );
 
-      // Optionally log the user in immediately
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
 
-      if (res.data.role === "teamAdmin") {
-        navigate("/dashboard/admin");
-      } else {
-        navigate("/dashboard/member");
-      }
+      navigate(
+        res.data.role === "teamAdmin"
+          ? "/dashboard/admin"
+          : "/dashboard/member"
+      );
     } catch (err) {
-      console.error(err.response?.data || err.message);
       setError(err.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
@@ -44,51 +43,40 @@ export default function Register() {
   };
 
   return (
-    <div style={{ padding: 40, maxWidth: 400, margin: "0 auto" }}>
-      <h1>Register</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name:</label>
+    <div className="auth-page">
+      <div className="auth-card">
+        <h1>Create your account</h1>
+        <p className="muted">Set up your team dashboard</p>
+
+        {error && <p className="error">{error}</p>}
+
+        <form onSubmit={handleSubmit}>
           <input
-            type="text"
             name="name"
-            value={form.name}
+            placeholder="Full name"
             onChange={handleChange}
             required
           />
-        </div>
 
-        <div style={{ marginTop: 10 }}>
-          <label>Email:</label>
           <input
-            type="email"
             name="email"
-            value={form.email}
+            placeholder="Email address"
             onChange={handleChange}
             required
           />
-        </div>
 
-        <div style={{ marginTop: 10 }}>
-          <label>Password:</label>
           <input
             type="password"
             name="password"
-            value={form.password}
+            placeholder="Password"
             onChange={handleChange}
             required
           />
-        </div>
 
-        <button type="submit" disabled={loading} style={{ marginTop: 20 }}>
-          {loading ? "Registering..." : "Register"}
-        </button>
-      </form>
+          <button disabled={loading}>
+            {loading ? "Creating account..." : "Create account"}
+          </button>
+        </form>
 
-      <p style={{ marginTop: 10 }}>
-        Already have an account? <Link to="/login">Login here</Link>
-      </p>
-    </div>
-  );
-}
+        <p className="switch">
+          Already have an account? <Link to="/login">Sign
