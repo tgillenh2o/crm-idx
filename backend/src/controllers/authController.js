@@ -1,3 +1,12 @@
+export const register = async (req, res) => {
+  console.log("REGISTER HIT", req.body);
+  ...
+};
+
+
+
+
+
 // src/controllers/authController.js
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
