@@ -1,20 +1,40 @@
-import "./dashboard.css";
+import { Link, useNavigate } from "react-router-dom";
+import "./dashboardLayout.css";
 
-export default function DashboardLayout({ title, children }) {
+export default function DashboardLayout({ children, role }) {
+  const navigate = useNavigate();
+
+  const logout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
   return (
-    <div className="dashboard">
+    <div className="layout">
+      {/* Sidebar */}
       <aside className="sidebar">
-        <h2>CRM IDX</h2>
+        <h2 className="logo">CRM IDX</h2>
+
         <nav>
-          <p>Dashboard</p>
-          <p>Leads</p>
-          <p>Listings</p>
-          <p>Settings</p>
+          {role === "admin" && (
+            <Link to="/dashboard/admin">Dashboard</Link>
+          )}
+
+          {role === "member" && (
+            <Link to="/dashboard/member">Dashboard</Link>
+          )}
+
+          <Link to="#">Listings</Link>
+          <Link to="#">Leads</Link>
         </nav>
+
+        <button className="logout" onClick={logout}>
+          Logout
+        </button>
       </aside>
 
-      <main className="content">
-        <h1>{title}</h1>
+      {/* Main content */}
+      <main className="main">
         {children}
       </main>
     </div>
