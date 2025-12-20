@@ -1,32 +1,16 @@
-// src/App.jsx
-import React from "react";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
 
-function Login() {
+function App() {
   return (
-    <div>
-      <h1>Login Page</h1>
-      <Link to="/register">Go to Register</Link>
-    </div>
-  );
-}
-
-function Register() {
-  return (
-    <div>
-      <h1>Register Page</h1>
-      <Link to="/login">Go to Login</Link>
-    </div>
-  );
-}
-
-export default function App() {
-  return (
-    <BrowserRouter>
+    <Router>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 }
+
+export default App;
