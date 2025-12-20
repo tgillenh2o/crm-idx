@@ -1,20 +1,17 @@
-import { useState } from "react";
+// src/pages/Register.jsx
+import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
-import "./auth.css";
 
 export default function Register() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) =>
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,20 +19,11 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await axios.post(
-        "https://your-backend.onrender.com/api/auth/register",
-        form
-      );
-
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("role", res.data.role);
-
-      navigate(
-        res.data.role === "teamAdmin"
-          ? "/dashboard/admin"
-          : "/dashboard/member"
-      );
+      // Register request
+      await axios.post("https://crm-idx.onrender.com/api/auth/register", form);
+      navigate("/login"); // Redirect to login after successful registration
     } catch (err) {
+      console.error(err.response?.data || err.message);
       setError(err.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
@@ -43,45 +31,50 @@ export default function Register() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h1>Create your account</h1>
-        <p className="muted">Set up your team dashboard</p>
-
-        {error && <p className="error">{error}</p>}
-
-        <form onSubmit={handleSubmit}>
+    <div style={{ maxWidth: 400, margin: "50px auto", padding: 20 }}>
+      <h1>Register</h1>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: 10 }}>
+          <label>Name:</label>
           <input
+            type="text"
             name="name"
-            placeholder="Full name"
+            value={form.name}
             onChange={handleChange}
             required
+            style={{ width: "100%", padding: 8 }}
           />
-
+        </div>
+        <div style={{ marginBottom: 10 }}>
+          <label>Email:</label>
           <input
+            type="email"
             name="email"
-            placeholder="Email address"
+            value={form.email}
             onChange={handleChange}
             required
+            style={{ width: "100%", padding: 8 }}
           />
-
+        </div>
+        <div style={{ marginBottom: 10 }}>
+          <label>Password:</label>
           <input
             type="password"
             name="password"
-            placeholder="Password"
+            value={form.password}
             onChange={handleChange}
             required
+            style={{ width: "100%", padding: 8 }}
           />
-
-          <button disabled={loading}>
-            {loading ? "Creating account..." : "Create account"}
-          </button>
-        </form>
-
-        <p className="switch">
-          Already have an account? <Link to="/login">Sign in</Link>
-        </p>
-      </div>
+        </div>
+        <button type="submit" disabled={loading} style={{ padding: 10, width: "100%" }}>
+          {loading ? "Registering..." : "Register"}
+        </button>
+      </form>
+      <p style={{ marginTop: 10 }}>
+        Already have an account? <Link to="/login">Login</Link>
+      </p>
     </div>
   );
 }
