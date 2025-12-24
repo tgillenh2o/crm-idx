@@ -1,37 +1,35 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useState } from "react";
+import axios from "axios";
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      setUser({ token });
+  const login = async (email, password) => {
+    try {
+      const res = await axios.post("http://localhost:5000/login", { email, password });
+      setUser(res.data.user);
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
     }
-  }, []);
-
-  const login = (token) => {
-    localStorage.setItem("token", token);
-    setUser({ token });
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
+  const register = async (email, password) => {
+    try {
+      const res = await axios.post("http://localhost:5000/register", { email, password });
+      return res.data.success;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, login, register }}>
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
-  return ctx;
-};
+}

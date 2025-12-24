@@ -1,13 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    // call your login API
-    console.log("Logging in:", { email, password });
+    const success = await login(email, password);
+    if (success) {
+      alert("Login successful");
+      // In the old setup, maybe we just stayed on the same page or navigated to "/" again
+      // You can replace with navigate("/") or just keep the alert
+    } else {
+      alert("Invalid credentials");
+    }
   };
 
   return (
@@ -30,6 +40,7 @@ export default function Login() {
         />
         <button type="submit">Login</button>
       </form>
+      <button onClick={() => navigate("/register")}>Go to Register</button>
     </div>
   );
 }
