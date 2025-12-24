@@ -1,6 +1,9 @@
 import React, { createContext, useState } from "react";
 import axios from "axios";
 
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = "http://localhost:5000";
+
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
@@ -8,21 +11,21 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      const res = await axios.post("http://localhost:5000/login", { email, password });
+      const res = await axios.post("/login", { email, password });
       setUser(res.data.user);
       return true;
     } catch (err) {
-      console.error(err);
+      console.error("LOGIN ERROR:", err.response?.data || err.message);
       return false;
     }
   };
 
   const register = async (email, password) => {
     try {
-      const res = await axios.post("http://localhost:5000/register", { email, password });
+      const res = await axios.post("/register", { email, password });
       return res.data.success;
     } catch (err) {
-      console.error(err);
+      console.error("REGISTER ERROR:", err.response?.data || err.message);
       return false;
     }
   };

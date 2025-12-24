@@ -38,6 +38,14 @@ export default function Register() {
           required
         />
         <button type="submit">Register</button>
+        <button
+  type="button"
+  onClick={() => navigate("/")}
+  style={{ marginTop: "10px" }}
+>
+  Back to Login
+</button>
+
       </form>
     </div>
   );
