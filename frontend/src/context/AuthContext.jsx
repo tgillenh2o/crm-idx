@@ -1,8 +1,9 @@
 import React, { createContext, useState } from "react";
 import axios from "axios";
 
+// ✅ Always use your Render backend URL
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = "http://localhost:5000";
+axios.defaults.baseURL = "https://com-idx.onrender.com";
 
 export const AuthContext = createContext();
 

@@ -12,16 +12,15 @@ export default function Login() {
     e.preventDefault();
     const success = await login(email, password);
     if (success) {
-      alert("Login successful");
-      // In the old setup, maybe we just stayed on the same page or navigated to "/" again
-      // You can replace with navigate("/") or just keep the alert
+      alert("Login successful!");
+      // Keep it simple: stay on login page or redirect to home/dashboard later
     } else {
-      alert("Invalid credentials");
+      alert("Invalid credentials or network error");
     }
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "50px auto" }}>
+    <div className="auth-container">
       <h2>Login</h2>
       <form onSubmit={handleLogin}>
         <input

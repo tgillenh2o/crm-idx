@@ -12,15 +12,15 @@ export default function Register() {
     e.preventDefault();
     const success = await register(email, password);
     if (success) {
-      alert("Registration successful");
-      navigate("/"); // back to login
+      alert("Registration successful!");
+      navigate("/"); // go back to login
     } else {
-      alert("Registration failed");
+      alert("Registration failed or network error");
     }
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "50px auto" }}>
+    <div className="auth-container">
       <h2>Register</h2>
       <form onSubmit={handleRegister}>
         <input
@@ -38,15 +38,8 @@ export default function Register() {
           required
         />
         <button type="submit">Register</button>
-        <button
-  type="button"
-  onClick={() => navigate("/")}
-  style={{ marginTop: "10px" }}
->
-  Back to Login
-</button>
-
       </form>
+      <button onClick={() => navigate("/")}>Back to Login</button>
     </div>
   );
 }
