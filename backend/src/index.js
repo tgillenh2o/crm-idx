@@ -8,24 +8,18 @@ connectDB();
 
 const app = express();
 
-// ✅ CORS MUST COME FIRST
+/* ✅ CORS — SAFE + SIMPLE */
 app.use(cors({
-  origin: function (origin, callback) {
-    // allow requests with no origin (like Postman)
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: [
+    "http://localhost:5173",
+    "https://crm-idx.onrender.com"
+  ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// ✅ Handle preflight explicitly
+/* ✅ REQUIRED for preflight */
 app.options("*", cors());
 
 app.use(express.json());
@@ -33,7 +27,7 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 
-// Optional sanity check
+/* ✅ sanity check */
 app.get("/", (req, res) => {
   res.send("API is running");
 });
