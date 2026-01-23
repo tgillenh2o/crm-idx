@@ -1,4 +1,3 @@
-// src/index.js
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -8,11 +7,28 @@ const authRoutes = require("./routes/auth");
 connectDB();
 
 const app = express();
-app.use(cors());
+
+// ✅ CORS MUST COME FIRST
+app.use(cors({
+  origin: "*", // tighten later
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
+
+// ✅ Handle preflight explicitly
+app.options("*", cors());
+
 app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
 
+// Optional sanity check
+app.get("/", (req, res) => {
+  res.send("API is running");
+});
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () =>
+  console.log(`Server running on port ${PORT}`)
+);
