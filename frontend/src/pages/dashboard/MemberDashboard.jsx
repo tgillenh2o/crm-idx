@@ -4,16 +4,31 @@ import { AuthContext } from "../../context/AuthContext";
 export default function MemberDashboard() {
   const { user } = useContext(AuthContext);
   const [leads, setLeads] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!user) return;
 
+    const token = localStorage.getItem("token");
     fetch(`${import.meta.env.VITE_API_URL}/api/leads?assignedTo=${user.email}`, {
-      credentials: "include",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     })
       .then(res => res.json())
-      .then(data => setLeads(data))
-      .catch(err => console.error(err));
+      .then(data => {
+        if (Array.isArray(data)) {
+          setLeads(data);
+        } else {
+          console.error("Leads fetch error:", data);
+          setError(data.message || "Failed to load leads");
+          setLeads([]);
+        }
+      })
+      .catch(err => {
+        console.error("Fetch error:", err);
+        setError("Failed to load leads");
+      });
   }, [user]);
 
   return (
@@ -22,8 +37,9 @@ export default function MemberDashboard() {
         <h1>Welcome, {user.email}</h1>
       </header>
 
-      <h2>Your Leads</h2>
-      {leads.length === 0 ? (
+      {error && <p className="no-leads">{error}</p>}
+
+      {leads.length === 0 && !error ? (
         <p className="no-leads">No leads assigned to you.</p>
       ) : (
         <ul className="leads-list">
