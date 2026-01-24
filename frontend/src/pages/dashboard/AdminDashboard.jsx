@@ -8,34 +8,88 @@ import "./Dashboard.css";
 export default function AdminDashboard() {
   const { user } = useContext(AuthContext);
   const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  // Add Lead Form State
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newLead, setNewLead] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    assignedTo: "",
+    status: "New",
+  });
+
+  // Fetch all leads
   useEffect(() => {
     const fetchLeads = async () => {
+      setLoading(true);
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-          headers: {
-            "Authorization": `Bearer ${localStorage.getItem("token")}`
-          }
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
+
+        if (!res.ok) {
+          console.error("Failed to fetch leads:", res.status);
+          setLeads([]);
+          setLoading(false);
+          return;
+        }
+
         const data = await res.json();
-        setLeads(data);
+        setLeads(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Leads fetch error:", err);
+        setLeads([]);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchLeads();
   }, []);
 
+  // Add new lead
+  const handleAddLead = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(newLead),
+      });
+
+      if (!res.ok) {
+        console.error("Failed to add lead", res.status);
+        return;
+      }
+
+      const addedLead = await res.json();
+      setLeads([addedLead, ...leads]); // prepend new lead
+      setNewLead({ name: "", email: "", phone: "", assignedTo: "", status: "New" });
+      setShowAddForm(false);
+    } catch (err) {
+      console.error("Add lead error:", err);
+    }
+  };
+
+  // Delete lead (admin only)
   const deleteLead = async (id) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${id}`, {
         method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        }
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      setLeads(leads.filter(l => l._id !== id));
+
+      if (!res.ok) {
+        console.error("Failed to delete lead:", res.status);
+        return;
+      }
+
+      setLeads(leads.filter((l) => l._id !== id));
     } catch (err) {
       console.error("Delete error:", err);
     }
@@ -46,10 +100,79 @@ export default function AdminDashboard() {
       <Sidebar />
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <Topbar />
+
+        {/* Stats Cards */}
+        <div className="stats-cards">
+          <div className="stat-card">
+            <p>Total Leads</p>
+            <h3>{leads.length}</h3>
+          </div>
+          <div className="stat-card">
+            <p>Pending Follow-ups</p>
+            <h3>{leads.filter((l) => l.status === "Follow-up").length}</h3>
+          </div>
+          <div className="stat-card">
+            <p>Contacted Leads</p>
+            <h3>{leads.filter((l) => l.status === "Contacted").length}</h3>
+          </div>
+        </div>
+
+        {/* Add Lead Form */}
+        <div className="add-lead-container">
+          <button onClick={() => setShowAddForm(!showAddForm)}>
+            {showAddForm ? "Cancel" : "Add Lead"}
+          </button>
+          {showAddForm && (
+            <form className="add-lead-form" onSubmit={handleAddLead}>
+              <input
+                type="text"
+                placeholder="Name"
+                value={newLead.name}
+                onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
+                required
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                value={newLead.email}
+                onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Phone"
+                value={newLead.phone}
+                onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
+                required
+              />
+              <input
+                type="email"
+                placeholder="Assign To (email)"
+                value={newLead.assignedTo}
+                onChange={(e) => setNewLead({ ...newLead, assignedTo: e.target.value })}
+                required
+              />
+              <button type="submit">Add Lead</button>
+            </form>
+          )}
+        </div>
+
+        {/* Lead List */}
         <div className="main-content">
-          {leads.map(lead => (
-            <LeadCard key={lead._id} lead={lead} isAdmin={true} onDelete={deleteLead} />
-          ))}
+          {loading ? (
+            <p>Loading leads...</p>
+          ) : leads.length > 0 ? (
+            leads.map((lead) => (
+              <LeadCard
+                key={lead._id}
+                lead={lead}
+                isAdmin={true}
+                onDelete={deleteLead}
+              />
+            ))
+          ) : (
+            <p>No leads found.</p>
+          )}
         </div>
       </div>
     </div>
