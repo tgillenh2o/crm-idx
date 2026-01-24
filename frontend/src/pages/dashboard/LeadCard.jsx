@@ -52,5 +52,14 @@ export default function LeadCard({ lead, isAdmin = false, onDelete }) {
         </button>
       )}
     </div>
+<div className="lead-info">
+  <p><strong>{lead.name}</strong></p>
+  <p>{lead.email}</p>
+  <p>{lead.phone}</p>
+  <p className={`status-badge status-${lead.status.replace(" ", "-")}`}>
+    {lead.status}
+  </p>
+</div>
+
   );
 }

@@ -221,3 +221,97 @@
     flex-direction: column;
   }
 }
+
+/* === Toggle Form Button === */
+.toggle-form-btn {
+  background-color: #6366f1;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.2s;
+}
+
+.toggle-form-btn:hover {
+  background-color: #4f46e5;
+  transform: translateY(-2px);
+}
+
+/* === Add Lead Form === */
+.add-lead-form {
+  background-color: #ffffff;
+  padding: 25px 20px;
+  margin-top: 15px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.add-lead-form input,
+.add-lead-form select {
+  flex: 1;
+  padding: 12px 15px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.add-lead-form input:focus,
+.add-lead-form select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.25);
+}
+
+/* === Submit Button === */
+.submit-lead-btn {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 12px 0;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.2s;
+}
+
+.submit-lead-btn:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+}
+
+/* === Status Badges for Leads === */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  color: white;
+  text-align: center;
+  display: inline-block;
+}
+
+.status-New {
+  background-color: #6366f1;
+}
+.status-Follow-up {
+  background-color: #f59e0b;
+}
+.status-Contacted {
+  background-color: #10b981;
+}
+.status-Closed {
+  background-color: #ef4444;
+}
+

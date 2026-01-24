@@ -52,6 +52,7 @@ export default function AdminDashboard() {
   // Add new lead
   const handleAddLead = async (e) => {
     e.preventDefault();
+
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
         method: "POST",
@@ -68,7 +69,7 @@ export default function AdminDashboard() {
       }
 
       const addedLead = await res.json();
-      setLeads([addedLead, ...leads]); // prepend new lead
+      setLeads([addedLead, ...leads]);
       setNewLead({ name: "", email: "", phone: "", assignedTo: "", status: "New" });
       setShowAddForm(false);
     } catch (err) {
@@ -76,19 +77,17 @@ export default function AdminDashboard() {
     }
   };
 
-  // Delete lead (admin only)
+  // Delete lead
   const deleteLead = async (id) => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-
       if (!res.ok) {
         console.error("Failed to delete lead:", res.status);
         return;
       }
-
       setLeads(leads.filter((l) => l._id !== id));
     } catch (err) {
       console.error("Delete error:", err);
@@ -98,7 +97,7 @@ export default function AdminDashboard() {
   return (
     <div className="dashboard">
       <Sidebar />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <div className="main-panel">
         <Topbar />
 
         {/* Stats Cards */}
@@ -108,51 +107,75 @@ export default function AdminDashboard() {
             <h3>{leads.length}</h3>
           </div>
           <div className="stat-card">
-            <p>Pending Follow-ups</p>
+            <p>Follow-ups</p>
             <h3>{leads.filter((l) => l.status === "Follow-up").length}</h3>
           </div>
           <div className="stat-card">
-            <p>Contacted Leads</p>
+            <p>Contacted</p>
             <h3>{leads.filter((l) => l.status === "Contacted").length}</h3>
           </div>
         </div>
 
         {/* Add Lead Form */}
         <div className="add-lead-container">
-          <button onClick={() => setShowAddForm(!showAddForm)}>
-            {showAddForm ? "Cancel" : "Add Lead"}
+          <button
+            type="button"
+            className="toggle-form-btn"
+            onClick={() => setShowAddForm(!showAddForm)}
+          >
+            {showAddForm ? "Cancel" : "Add New Lead"}
           </button>
+
           {showAddForm && (
             <form className="add-lead-form" onSubmit={handleAddLead}>
-              <input
-                type="text"
-                placeholder="Name"
-                value={newLead.name}
-                onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
-                required
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={newLead.email}
-                onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
-                required
-              />
-              <input
-                type="text"
-                placeholder="Phone"
-                value={newLead.phone}
-                onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
-                required
-              />
-              <input
-                type="email"
-                placeholder="Assign To (email)"
-                value={newLead.assignedTo}
-                onChange={(e) => setNewLead({ ...newLead, assignedTo: e.target.value })}
-                required
-              />
-              <button type="submit">Add Lead</button>
+              <div className="form-row">
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  value={newLead.name}
+                  onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
+                  required
+                />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={newLead.email}
+                  onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="form-row">
+                <input
+                  type="text"
+                  placeholder="Phone"
+                  value={newLead.phone}
+                  onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
+                  required
+                />
+                <input
+                  type="email"
+                  placeholder="Assign To (email)"
+                  value={newLead.assignedTo}
+                  onChange={(e) =>
+                    setNewLead({ ...newLead, assignedTo: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="form-row">
+                <select
+                  value={newLead.status}
+                  onChange={(e) => setNewLead({ ...newLead, status: e.target.value })}
+                >
+                  <option value="New">New</option>
+                  <option value="Follow-up">Follow-up</option>
+                  <option value="Contacted">Contacted</option>
+                  <option value="Closed">Closed</option>
+                </select>
+              </div>
+              <button type="submit" className="submit-lead-btn">
+                Add Lead
+              </button>
             </form>
           )}
         </div>
