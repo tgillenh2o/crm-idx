@@ -10,10 +10,11 @@ import MemberDashboard from "./pages/dashboard/MemberDashboard";
 export default function App() {
   const { user } = useContext(AuthContext);
 
-  // Role-based dashboard selection
   const Dashboard = () => {
-    if (!user) return <Navigate to="/" />; // redirect if not logged in
-    return user.role === "teamAdmin" ? <AdminDashboard /> : <MemberDashboard />;
+    if (!user) return <Navigate to="/" replace />;
+    return user.role === "teamAdmin"
+      ? <AdminDashboard />
+      : <MemberDashboard />;
   };
 
   return (

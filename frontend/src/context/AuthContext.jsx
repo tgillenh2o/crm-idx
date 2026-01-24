@@ -52,3 +52,16 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  const storedUser = localStorage.getItem("user");
+
+  if (!token || !storedUser) {
+    localStorage.clear();
+    setUser(null);
+    return;
+  }
+
+  setUser(JSON.parse(storedUser));
+}, []);
+
