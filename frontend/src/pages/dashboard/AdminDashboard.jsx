@@ -4,67 +4,51 @@ import { AuthContext } from "../../context/AuthContext";
 export default function AdminDashboard() {
   const { user } = useContext(AuthContext);
   const [leads, setLeads] = useState([]);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!user) return;
+    const fetchLeads = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
 
-    const token = localStorage.getItem("token"); // make sure login saves token
-    fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setLeads(data);
-        } else {
-          console.error("Leads fetch error:", data);
-          setError(data.message || "Failed to load leads");
-          setLeads([]);
-        }
-      })
-      .catch(err => {
-        console.error("Fetch error:", err);
-        setError("Failed to load leads");
-      });
-  }, [user]);
+        if (!res.ok) throw new Error("Failed to fetch leads");
 
-  const handleDelete = async (id) => {
-    const token = localStorage.getItem("token");
+        const data = await res.json();
+        setLeads(data);
+      } catch (err) {
+        console.error("Leads fetch error:", err);
+      }
+    };
+    fetchLeads();
+  }, []);
+
+  const deleteLead = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this lead?")) return;
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      setLeads(prev => prev.filter(l => l._id !== id));
+      if (!res.ok) throw new Error("Failed to delete lead");
+      setLeads((prev) => prev.filter((lead) => lead._id !== id));
     } catch (err) {
-      console.error("Delete error:", err);
+      console.error(err);
     }
   };
 
   return (
-    <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>Admin Dashboard</h1>
-        <p>Logged in as: {user.email}</p>
-      </header>
-
-      {error && <p className="no-leads">{error}</p>}
-
-      {leads.length === 0 && !error ? (
-        <p className="no-leads">No leads available.</p>
-      ) : (
-        <ul className="leads-list">
-          {leads.map(lead => (
-            <li key={lead._id}>
-              <span>{lead.name} — {lead.status}</span>
-              <button onClick={() => handleDelete(lead._id)}>Delete</button>
-            </li>
-          ))}
-        </ul>
-      )}
+    <div className="dashboard">
+      <h2>Admin Dashboard</h2>
+      <p>Welcome, {user.email}</p>
+      <ul>
+        {leads.map((lead) => (
+          <li key={lead._id}>
+            <span>{lead.name} — {lead.status}</span>
+            <button onClick={() => deleteLead(lead._id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

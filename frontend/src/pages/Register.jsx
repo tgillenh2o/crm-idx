@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
@@ -10,10 +10,9 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    const success = await register(email, password);
-
+    const success = await register(email, password, "teamMember");
     if (success) {
-      navigate("/dashboard"); // auto-login
+      navigate("/dashboard");
     } else {
       alert("Registration failed or network error");
     }
@@ -22,7 +21,7 @@ export default function Register() {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>Create Account</h2>
+        <h2>Register</h2>
         <form onSubmit={handleRegister}>
           <input
             type="email"
@@ -40,9 +39,9 @@ export default function Register() {
           />
           <button type="submit">Register</button>
         </form>
-        <div className="auth-link" onClick={() => navigate("/")}>
-          Already have an account? Login
-        </div>
+        <p>
+          Already have an account? <a href="/">Login here</a>
+        </p>
       </div>
     </div>
   );
