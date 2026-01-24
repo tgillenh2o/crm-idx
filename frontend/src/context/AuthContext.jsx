@@ -5,7 +5,7 @@ export const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
-  // Login function
+  // LOGIN
   const login = async (email, password) => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
@@ -14,24 +14,18 @@ export function AuthProvider({ children }) {
         body: JSON.stringify({ email, password }),
         credentials: "include",
       });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Login failed:", errorData);
-        return false;
-      }
-
+      if (!res.ok) return false;
       const data = await res.json();
       setUser(data.user);
       return true;
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("Login error", err);
       return false;
     }
   };
 
-  // Register function with auto-login
-  const register = async (email, password, role) => {
+  // REGISTER
+  const register = async (email, password, role = "teamMember") => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
         method: "POST",
@@ -39,24 +33,19 @@ export function AuthProvider({ children }) {
         body: JSON.stringify({ email, password, role }),
         credentials: "include",
       });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Register failed:", errorData);
-        return false;
-      }
-
+      if (!res.ok) return false;
       const data = await res.json();
-      setUser(data.user); // auto-login after register
+      // Auto-login after register
+      setUser(data.user);
       return true;
     } catch (err) {
-      console.error("Register error:", err);
+      console.error("Register error", err);
       return false;
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, login, register }}>
+    <AuthContext.Provider value={{ user, login, register }}>
       {children}
     </AuthContext.Provider>
   );
