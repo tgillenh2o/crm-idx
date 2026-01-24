@@ -3,37 +3,85 @@ const router = express.Router();
 const auth = require("../middleware/auth");
 const Lead = require("../models/Lead");
 
-// GET LEADS
+// ================== GET LEADS ==================
 router.get("/", auth, async (req, res) => {
   try {
-    if (!req.user) return res.status(401).json([]); // fallback empty array
+    let leads;
 
-    let leads = [];
     if (req.user.role === "teamAdmin") {
-      leads = await Lead.find(); // admin sees all
-    } else if (req.user.role === "teamMember") {
-      leads = await Lead.find({ assignedTo: req.user.email }); // member sees theirs
+      leads = await Lead.find().sort({ createdAt: -1 });
+    } else {
+      leads = await Lead.find({ assignedTo: req.user.email }).sort({ createdAt: -1 });
     }
 
-    // Always return an array
-    res.json(Array.isArray(leads) ? leads : []);
+    res.json(leads);
   } catch (err) {
-    console.error("Get leads error:", err);
-    res.json([]); // fallback empty array
+    console.error("GET leads error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// DELETE LEAD (ADMIN ONLY)
+// ================== POST NEW LEAD ==================
+router.post("/", auth, async (req, res) => {
+  try {
+    const { name, email, phone, assignedTo, status } = req.body;
+
+    // Members cannot assign to others
+    const assignedEmail =
+      req.user.role === "teamAdmin" ? assignedTo : req.user.email;
+
+    const newLead = new Lead({
+      name,
+      email,
+      phone,
+      assignedTo: assignedEmail,
+      status: status || "New",
+    });
+
+    await newLead.save();
+    res.status(201).json(newLead);
+  } catch (err) {
+    console.error("POST lead error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ================== PATCH LEAD (Status update) ==================
+router.patch("/:id", auth, async (req, res) => {
+  try {
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+    // Only assigned user or admin can update
+    if (req.user.role !== "teamAdmin" && lead.assignedTo !== req.user.email) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const { status } = req.body;
+    if (status) lead.status = status;
+
+    await lead.save();
+    res.json(lead);
+  } catch (err) {
+    console.error("PATCH lead error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ================== DELETE LEAD (Admin only) ==================
 router.delete("/:id", auth, async (req, res) => {
   try {
     if (req.user.role !== "teamAdmin") {
       return res.status(403).json({ message: "Forbidden" });
     }
 
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+
     await Lead.findByIdAndDelete(req.params.id);
     res.json({ success: true });
   } catch (err) {
-    console.error("Delete lead error:", err);
+    console.error("DELETE lead error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
