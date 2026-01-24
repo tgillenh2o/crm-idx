@@ -1,41 +1,38 @@
+// backend/routes/auth.js
 const express = require("express");
 const router = express.Router();
-const User = require("../models/User");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const User = require("../models/User"); // make sure path correct
 
-// REGISTER
 router.post("/register", async (req, res) => {
   try {
     const { email, password, role } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password required" });
-    }
-
+    // Check if user exists
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
-    }
+    if (existingUser) return res.status(400).json({ msg: "User exists" });
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const assignedRole = role === "teamAdmin" ? "teamAdmin" : "teamMember";
-
+    // Default role if not provided
     const newUser = new User({
       email,
       password: hashedPassword,
-      role: assignedRole
+      role: role || "teamMember"
     });
 
     await newUser.save();
 
-    res.status(201).json({ message: "User created" });
+    return res.status(201).json({ user: { email: newUser.email, role: newUser.role } });
   } catch (err) {
-    console.error("REGISTER ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error("Register error:", err);
+    return res.status(500).json({ msg: "Server error" });
   }
 });
+
+module.exports = router;
+
 
 // LOGIN
 router.post("/login", async (req, res) => {
