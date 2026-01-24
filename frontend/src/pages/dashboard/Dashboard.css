@@ -1,38 +1,86 @@
+/* Layout */
 .dashboard {
-  padding: 2rem;
-  background-color: #f0f4f8;
+  display: flex;
   min-height: 100vh;
+  background-color: #f4f6f8;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.dashboard-header {
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  background-color: #2f3e46;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1rem;
+}
+
+.sidebar h2 {
+  font-size: 1.5rem;
   margin-bottom: 2rem;
 }
 
-.leads-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1rem;
+.sidebar a {
+  color: #cfd8dc;
+  text-decoration: none;
+  padding: 0.5rem 0;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
 }
 
+.sidebar a.active, .sidebar a:hover {
+  background-color: #354f52;
+  color: #fff;
+}
+
+/* Topbar */
+.topbar {
+  flex: 1;
+  padding: 1rem 2rem;
+  background-color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Lead Cards */
 .lead-card {
-  background: white;
-  padding: 1rem;
+  background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: transform 0.2s;
+}
+
+.lead-card:hover {
+  transform: translateY(-3px);
 }
 
 .lead-card h3 {
   margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
 }
 
 .lead-card p {
   margin: 0.3rem 0;
+  color: #555;
 }
 
 .lead-card button {
-  margin-top: 0.5rem;
-  background: #e74c3c;
-  color: white;
+  margin-top: 0.7rem;
+  background-color: #e63946;
+  color: #fff;
   border: none;
   padding: 0.4rem 0.8rem;
   border-radius: 6px;
@@ -40,5 +88,10 @@
 }
 
 .lead-card button:hover {
-  background: #c0392b;
+  background-color: #d62828;
 }
+
+/* Status labels */
+.status-new { color: #1d3557; font-weight: bold; }
+.status-pending { color: #f4a261; font-weight: bold; }
+.status-contacted { color: #2a9d8f; font-weight: bold; }
