@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./db");
 const authRoutes = require("./routes/auth");
+const leadRoutes = require("./routes/leads");
 
 connectDB();
 
@@ -20,6 +21,7 @@ app.use(cors({
 }));
 
 app.options("*", cors());
+app.use("/api/leads", leadRoutes);
 
 
 /* ✅ REQUIRED for preflight */
