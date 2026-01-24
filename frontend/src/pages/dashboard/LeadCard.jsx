@@ -28,3 +28,29 @@ export default function LeadCard({ lead, isAdmin = false, onDelete }) {
   return (
     <div className="lead-card">
       <div className="lead-info">
+        <p><strong>Name:</strong> {lead.name}</p>
+        <p><strong>Email:</strong> {lead.email}</p>
+        <p><strong>Phone:</strong> {lead.phone}</p>
+        <p><strong>Assigned To:</strong> {lead.assignedTo}</p>
+        <p>
+          <strong>Status:</strong>{" "}
+          <select value={status} onChange={handleStatusChange}>
+            <option>New</option>
+            <option>Contacted</option>
+            <option>Follow-up</option>
+            <option>Closed</option>
+          </select>
+        </p>
+      </div>
+
+      {isAdmin && onDelete && (
+        <button
+          className="delete-button"
+          onClick={() => onDelete(lead._id)}
+        >
+          Delete Lead
+        </button>
+      )}
+    </div>
+  );
+}
