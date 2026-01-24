@@ -7,22 +7,36 @@ export function AuthProvider({ children }) {
 
   // LOGIN
   const login = async (email, password) => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
-      });
-      if (!res.ok) return false;
-      const data = await res.json();
-      setUser(data.user);
-      return true;
-    } catch (err) {
-      console.error("Login error", err);
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+      credentials: "include",
+    });
+
+    if (!res.ok) return false;
+
+    const data = await res.json();
+
+    // ✅ Store token in localStorage
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+    } else {
+      console.error("No token returned from backend!");
       return false;
     }
-  };
+
+    // store user info in context
+    setUser(data.user);
+
+    return true;
+  } catch (err) {
+    console.error("Login error", err);
+    return false;
+  }
+};
+
 
   // REGISTER
   const register = async (email, password, role = "teamMember") => {
