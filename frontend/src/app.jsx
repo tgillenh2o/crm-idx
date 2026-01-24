@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "./context/AuthContext";
 
@@ -10,7 +10,7 @@ import MemberDashboard from "./pages/dashboard/MemberDashboard";
 function DashboardRouter() {
   const { user } = useContext(AuthContext);
 
-  if (!user) return null;
+  if (!user) return <Navigate to="/" />; // redirect if not logged in
 
   return user.role === "teamAdmin"
     ? <AdminDashboard />
