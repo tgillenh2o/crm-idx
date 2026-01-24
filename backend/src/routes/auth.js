@@ -1,9 +1,10 @@
-// backend/routes/auth.js
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
-const User = require("../models/User"); // make sure path correct
+const jwt = require("jsonwebtoken"); // make sure this is added
+const User = require("../models/User"); // path to your User model
 
+// -------------------- REGISTER --------------------
 router.post("/register", async (req, res) => {
   try {
     const { email, password, role } = req.body;
@@ -19,35 +20,30 @@ router.post("/register", async (req, res) => {
     const newUser = new User({
       email,
       password: hashedPassword,
-      role: role || "teamMember"
+      role: role || "teamMember",
     });
 
     await newUser.save();
 
-    return res.status(201).json({ user: { email: newUser.email, role: newUser.role } });
+    return res.status(201).json({
+      user: { email: newUser.email, role: newUser.role },
+    });
   } catch (err) {
     console.error("Register error:", err);
     return res.status(500).json({ msg: "Server error" });
   }
 });
 
-module.exports = router;
-
-
-// LOGIN
+// -------------------- LOGIN --------------------
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -60,8 +56,8 @@ router.post("/login", async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
   } catch (err) {
     console.error("LOGIN ERROR:", err);
