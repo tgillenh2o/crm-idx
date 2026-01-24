@@ -1,54 +1,53 @@
-import { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { useEffect, useState } from "react";
 
-export default function AdminDashboard() {
-  const { user } = useContext(AuthContext);
+export default function AdminDashboard({ user }) {
   const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchLeads = async () => {
       try {
+        const token = localStorage.getItem("token");
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
         });
 
         if (!res.ok) throw new Error("Failed to fetch leads");
 
         const data = await res.json();
-        setLeads(data);
+        setLeads(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Leads fetch error:", err);
+        setLeads([]);
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchLeads();
   }, []);
 
-  const deleteLead = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this lead?")) return;
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      if (!res.ok) throw new Error("Failed to delete lead");
-      setLeads((prev) => prev.filter((lead) => lead._id !== id));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   return (
     <div className="dashboard">
-      <h2>Admin Dashboard</h2>
+      <h1>Admin Dashboard</h1>
       <p>Welcome, {user.email}</p>
-      <ul>
-        {leads.map((lead) => (
-          <li key={lead._id}>
-            <span>{lead.name} — {lead.status}</span>
-            <button onClick={() => deleteLead(lead._id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+
+      {loading ? (
+        <p>Loading all leads...</p>
+      ) : leads.length === 0 ? (
+        <p>No leads in the system.</p>
+      ) : (
+        <ul>
+          {leads.map((lead) => (
+            <li key={lead._id}>
+              {lead.name} — {lead.status} — Assigned to: {lead.assignedToEmail}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

@@ -1,39 +1,53 @@
-import { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { useEffect, useState } from "react";
 
-export default function MemberDashboard() {
-  const { user } = useContext(AuthContext);
+export default function MemberDashboard({ user }) {
   const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchLeads = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/member/${user.id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
         });
 
         if (!res.ok) throw new Error("Failed to fetch leads");
 
         const data = await res.json();
-        setLeads(data);
+        setLeads(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Leads fetch error:", err);
+        setLeads([]);
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchLeads();
-  }, [user]);
+  }, []);
 
   return (
     <div className="dashboard">
-      <h2>Member Dashboard</h2>
+      <h1>Member Dashboard</h1>
       <p>Welcome, {user.email}</p>
-      <ul>
-        {leads.map((lead) => (
-          <li key={lead._id}>
-            <span>{lead.name} — {lead.status}</span>
-          </li>
-        ))}
-      </ul>
+
+      {loading ? (
+        <p>Loading your leads...</p>
+      ) : leads.length === 0 ? (
+        <p>You have no leads assigned.</p>
+      ) : (
+        <ul>
+          {leads.map((lead) => (
+            <li key={lead._id}>
+              {lead.name} — {lead.status}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
