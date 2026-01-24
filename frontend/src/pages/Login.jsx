@@ -1,7 +1,44 @@
+import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { login } = useContext(AuthContext); // only inside component
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    const success = await login(email, password);
+    if (success) {
+      navigate("/dashboard");
+    } else {
+      alert("Invalid credentials or network error");
+    }
+  };
+
   return (
-    <div style={{ background: "#007bff", height: "100vh", color: "white" }}>
-      <h1>Login Test Page</h1>
+    <div className="auth-container">
+      <h2>Login</h2>
+      <form onSubmit={handleLogin}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit">Login</button>
+      </form>
+      <button onClick={() => navigate("/register")}>Go to Register</button>
     </div>
   );
 }
