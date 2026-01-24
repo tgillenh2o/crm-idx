@@ -20,9 +20,9 @@ export default function AdminDashboard() {
 
   return (
     <div className="dashboard-container">
-      <div className="dashboard-header">
+      <header className="dashboard-header">
         <h1>Admin Dashboard</h1>
-      </div>
+      </header>
 
       <h2>All Leads</h2>
       {leads.length === 0 ? (

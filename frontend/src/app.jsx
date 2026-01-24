@@ -7,22 +7,20 @@ import Register from "./pages/Register";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import MemberDashboard from "./pages/dashboard/MemberDashboard";
 
-function DashboardRouter() {
+export default function App() {
   const { user } = useContext(AuthContext);
 
-  if (!user) return <Navigate to="/" />; // redirect if not logged in
+  // Role-based dashboard selection
+  const Dashboard = () => {
+    if (!user) return <Navigate to="/" />; // redirect if not logged in
+    return user.role === "teamAdmin" ? <AdminDashboard /> : <MemberDashboard />;
+  };
 
-  return user.role === "teamAdmin"
-    ? <AdminDashboard />
-    : <MemberDashboard />;
-}
-
-export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/dashboard" element={<DashboardRouter />} />
+      <Route path="/dashboard" element={<Dashboard />} />
     </Routes>
   );
 }

@@ -67,9 +67,9 @@ body {
 .dashboard-container {
   min-height: 100vh;
   padding: 20px;
-  background: #0f172a; /* dark slate background */
-  color: #e5e7eb; /* light text */
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0f172a;
+  color: #e5e7eb;
+  font-family: system-ui, sans-serif;
 }
 
 .dashboard-header {
@@ -84,16 +84,6 @@ body {
   margin: 0;
 }
 
-.dashboard-header button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #f43f5e, #f97316);
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-}
-
 .leads-list {
   list-style: none;
   padding: 0;
@@ -106,7 +96,7 @@ body {
   padding: 12px;
   margin-bottom: 8px;
   border-radius: 8px;
-  background: #1e293b; /* dark card style */
+  background: #1e293b;
 }
 
 .leads-list li button {

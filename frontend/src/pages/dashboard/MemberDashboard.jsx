@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 
 export default function MemberDashboard() {
@@ -18,9 +18,9 @@ export default function MemberDashboard() {
 
   return (
     <div className="dashboard-container">
-      <div className="dashboard-header">
+      <header className="dashboard-header">
         <h1>Welcome, {user.email}</h1>
-      </div>
+      </header>
 
       <h2>Your Leads</h2>
       {leads.length === 0 ? (
@@ -30,7 +30,6 @@ export default function MemberDashboard() {
           {leads.map(lead => (
             <li key={lead._id}>
               <span>{lead.name} — {lead.status}</span>
-              {/* Team members cannot delete */}
             </li>
           ))}
         </ul>
