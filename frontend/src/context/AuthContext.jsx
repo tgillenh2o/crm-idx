@@ -1,23 +1,29 @@
 import { createContext, useState } from "react";
-import axios from "axios";
 
 export const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
   const login = async (email, password) => {
     try {
-      const res = await axios.post(
+      const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/auth/login`,
-        { email, password }
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+          credentials: "include",
+        }
       );
 
-      localStorage.setItem("token", res.data.token);
-      setUser(res.data.user);
+      if (!res.ok) return false;
+
+      const data = await res.json();
+      setUser(data.user);
       return true;
     } catch (err) {
-      console.error("LOGIN ERROR", err);
+      console.error("Login error", err);
       return false;
     }
   };
@@ -27,4 +33,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
+}
