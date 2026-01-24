@@ -1,0 +1,44 @@
+.dashboard {
+  padding: 2rem;
+  background-color: #f0f4f8;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  margin-bottom: 2rem;
+}
+
+.leads-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.lead-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.lead-card h3 {
+  margin: 0 0 0.5rem 0;
+}
+
+.lead-card p {
+  margin: 0.3rem 0;
+}
+
+.lead-card button {
+  margin-top: 0.5rem;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.lead-card button:hover {
+  background: #c0392b;
+}

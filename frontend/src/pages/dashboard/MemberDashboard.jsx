@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "./Dashboard.css";
 
 export default function MemberDashboard({ user }) {
   const [leads, setLeads] = useState([]);
@@ -14,9 +15,7 @@ export default function MemberDashboard({ user }) {
             "Authorization": `Bearer ${token}`,
           },
         });
-
         if (!res.ok) throw new Error("Failed to fetch leads");
-
         const data = await res.json();
         setLeads(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -26,27 +25,39 @@ export default function MemberDashboard({ user }) {
         setLoading(false);
       }
     };
-
     fetchLeads();
   }, []);
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "contacted": return "green";
+      case "pending": return "orange";
+      case "new": return "blue";
+      default: return "gray";
+    }
+  };
+
   return (
     <div className="dashboard">
-      <h1>Member Dashboard</h1>
-      <p>Welcome, {user.email}</p>
+      <div className="dashboard-header">
+        <h1>Member Dashboard</h1>
+        <p>Welcome, {user.email}</p>
+      </div>
 
       {loading ? (
         <p>Loading your leads...</p>
       ) : leads.length === 0 ? (
         <p>You have no leads assigned.</p>
       ) : (
-        <ul>
+        <div className="leads-grid">
           {leads.map((lead) => (
-            <li key={lead._id}>
-              {lead.name} — {lead.status}
-            </li>
+            <div className="lead-card" key={lead._id}>
+              <h3>{lead.name}</h3>
+              <p>Status: <span style={{ color: getStatusColor(lead.status) }}>{lead.status}</span></p>
+              <p>Assigned To: {lead.assignedToEmail || "Unassigned"}</p>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
