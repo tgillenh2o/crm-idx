@@ -9,35 +9,39 @@ connectDB();
 
 const app = express();
 
-/* ✅ CORS — SAFE + SIMPLE */
+/* ================== MIDDLEWARE ================== */
+
+// ✅ Enable CORS
 app.use(cors({
   origin: [
-    "http://localhost:5173",
-    "https://crm-idx-frontend.onrender.com" // ✅ REAL frontend
+    "http://localhost:5173",                  // local dev frontend
+    "https://crm-idx-frontend.onrender.com"   // deployed frontend
   ],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-app.options("*", cors());
+app.options("*", cors()); // preflight for all routes
+
+// ✅ Parse JSON and URL-encoded bodies BEFORE routes
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+/* ================== ROUTES ================== */
+
+// Leads
 app.use("/api/leads", leadRoutes);
 
-
-/* ✅ REQUIRED for preflight */
-app.options("*", cors());
-
-app.use(express.json());
-
-// Routes
+// Auth
 app.use("/api/auth", authRoutes);
 
-/* ✅ sanity check */
+// Sanity check
 app.get("/", (req, res) => {
   res.send("API is running");
 });
 
+/* ================== START SERVER ================== */
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
