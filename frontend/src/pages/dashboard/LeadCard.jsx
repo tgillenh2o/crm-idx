@@ -4,7 +4,7 @@ import "./Dashboard.css";
 export default function LeadCard({ lead, isAdmin = false, onDelete }) {
   const [status, setStatus] = useState(lead.status || "New");
 
-  // Optional: update status handler (for both admin & member)
+  // Optional: update status handler
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
@@ -41,6 +41,13 @@ export default function LeadCard({ lead, isAdmin = false, onDelete }) {
             <option>Closed</option>
           </select>
         </p>
+
+        {/* Optional visual status badge */}
+        <p>
+          <span className={`status-badge status-${status.replace(" ", "-")}`}>
+            {status}
+          </span>
+        </p>
       </div>
 
       {isAdmin && onDelete && (
@@ -52,14 +59,5 @@ export default function LeadCard({ lead, isAdmin = false, onDelete }) {
         </button>
       )}
     </div>
-<div className="lead-info">
-  <p><strong>{lead.name}</strong></p>
-  <p>{lead.email}</p>
-  <p>{lead.phone}</p>
-  <p className={`status-badge status-${lead.status.replace(" ", "-")}`}>
-    {lead.status}
-  </p>
-</div>
-
   );
 }
