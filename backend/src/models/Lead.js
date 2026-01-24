@@ -1,22 +1,27 @@
 const mongoose = require("mongoose");
 
+const InteractionSchema = new mongoose.Schema(
+  {
+    type: { type: String, enum: ["call", "email", "meeting", "note"], required: true },
+    note: { type: String },
+    date: { type: Date, default: Date.now },
+    createdBy: { type: String, required: true } // user email or name
+  },
+  { _id: false }
+);
+
 const LeadSchema = new mongoose.Schema(
   {
-    name: String,
-    email: String,
-    phone: String,
-    source: String,
-
-    assignedTo: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null // null = lead pond
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+    phone: { type: String },
+    assignedTo: { type: String, required: true },
+    status: {
+      type: String,
+      enum: ["New", "Contacted", "Follow-up", "Closed"],
+      default: "New",
     },
-
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
-    }
+    interactions: [InteractionSchema],
   },
   { timestamps: true }
 );

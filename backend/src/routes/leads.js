@@ -85,5 +85,32 @@ router.delete("/:id", auth, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+// POST /api/leads/:id/interactions
+router.post("/:id/interactions", auth, async (req, res) => {
+  try {
+    const { type, note } = req.body;
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+    // Only admin or assigned member can log
+    if (req.user.role !== "teamAdmin" && lead.assignedTo !== req.user.email) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    lead.interactions.push({
+      type,
+      note,
+      createdBy: req.user.email,
+      date: new Date(),
+    });
+
+    await lead.save();
+    res.json(lead);
+  } catch (err) {
+    console.error("Add interaction error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 
 module.exports = router;
