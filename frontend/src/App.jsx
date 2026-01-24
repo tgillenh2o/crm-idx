@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "./context/AuthContext";
-
+import DashboardRouter from "./routes/DashboardRouter";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
@@ -25,3 +25,14 @@ export default function App() {
     </Routes>
   );
 }
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/dashboard/*" element={<DashboardRouter />} />
+    </Routes>
+  );
+}
+
+export default App;
