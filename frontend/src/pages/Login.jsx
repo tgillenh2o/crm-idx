@@ -40,7 +40,8 @@ export default function Login() {
           <button type="submit">Login</button>
         </form>
         <p>
-          Don't have an account? <a href="/register">Register here</a>
+          Don’t have an account?{" "}
+          <button onClick={() => navigate("/register")}>Register here</button>
         </p>
       </div>
     </div>
