@@ -1,12 +1,14 @@
+import { Routes, Route } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "./context/AuthContext";
+
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import MemberDashboard from "./pages/dashboard/MemberDashboard";
 
 function DashboardRouter() {
   const { user } = useContext(AuthContext);
-<Route path="/dashboard" element={<DashboardRouter />} />
-
 
   if (!user) return null;
 
@@ -15,18 +17,12 @@ function DashboardRouter() {
     : <MemberDashboard />;
 }
 
-
-function App() {
+export default function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/dashboard" element={<DashboardRouter />} />
+    </Routes>
   );
 }
-
-export default App;
