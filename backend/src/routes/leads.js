@@ -1,50 +1,31 @@
 const express = require("express");
 const router = express.Router();
+const auth = require("../middleware/auth");
 const Lead = require("../models/Lead");
-const { authMiddleware, requireRole } = require("../middleware/auth");
 
-/**
- * GET LEADS
- * - Admin: all leads
- * - Member: only their leads
- */
-router.get("/", authMiddleware, async (req, res) => {
+// GET LEADS
+router.get("/", auth, async (req, res) => {
   try {
-    let leads;
-
     if (req.user.role === "teamAdmin") {
-      leads = await Lead.find();
-    } else {
-      leads = await Lead.find({
-        $or: [
-          { assignedTo: req.user.id },
-          { assignedTo: null } // lead pond
-        ]
-      });
+      const leads = await Lead.find();
+      return res.json(leads);
     }
 
+    const leads = await Lead.find({ assignedTo: req.user.email });
     res.json(leads);
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
 });
 
-/**
- * DELETE LEAD
- * ❌ Members blocked
- */
-router.delete(
-  "/:id",
-  authMiddleware,
-  requireRole(["teamAdmin"]),
-  async (req, res) => {
-    try {
-      await Lead.findByIdAndDelete(req.params.id);
-      res.json({ message: "Lead deleted" });
-    } catch (err) {
-      res.status(500).json({ message: "Server error" });
-    }
+// DELETE LEAD (ADMIN ONLY)
+router.delete("/:id", auth, async (req, res) => {
+  if (req.user.role !== "teamAdmin") {
+    return res.status(403).json({ message: "Forbidden" });
   }
-);
+
+  await Lead.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
+});
 
 module.exports = router;
