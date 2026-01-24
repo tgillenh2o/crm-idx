@@ -1,89 +1,64 @@
+* {
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  color: #111;
+  background: #0f172a; /* slate-900 */
+  color: #e5e7eb;
 }
 
 .auth-container {
+  min-height: 100vh;
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 100vh;
+  justify-content: center;
 }
 
 .auth-card {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  width: 350px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  background: #020617;
+  padding: 32px;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.6);
 }
 
 .auth-card h2 {
-  text-align: center;
   margin-bottom: 20px;
-}
-
-.auth-card form {
-  display: flex;
-  flex-direction: column;
+  font-size: 24px;
 }
 
 .auth-card input {
-  margin-bottom: 15px;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 14px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #020617;
+  color: white;
 }
 
 .auth-card button {
-  padding: 10px;
-  border-radius: 6px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
   border: none;
-  background: #1e40af;
+  background: linear-gradient(135deg, #f43f5e, #f97316);
   color: white;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
-  transition: 0.2s;
 }
 
 .auth-card button:hover {
-  background: #3b82f6;
+  opacity: 0.9;
 }
 
-.link-btn {
-  background: none;
-  border: none;
-  color: #1e40af;
-  cursor: pointer;
-  text-decoration: underline;
-  padding: 0;
+.auth-link {
+  margin-top: 14px;
+  text-align: center;
   font-size: 14px;
+  opacity: 0.8;
+  cursor: pointer;
 }
-
-.error {
-  color: #b91c1c;
-  background: #fee2e2;
-  padding: 10px;
-  border-radius: 6px;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.success {
-  color: #166534;
-  background: #dcfce7;
-  padding: 10px;
-  border-radius: 6px;
-  text-align: center;
-  margin-bottom: 10px;
-}
-.card {
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-

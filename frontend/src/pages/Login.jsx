@@ -9,19 +9,23 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    const success = await login(email, password);
-    if (success) {
-      alert("Login successful!");
-      // Keep it simple: stay on login page or redirect to home/dashboard later
-    } else {
-      alert("Invalid credentials or network error");
-    }
+  e.preventDefault();
+  const success = await login(email, password);
+
+  if (success) {
+    navigate("/dashboard"); // 👈 THIS WAS MISSING
+  } else {
+    alert("Invalid credentials or network error");
+  }
+};
+
   };
 
   return (
-    <div className="auth-container">
-      <h2>Login</h2>
+  <div className="auth-container">
+    <div className="auth-card">
+      <h2>Welcome Back</h2>
+
       <form onSubmit={handleLogin}>
         <input
           type="email"
@@ -37,9 +41,15 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit">Login</button>
+        <button type="submit">Sign In</button>
       </form>
-      <button onClick={() => navigate("/register")}>Go to Register</button>
+
+      <div
+        className="auth-link"
+        onClick={() => navigate("/register")}
+      >
+        Need an account? Register
+      </div>
     </div>
-  );
-}
+  </div>
+);
