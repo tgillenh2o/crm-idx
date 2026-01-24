@@ -24,12 +24,13 @@
 .sidebar a {
   color: #cfd8dc;
   text-decoration: none;
-  padding: 0.5rem 0;
+  padding: 0.5rem 0.5rem;
   margin-bottom: 0.5rem;
   border-radius: 6px;
 }
 
-.sidebar a.active, .sidebar a:hover {
+.sidebar a.active,
+.sidebar a:hover {
   background-color: #354f52;
   color: #fff;
 }
