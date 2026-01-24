@@ -9,47 +9,44 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-  e.preventDefault();
-  const success = await login(email, password);
+    e.preventDefault();
+    const success = await login(email, password);
 
-  if (success) {
-    navigate("/dashboard"); // 👈 THIS WAS MISSING
-  } else {
-    alert("Invalid credentials or network error");
-  }
-};
-
+    if (success) {
+      navigate("/dashboard"); // redirect after login
+    } else {
+      alert("Invalid credentials or network error");
+    }
   };
 
   return (
-  <div className="auth-container">
-    <div className="auth-card">
-      <h2>Welcome Back</h2>
-
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Sign In</button>
-      </form>
-
-      <div
-        className="auth-link"
-        onClick={() => navigate("/register")}
-      >
-        Need an account? Register
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2>Welcome Back</h2>
+        <form onSubmit={handleLogin}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button type="submit">Sign In</button>
+        </form>
+        <div
+          className="auth-link"
+          onClick={() => navigate("/register")}
+        >
+          Need an account? Register
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+}
