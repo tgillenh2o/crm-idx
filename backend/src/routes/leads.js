@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/auth");
 const Lead = require("../models/Lead");
+const { verifyToken } = require("../middleware/auth"); // adjust path if needed
+
 
 // ================== GET LEADS ==================
 router.get("/", auth, async (req, res) => {
