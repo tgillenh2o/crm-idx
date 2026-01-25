@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import "./Dashboard.css";
 
@@ -11,6 +10,7 @@ export default function LeadCard({ lead, isAdmin = false, onDelete }) {
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
+
     await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`, {
       method: "PATCH",
       headers: {
@@ -31,12 +31,16 @@ export default function LeadCard({ lead, isAdmin = false, onDelete }) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify({ type: interactionType, note: interactionNote }),
+          body: JSON.stringify({
+            type: interactionType,
+            note: interactionNote,
+          }),
         }
       );
+
       const data = await res.json();
       setInteractions(data.interactions);
-      setInteractionNote(""); // reset input
+      setInteractionNote("");
     } catch (err) {
       console.error("Failed to log interaction:", err);
     }
@@ -48,10 +52,13 @@ export default function LeadCard({ lead, isAdmin = false, onDelete }) {
         <p><strong>Name:</strong> {lead.name}</p>
         <p><strong>Email:</strong> {lead.email}</p>
         <p><strong>Phone:</strong> {lead.phone}</p>
-        <p><strong>Assigned To:</strong>{" "}
-  {lead.assignedTo === "POND" ? "Lead Pond" : lead.assignedTo}
-</p>
 
+        <p>
+          <strong>Assigned To:</strong>{" "}
+          {lead.assignedTo === "POND" ? "Lead Pond" : lead.assignedTo}
+        </p>
+
+        <p>
           <strong>Status:</strong>{" "}
           <select value={status} onChange={handleStatusChange}>
             <option>New</option>
@@ -63,12 +70,15 @@ export default function LeadCard({ lead, isAdmin = false, onDelete }) {
       </div>
 
       {isAdmin && onDelete && (
-        <button onClick={() => onDelete(lead._id)} className="delete-button">
+        <button
+          onClick={() => onDelete(lead._id)}
+          className="delete-button"
+        >
           Delete Lead
         </button>
       )}
 
-      {/* Log Interaction */}
+      {/* Interaction Logger */}
       <div className="interaction-form">
         <select
           value={interactionType}
@@ -79,22 +89,26 @@ export default function LeadCard({ lead, isAdmin = false, onDelete }) {
           <option value="meeting">Meeting</option>
           <option value="note">Note</option>
         </select>
+
         <input
           type="text"
           placeholder="Add note..."
           value={interactionNote}
           onChange={(e) => setInteractionNote(e.target.value)}
         />
+
         <button onClick={logInteraction}>Add Interaction</button>
       </div>
 
-      {/* Display Interaction History */}
+      {/* Interaction History */}
       <div className="interaction-history">
         <h4>Interaction History</h4>
         {interactions.map((i, idx) => (
           <div key={idx} className="interaction-item">
-            <strong>{i.type}</strong> by {i.createdBy} on{" "}
-            {new Date(i.date).toLocaleString()} <br />
+            <strong>{i.type}</strong>{" "}
+            {i.createdBy && <>by {i.createdBy}</>} on{" "}
+            {new Date(i.date).toLocaleString()}
+            <br />
             {i.note}
           </div>
         ))}
@@ -102,4 +116,3 @@ export default function LeadCard({ lead, isAdmin = false, onDelete }) {
     </div>
   );
 }
-
