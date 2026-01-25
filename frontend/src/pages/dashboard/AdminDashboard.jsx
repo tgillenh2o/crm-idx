@@ -26,18 +26,19 @@ export default function AdminDashboard() {
     } finally { setLoading(false); }
   };
 
-  const fetchUsers = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      const data = await res.json();
-      setUsers(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error(err);
-      setUsers([]);
-    }
-  };
+ const fetchUsers = async () => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    const data = await res.json();
+    setUsers(Array.isArray(data) ? data : []);
+  } catch (err) {
+    console.error(err);
+    setUsers([]);
+  }
+};
+
 
   useEffect(() => { fetchLeads(); fetchUsers(); }, []);
 

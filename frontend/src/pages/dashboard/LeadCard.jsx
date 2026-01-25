@@ -81,7 +81,7 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
           </select>
         </p>
 
-       {isAdmin && onAssign && (
+  {isAdmin && onAssign && (
   <p>
     <strong>Reassign:</strong>
     <select
@@ -91,11 +91,14 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
       <option value="">Unassigned</option>
       <option value="POND">Lead Pond</option>
       {users.map(u => (
-        <option key={u._id} value={u.email}>{u.name}</option>
+        <option key={u._id} value={u.email}>
+          {u.name} {u.role === "teamAdmin" ? "(Admin)" : ""}
+        </option>
       ))}
     </select>
   </p>
 )}
+
 
       </div>
 
