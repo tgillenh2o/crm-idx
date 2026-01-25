@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const verifyToken = require("../middleware/auth");
 const Lead = require("../models/Lead");
+const isAdmin = require("../middleware/isAdmin");
+
 
 /* ================== GET LEADS ================== */
 router.get("/", verifyToken, async (req, res) => {
