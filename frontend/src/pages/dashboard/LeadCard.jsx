@@ -53,6 +53,8 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
         },
         body: JSON.stringify({ type: interactionType, note: interactionNote }),
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
       const data = await res.json();
       setInteractions(data.interactions || []);
       setInteractionNote("");
@@ -83,14 +85,17 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
         {isAdmin && onAssign && users.length > 0 && (
           <p>
             <strong>Reassign:</strong>
-            <select
-              value={lead.assignedTo || ""}
-              onChange={(e) => onAssign(lead.Id, user._id)}
-            >
-              <option value="">Unassigned</option>
-              <option value="POND">Lead Pond</option>
-              {users.map(u => <option key={u._id} value={u.email}>{u.name}</option>)}
-            </select>
+          <select
+  value={lead.assignedTo?._id || ""} // <- note the _id
+  onChange={(e) => onAssign(lead._id, e.target.value)}
+>
+  <option value="">Unassigned</option>
+  <option value="POND">Lead Pond</option>
+  {users.map(u => (
+    <option key={u._id} value={u._id}>{u.name}</option>
+  ))}
+</select>
+
           </p>
         )}
       </div>

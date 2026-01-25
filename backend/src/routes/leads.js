@@ -122,6 +122,31 @@ router.patch("/:id/assign", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+/*================== INTERACTIONS ================*/
+// routes/leads.js
+router.post("/:id/interactions", verifyToken, async (req, res) => {
+  try {
+    const { type, note } = req.body;
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+    const interaction = {
+      type,
+      note,
+      createdBy: req.user.name || req.user.email,
+      date: new Date(),
+    };
+
+    lead.interactions = lead.interactions || [];
+    lead.interactions.push(interaction);
+    await lead.save();
+
+    res.json({ interactions: lead.interactions });
+  } catch (err) {
+    console.error("INTERACTION ERROR:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 
 module.exports = router;
