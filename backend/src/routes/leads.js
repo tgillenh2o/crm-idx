@@ -20,6 +20,11 @@ router.get("/", verifyToken, async (req, res) => {
 
 // ================== POST NEW LEAD ==================
 router.post("/", verifyToken, async (req, res) => {
+router.post("/", verifyToken, async (req, res) => {
+  console.log("🔥 POST /leads HIT");
+  console.log("USER:", req.user);
+  console.log("BODY:", req.body);
+
   try {
     const { name, email, phone, status, assignedTo: requestedAssignedTo } = req.body;
 
