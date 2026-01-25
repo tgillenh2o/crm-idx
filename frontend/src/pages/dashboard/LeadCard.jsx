@@ -47,15 +47,19 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
     } catch (err) { console.error("Failed to log interaction:", err); }
   };
 
+  // Optional: check if lead is in pond
+  const isLeadPond = lead.assignedTo === "POND";
+
   return (
-    <div className="lead-card">
+    <div className={`lead-card ${isLeadPond ? "lead-pond" : ""}`}>
       <div className="lead-info">
         <p><strong>Name:</strong> {lead.name}</p>
         <p><strong>Email:</strong> {lead.email}</p>
         <p><strong>Phone:</strong> {lead.phone}</p>
         <p><strong>Assigned To:</strong> {assignedToName}</p>
 
-        <p className={`status-${status}`}><strong>Status:</strong> 
+        <p className={`status-${status}`}>
+          <strong>Status:</strong>
           <select value={status} onChange={handleStatusChange}>
             <option>New</option>
             <option>Contacted</option>
@@ -64,7 +68,6 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
           </select>
         </p>
 
-        {/* Admin Reassign Dropdown */}
         {isAdmin && onAssign && users.length > 0 && (
           <p>
             <strong>Reassign:</strong>
@@ -95,19 +98,18 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
         <button onClick={handleInteraction}>Add Interaction</button>
       </div>
 
-<div className={`lead-card ${isLeadPond ? "lead-pond" : ""}`}>
-
-
       <div className="interaction-history">
         <h4>Interaction History</h4>
-        {interactions.length === 0 ? <p>No interactions yet</p> :
+        {interactions.length === 0 ? (
+          <p>No interactions yet</p>
+        ) : (
           interactions.map((i, idx) => (
             <div key={idx} className="interaction-item">
               <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on {new Date(i.date).toLocaleString()}<br />
               {i.note}
             </div>
           ))
-        }
+        )}
       </div>
     </div>
   );
