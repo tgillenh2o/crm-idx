@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Register() {
+  const [name, setName] = useState(""); 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { register } = useContext(AuthContext);
@@ -10,7 +11,7 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    const success = await register(email, password, "teamMember");
+    const success = await register(name,email, password, "teamMember");
     if (success) {
       navigate("/dashboard");
     } else {
