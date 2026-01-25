@@ -81,20 +81,22 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
           </select>
         </p>
 
-        {isAdmin && onAssign && users.length > 0 && (
-          <p>
-            <strong>Reassign:</strong>{" "}
-            <select value={assignedTo} onChange={handleAssignChange}>
-              <option value="">Unassigned</option>
-              <option value="POND">Lead Pond</option>
-              {users.map((u) => (
-                <option key={u._id} value={u.email}>
-                  {u.name}
-                </option>
-              ))}
-            </select>
-          </p>
-        )}
+       {isAdmin && onAssign && (
+  <p>
+    <strong>Reassign:</strong>
+    <select
+      value={lead.assignedTo === "UNASSIGNED" ? "" : lead.assignedTo || ""}
+      onChange={(e) => onAssign(lead._id, e.target.value)}
+    >
+      <option value="">Unassigned</option>
+      <option value="POND">Lead Pond</option>
+      {users.map(u => (
+        <option key={u._id} value={u.email}>{u.name}</option>
+      ))}
+    </select>
+  </p>
+)}
+
       </div>
 
       {isAdmin && onDelete && (
