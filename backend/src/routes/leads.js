@@ -64,7 +64,7 @@ router.post("/", verifyToken, async (req, res) => {
 });
 
 /* ================== PATCH LEAD ================== */
-router.patch("/:id/assign", auth, isAdmin, async (req, res) => {
+router.patch("/:id/assign", verifyToken, isAdmin, async (req, res) => {
   const { userId } = req.body;
 
   const lead = await Lead.findById(req.params.id);
