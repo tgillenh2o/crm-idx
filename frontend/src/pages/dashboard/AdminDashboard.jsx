@@ -3,127 +3,52 @@ import { AuthContext } from "../../context/AuthContext";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import LeadCard from "./LeadCard";
+import AddLead from "./AddLead";
 import "./Dashboard.css";
 
 export default function AdminDashboard() {
   const { user } = useContext(AuthContext);
   const [leads, setLeads] = useState([]);
+  const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Add Lead Form State
-  const [users, setUsers] = useState([]);
-const [assignedTo, setAssignedTo] = useState("POND");
-
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newLead, setNewLead] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    assignedTo: "",
-    status: "New",
-  });
-
-  // Fetch all leads
-  useEffect(() => {
-useEffect(() => {
-  if (user?.role !== "teamAdmin") return;
-
-  const fetchUsers = async () => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-
-    const data = await res.json();
-    setUsers(data);
-  };
-
-  fetchUsers();
-}, [user]);
-
-    const fetchLeads = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
-
-        if (!res.ok) {
-          console.error("Failed to fetch leads:", res.status);
-          setLeads([]);
-          setLoading(false);
-          return;
-        }
-
-        const data = await res.json();
-        setLeads(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Leads fetch error:", err);
-        setLeads([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLeads();
-  }, []);
-
-  // Add new lead
-  const handleAddLead = async (e) => {
-    e.preventDefault();
-{user?.role === "teamAdmin" && (
-  <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
-    <option value="POND">Lead Pond</option>
-    {users.map((u) => (
-      <option key={u.email} value={u.email}>
-        {u.name}
-      </option>
-    ))}
-  </select>
-)}
-
-
+  // Fetch leads
+  const fetchLeads = async () => {
+    setLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(newLead),
-      });
-
-      if (!res.ok) {
-        console.error("Failed to add lead", res.status);
-        return;
-      }
-
-      const addedLead = await res.json();
-      setLeads([addedLead, ...leads]);
-      setNewLead({ name: "", email: "", phone: "", assignedTo: "", status: "New" });
-      setShowAddForm(false);
-    } catch (err) {
-      console.error("Add lead error:", err);
-    }
-  };
-
-  // Delete lead
-  const deleteLead = async (id) => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${id}`, {
-        method: "DELETE",
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      if (!res.ok) {
-        console.error("Failed to delete lead:", res.status);
-        return;
-      }
-      setLeads(leads.filter((l) => l._id !== id));
+      if (!res.ok) throw new Error("Failed to fetch leads");
+      const data = await res.json();
+      setLeads(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Delete error:", err);
+      console.error("Leads fetch error:", err);
+      setLeads([]);
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Fetch members for dropdown
+  const fetchMembers = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch members");
+      const data = await res.json();
+      setMembers(data);
+    } catch (err) {
+      console.error("Members fetch error:", err);
+      setMembers([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchLeads();
+    fetchMembers();
+  }, []);
 
   return (
     <div className="dashboard">
@@ -131,7 +56,7 @@ useEffect(() => {
       <div className="main-panel">
         <Topbar />
 
-        {/* Stats Cards */}
+        {/* Stats */}
         <div className="stats-cards">
           <div className="stat-card">
             <p>Total Leads</p>
@@ -147,85 +72,22 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Add Lead Form */}
-        <div className="add-lead-container">
-          <button
-            type="button"
-            className="toggle-form-btn"
-            onClick={() => setShowAddForm(!showAddForm)}
-          >
-            {showAddForm ? "Cancel" : "Add New Lead"}
-          </button>
-
-          {showAddForm && (
-            <form className="add-lead-form" onSubmit={handleAddLead}>
-              <div className="form-row">
-                <input
-                  type="text"
-                  placeholder="Full Name"
-                  value={newLead.name}
-                  onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
-                  required
-                />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={newLead.email}
-                  onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="form-row">
-                <input
-                  type="text"
-                  placeholder="Phone"
-                  value={newLead.phone}
-                  onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
-                  required
-                />
-                <input
-                  type="email"
-                  placeholder="Assign To (email)"
-                  value={newLead.assignedTo}
-                  onChange={(e) =>
-                    setNewLead({ ...newLead, assignedTo: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="form-row">
-                <select
-                  value={newLead.status}
-                  onChange={(e) => setNewLead({ ...newLead, status: e.target.value })}
-                >
-                  <option value="New">New</option>
-                  <option value="Follow-up">Follow-up</option>
-                  <option value="Contacted">Contacted</option>
-                  <option value="Closed">Closed</option>
-                </select>
-              </div>
-              <button type="submit" className="submit-lead-btn">
-                Add Lead
-              </button>
-            </form>
-          )}
-        </div>
+        {/* Add Lead */}
+        <AddLead
+          onLeadAdded={(newLead) => setLeads([newLead, ...leads])}
+          currentUser={user}
+          members={members}
+          isAdmin={true}
+        />
 
         {/* Lead List */}
         <div className="main-content">
           {loading ? (
             <p>Loading leads...</p>
           ) : leads.length > 0 ? (
-            leads.map((lead) => (
-              <LeadCard
-                key={lead._id}
-                lead={lead}
-                isAdmin={true}
-                onDelete={deleteLead}
-              />
-            ))
+            leads.map((lead) => <LeadCard key={lead._id} lead={lead} isAdmin={true} onDelete={fetchLeads} />)
           ) : (
-            <p>No leads found.</p>
+            <p>No leads yet.</p>
           )}
         </div>
       </div>
