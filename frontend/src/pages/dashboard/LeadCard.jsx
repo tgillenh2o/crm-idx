@@ -1,20 +1,20 @@
 import React, { useState } from "react";
 import "./Dashboard.css";
 
-export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, users = [], currentUser}) {
+export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, users = [] }) {
   const [status, setStatus] = useState(lead.status || "New");
   const [interactionType, setInteractionType] = useState("call");
   const [interactionNote, setInteractionNote] = useState("");
   const [interactions, setInteractions] = useState(lead.interactions || []);
-  const [assignedTo, setAssignedTo] = useState(
-    !lead.assignedTo || lead.assignedTo === "UNASSIGNED"
-      ? ""
-      : lead.assignedTo === "POND"
-      ? "POND"
-      : lead.assignedTo
-  );
+  const [showInteractions, setShowInteractions] = useState(false);
 
-  // ---------------- Status Change ----------------
+  const statusColors = {
+    "New": "blue",
+    "Contacted": "green",
+    "Follow-up": "orange",
+    "Closed": "gray"
+  };
+
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
@@ -34,7 +34,6 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
     }
   };
 
-  // ---------------- Interaction Logging ----------------
   const handleInteraction = async () => {
     if (!interactionNote.trim()) return;
     try {
@@ -49,100 +48,79 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
       const data = await res.json();
       setInteractions(data.interactions || []);
       setInteractionNote("");
+      setShowInteractions(true);
     } catch (err) {
       console.error("Failed to log interaction:", err);
     }
   };
 
-  // ---------------- Reassignment ----------------
-  const handleAssignChange = async (e) => {
-    const newAssignee = e.target.value;
-    setAssignedTo(newAssignee);
-    if (onAssign) {
-      onAssign(lead._id, newAssignee);
-    }
-  };
-
   return (
-    <div className="lead-card">
-      <div className="lead-info">
-        <p><strong>Name:</strong> {lead.name}</p>
-        <p><strong>Email:</strong> {lead.email}</p>
-        <p><strong>Phone:</strong> {lead.phone}</p>
-        <p><strong>Assigned To:</strong> {assignedTo || "Unassigned"}</p>
+    <div className="lead-card modern-card">
+      <div className="lead-header">
+        <h4>{lead.name}</h4>
+        <span className={`status-badge ${statusColors[status] || "gray"}`}>{status}</span>
+      </div>
 
-        <p>
-          <strong>Status:</strong>{" "}
+      <p><strong>Email:</strong> {lead.email}</p>
+      <p><strong>Phone:</strong> {lead.phone}</p>
+      <p><strong>Assigned To:</strong> {lead.assignedTo === "UNASSIGNED" ? "Unassigned" : lead.assignedTo === "POND" ? "Lead Pond" : lead.assignedTo}</p>
+
+      <div className="lead-actions">
+        <label>
+          Status:
           <select value={status} onChange={handleStatusChange}>
             <option>New</option>
             <option>Contacted</option>
             <option>Follow-up</option>
             <option>Closed</option>
           </select>
-        </p>
+        </label>
 
- {isAdmin && onAssign && (
-  <p>
-    <strong>Reassign:</strong>
-    <select
-      value={lead.assignedTo === "UNASSIGNED" ? "" : lead.assignedTo || ""}
-      onChange={(e) => onAssign(lead._id, e.target.value)}
-    >
-      <option value="">Unassigned</option>
-      <option value="POND">Lead Pond</option>
-      {users.map(u => (
-        <option key={u._id} value={u.email}>
-          {u.name} {u.role === "teamAdmin" ? "(Admin)" : ""}
-        </option>
-      ))}
-      {/* Include yourself if not already in users */}
-      {currentUser && !users.find(u => u.email === currentUser.email) && (
-        <option value={currentUser.email}>{currentUser.name} (You)</option>
-      )}
-    </select>
-  </p>
-)}
+        {isAdmin && users.length > 0 && onAssign && (
+          <label>
+            Reassign:
+            <select
+              value={lead.assignedTo === "UNASSIGNED" ? "" : lead.assignedTo || ""}
+              onChange={(e) => onAssign(lead._id, e.target.value)}
+            >
+              <option value="">Unassigned</option>
+              <option value="POND">Lead Pond</option>
+              {users.map(u => <option key={u._id} value={u.email}>{u.name}</option>)}
+            </select>
+          </label>
+        )}
 
-
-
-
+        {isAdmin && onDelete && (
+          <button className="delete-btn" onClick={() => onDelete(lead._id)}>🗑</button>
+        )}
       </div>
 
-      {isAdmin && onDelete && (
-        <button className="delete-button" onClick={() => onDelete(lead._id)}>
-          Delete Lead
+      <div className="interaction-logger">
+        <button className="toggle-interactions-btn" onClick={() => setShowInteractions(!showInteractions)}>
+          {showInteractions ? "Hide Interactions" : "Show Interactions"} ({interactions.length})
         </button>
-      )}
 
-      <div className="interaction-form">
-        <select value={interactionType} onChange={(e) => setInteractionType(e.target.value)}>
-          <option value="call">Call</option>
-          <option value="email">Email</option>
-          <option value="meeting">Meeting</option>
-          <option value="note">Note</option>
-        </select>
-        <input
-          type="text"
-          placeholder="Add note..."
-          value={interactionNote}
-          onChange={(e) => setInteractionNote(e.target.value)}
-        />
-        <button onClick={handleInteraction}>Add Interaction</button>
-      </div>
-
-      <div className="interaction-history">
-        <h4>Interaction History</h4>
-        {interactions.length === 0 ? (
-          <p>No interactions logged yet.</p>
-        ) : (
-          interactions.map((i, idx) => (
-            <div key={idx} className="interaction-item">
-              <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on{" "}
-              {new Date(i.date).toLocaleString()}
-              <br />
-              {i.note}
+        {showInteractions && (
+          <div className="interactions">
+            {interactions.length === 0 ? <p>No interactions yet</p> :
+              interactions.map((i, idx) => (
+                <div key={idx} className="interaction-item">
+                  <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on {new Date(i.date).toLocaleString()}<br />
+                  {i.note}
+                </div>
+              ))
+            )}
+            <div className="interaction-form">
+              <select value={interactionType} onChange={(e) => setInteractionType(e.target.value)}>
+                <option value="call">Call</option>
+                <option value="email">Email</option>
+                <option value="meeting">Meeting</option>
+                <option value="note">Note</option>
+              </select>
+              <input type="text" placeholder="Add note..." value={interactionNote} onChange={(e) => setInteractionNote(e.target.value)} />
+              <button onClick={handleInteraction}>Add</button>
             </div>
-          ))
+          </div>
         )}
       </div>
     </div>
