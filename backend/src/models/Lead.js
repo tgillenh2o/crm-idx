@@ -15,7 +15,7 @@ const LeadSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true },
     phone: { type: String },
-    assignedTo: { type: String, required: true },
+    assignedTo: { type: String, default: "POND" },
     status: {
       type: String,
       enum: ["New", "Contacted", "Follow-up", "Closed"],
