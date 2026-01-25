@@ -103,6 +103,7 @@ export default function AdminDashboard() {
                   onDelete={handleDelete}
                   users={users}
                   onAssign={handleAssign}
+                  currentUser={user} // <-- pass the logged-in admin
                 />
               ))}
             </div> : <p>No leads found.</p>

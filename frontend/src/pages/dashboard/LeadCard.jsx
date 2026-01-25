@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Dashboard.css";
 
-export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, users = [] }) {
+export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, users = [], currentUser}) {
   const [status, setStatus] = useState(lead.status || "New");
   const [interactionType, setInteractionType] = useState("call");
   const [interactionNote, setInteractionNote] = useState("");
@@ -95,8 +95,8 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
           {u.name} {u.role === "teamAdmin" ? "(Admin)" : ""}
         </option>
       ))}
-      {/* Include yourself if not in users array */}
-      {!users.find(u => u.email === currentUser.email) && (
+      {/* Include yourself if not already in users */}
+      {currentUser && !users.find(u => u.email === currentUser.email) && (
         <option value={currentUser.email}>{currentUser.name} (You)</option>
       )}
     </select>
