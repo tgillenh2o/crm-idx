@@ -64,24 +64,21 @@ router.post("/", verifyToken, async (req, res) => {
 });
 
 /* ================== PATCH LEAD ================== */
-router.patch("/:id", verifyToken, async (req, res) => {
-  try {
-    const lead = await Lead.findById(req.params.id);
-    if (!lead) return res.status(404).json({ message: "Lead not found" });
+router.patch("/:id/assign", auth, isAdmin, async (req, res) => {
+  const { userId } = req.body;
 
-    if (req.user.role !== "teamAdmin" && lead.assignedTo !== req.user.email) {
-      return res.status(403).json({ message: "Forbidden" });
-    }
+  const lead = await Lead.findById(req.params.id);
+  if (!lead) return res.status(404).json({ message: "Lead not found" });
 
-    if (req.body.status) lead.status = req.body.status;
+  lead.assignedTo = userId || null;
+  await lead.save();
 
-    await lead.save();
-    res.json(lead);
-  } catch (err) {
-    console.error("PATCH lead error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
+  const populated = await Lead.findById(lead._id)
+    .populate("assignedTo", "name email");
+
+  res.json(populated);
 });
+
 
 /* ================== DELETE LEAD ================== */
 router.delete("/:id", verifyToken, async (req, res) => {

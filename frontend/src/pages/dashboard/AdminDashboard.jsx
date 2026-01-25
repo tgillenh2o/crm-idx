@@ -52,20 +52,30 @@ export default function AdminDashboard() {
     } catch (err) { console.error(err); }
   };
 
-  const handleAssign = async (leadId, userEmail) => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
+ const handleAssign = async (leadId, userId) => {
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`,
+      {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ assignedTo: userEmail || "UNASSIGNED" }),
-      });
-      const updatedLead = await res.json();
-      setLeads(prev => prev.map(l => l._id === leadId ? updatedLead : l));
-    } catch (err) { console.error(err); }
-  };
+        body: JSON.stringify({ userId }), // 👈 send userId
+      }
+    );
+
+    const updatedLead = await res.json();
+
+    setLeads(prev =>
+      prev.map(l => (l._id === leadId ? updatedLead : l))
+    );
+  } catch (err) {
+    console.error("Assign failed:", err);
+  }
+};
+
 
   return (
     <div className="dashboard">
