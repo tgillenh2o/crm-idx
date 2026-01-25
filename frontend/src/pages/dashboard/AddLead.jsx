@@ -1,23 +1,18 @@
 import React, { useState } from "react";
+import "./Dashboard.css";
 
-export default function AddLead({ onLeadAdded, currentUser }) {
+export default function AddLead({ onLeadAdded, currentUser, isAdmin = false, users = [] }) {
   const [showForm, setShowForm] = useState(false);
-  const [newLead, setNewLead] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    status: "New",
-  });
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [status, setStatus] = useState("New");
+  const [assignedTo, setAssignedTo] = useState(isAdmin ? "" : currentUser.email);
+  const [loading, setLoading] = useState(false);
 
-  const handleAddLead = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // ALWAYS include assignedTo in the POST body
-    const leadToAdd = { 
-      ...newLead, 
-      assignedTo: currentUser?.email || "POND" 
-    };
-
+    setLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
         method: "POST",
@@ -25,67 +20,57 @@ export default function AddLead({ onLeadAdded, currentUser }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(leadToAdd),
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          status,
+          assignedTo: isAdmin ? assignedTo : currentUser.email,
+        }),
       });
 
-      if (!res.ok) throw new Error("Failed to add lead");
+      const newLead = await res.json();
+      onLeadAdded(newLead);
 
-      const savedLead = await res.json();
-      onLeadAdded(savedLead);
-
-      // Reset form
-      setNewLead({ name: "", email: "", phone: "", status: "New" });
+      // reset form
+      setName(""); setEmail(""); setPhone(""); setStatus("New"); setAssignedTo(isAdmin ? "" : currentUser.email);
       setShowForm(false);
-    } catch (err) {
-      console.error("Add lead error:", err);
-      alert("Failed to add lead. Check console for details.");
-    }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
   return (
     <div className="add-lead-container">
-      <button
-        type="button"
-        className="toggle-form-btn"
-        onClick={() => setShowForm(!showForm)}
-      >
+      <button className="toggle-form-btn" onClick={() => setShowForm(!showForm)}>
         {showForm ? "Cancel" : "Add New Lead"}
       </button>
 
       {showForm && (
-        <form className="add-lead-form" onSubmit={handleAddLead}>
-          <input
-            type="text"
-            placeholder="Full Name"
-            value={newLead.name}
-            onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
-            required
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={newLead.email}
-            onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Phone"
-            value={newLead.phone}
-            onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
-            required
-          />
-          <select
-            value={newLead.status}
-            onChange={(e) => setNewLead({ ...newLead, status: e.target.value })}
-          >
-            <option value="New">New</option>
-            <option value="Follow-up">Follow-up</option>
-            <option value="Contacted">Contacted</option>
-            <option value="Closed">Closed</option>
-          </select>
-          <button type="submit" className="submit-lead-btn">
-            Add Lead
+        <form className="add-lead-form" onSubmit={handleSubmit}>
+          <div className="form-row">
+            <input type="text" placeholder="Name" value={name} onChange={e => setName(e.target.value)} required />
+            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+            <input type="tel" placeholder="Phone" value={phone} onChange={e => setPhone(e.target.value)} />
+          </div>
+
+          <div className="form-row">
+            <select value={status} onChange={e => setStatus(e.target.value)} required>
+              <option>New</option>
+              <option>Contacted</option>
+              <option>Follow-up</option>
+              <option>Closed</option>
+            </select>
+
+            {isAdmin && users.length > 0 && (
+              <select value={assignedTo} onChange={e => setAssignedTo(e.target.value)}>
+                <option value="">Unassigned</option>
+                {users.map(u => <option key={u._id} value={u.email}>{u.name}</option>)}
+              </select>
+            )}
+          </div>
+
+          <button className="submit-lead-btn" type="submit" disabled={loading}>
+            {loading ? "Adding..." : "Add Lead"}
           </button>
         </form>
       )}

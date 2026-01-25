@@ -21,7 +21,7 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-// ================== POST NEW LEAD ==================
+
 // ================== POST NEW LEAD ==================
 router.post("/", auth, async (req, res) => {
   try {
@@ -101,6 +101,7 @@ router.delete("/:id", auth, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 // POST /api/leads/:id/interactions
 router.post("/:id/interactions", auth, async (req, res) => {
   try {
@@ -127,6 +128,52 @@ router.post("/:id/interactions", auth, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+// Create lead
+router.post("/", verifyToken, async (req, res) => {
+  try {
+    const { name, email, phone, status, assignedTo } = req.body;
+
+    const newLead = new Lead({
+      name,
+      email,
+      phone,
+      status: status || "New",
+      assignedTo: assignedTo || req.user.email, // assign member automatically if unassigned
+      interactions: []
+    });
+
+    await newLead.save();
+    res.status(201).json(newLead);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Add interaction
+router.post("/:id/interactions", verifyToken, async (req, res) => {
+  try {
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+    const newInteraction = {
+      type: req.body.type,
+      note: req.body.note,
+      createdBy: req.user.email, // always use logged-in user
+      date: new Date(),
+    };
+
+    lead.interactions.push(newInteraction);
+    await lead.save();
+
+    res.json(lead);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 
 
 module.exports = router;
