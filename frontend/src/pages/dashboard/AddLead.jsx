@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 
-export default function AddLead({ onLeadAdded, currentUser, isAdmin }) {
+export default function AddLead({ onLeadAdded, currentUser }) {
   const [showForm, setShowForm] = useState(false);
   const [newLead, setNewLead] = useState({
     name: "",
     email: "",
     phone: "",
     status: "New",
-    assignedTo: currentUser?.email || "POND",
   });
 
   const handleAddLead = async (e) => {
     e.preventDefault();
-    const leadToAdd = { ...newLead, assignedTo: currentUser?.email || "POND" };
+
+    // Only send assignedTo for admin override in future, otherwise backend handles it
+    const leadToAdd = { ...newLead };
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
@@ -28,6 +29,8 @@ export default function AddLead({ onLeadAdded, currentUser, isAdmin }) {
 
       const savedLead = await res.json();
       onLeadAdded(savedLead);
+
+      // Reset form
       setNewLead({ name: "", email: "", phone: "", status: "New" });
       setShowForm(false);
     } catch (err) {
