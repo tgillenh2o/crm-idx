@@ -74,8 +74,7 @@ export default function MemberDashboard() {
     <div className="dashboard">
       <Sidebar>
         {/* Sidebar links for smooth scroll */}
-        <a href="#lead-pond">Lead Pond</a>
-        <a href="#my-leads">My Leads</a>
+        
       </Sidebar>
 
       <div className="main-panel">

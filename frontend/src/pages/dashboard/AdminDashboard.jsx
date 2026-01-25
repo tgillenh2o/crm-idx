@@ -12,7 +12,6 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch all leads
   const fetchLeads = async () => {
     setLoading(true);
     try {
@@ -29,7 +28,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Fetch all users
   const fetchUsers = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
@@ -48,7 +46,6 @@ export default function AdminDashboard() {
     fetchUsers();
   }, []);
 
-  // Delete lead
   const handleDelete = async (leadId) => {
     if (!window.confirm("Are you sure?")) return;
     try {
@@ -56,14 +53,13 @@ export default function AdminDashboard() {
         method: "DELETE",
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      setLeads((prev) => prev.filter((l) => l._id !== leadId));
+      setLeads(leads.filter((l) => l._id !== leadId));
     } catch (err) {
       console.error(err);
     }
   };
 
-  // Assign/Reassign lead
-  const handleAssign = async (leadId, userId) => {
+  const handleAssign = async (leadId, assignedTo) => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`, {
         method: "PATCH",
@@ -71,7 +67,7 @@ export default function AdminDashboard() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId: assignedTo }),
       });
       const updatedLead = await res.json();
       setLeads((prev) => prev.map((l) => (l._id === leadId ? updatedLead : l)));
@@ -80,9 +76,9 @@ export default function AdminDashboard() {
     }
   };
 
-  // Separate Lead Pond (unassigned) and other leads
-  const leadPondLeads = leads.filter((l) => !l.assignedTo || l.assignedTo === "POND");
-  const otherLeads = leads.filter((l) => !leadPondLeads.includes(l));
+  // Separate sections
+  const leadPondLeads = leads.filter((l) => l.assignedTo === "POND" || !l.assignedTo || l.assignedTo === "UNASSIGNED");
+  const myLeads = leads.filter((l) => l.assignedTo?._id === user._id);
 
   return (
     <div className="dashboard">
@@ -90,26 +86,8 @@ export default function AdminDashboard() {
       <div className="main-panel">
         <Topbar />
 
-        {/* Stats */}
-        <div className="stats-cards">
-          <div className="stat-card">
-            <p>Total Leads</p>
-            <h3>{leads.length}</h3>
-          </div>
-          <div className="stat-card">
-            <p>Follow-ups</p>
-            <h3>{leads.filter((l) => l.status === "Follow-up").length}</h3>
-          </div>
-          <div className="stat-card">
-            <p>Contacted</p>
-            <h3>{leads.filter((l) => l.status === "Contacted").length}</h3>
-          </div>
-        </div>
-
-        {/* Add Lead Form */}
         <AddLead onLeadAdded={(l) => setLeads([l, ...leads])} currentUser={user} isAdmin={true} users={users} />
 
-        {/* Leads Sections */}
         <div className="main-content">
           {loading ? (
             <p>Loading leads...</p>
@@ -136,11 +114,11 @@ export default function AdminDashboard() {
               )}
 
               {/* My Leads */}
-              {otherLeads.length > 0 && (
+              {myLeads.length > 0 && (
                 <div id="my-leads">
-                  <h3 style={{ marginBottom: "8px" }}>Your Leads</h3>
+                  <h3 style={{ marginBottom: "8px" }}>My Leads</h3>
                   <div className="leads-grid">
-                    {otherLeads.map((lead) => (
+                    {myLeads.map((lead) => (
                       <LeadCard
                         key={lead._id}
                         lead={lead}
@@ -148,6 +126,7 @@ export default function AdminDashboard() {
                         onDelete={handleDelete}
                         users={users}
                         onAssign={handleAssign}
+                        isLeadPond={false}
                       />
                     ))}
                   </div>
