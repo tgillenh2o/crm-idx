@@ -125,7 +125,6 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
 </div>
 
         )}
-      </div>
-    </div>
+      
   );
 }
