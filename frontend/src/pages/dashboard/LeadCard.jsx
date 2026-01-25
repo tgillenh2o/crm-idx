@@ -6,13 +6,15 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
   const [interactionType, setInteractionType] = useState("call");
   const [interactionNote, setInteractionNote] = useState("");
   const [interactions, setInteractions] = useState(lead.interactions || []);
+  const [assignedTo, setAssignedTo] = useState(
+    !lead.assignedTo || lead.assignedTo === "UNASSIGNED"
+      ? ""
+      : lead.assignedTo === "POND"
+      ? "POND"
+      : lead.assignedTo
+  );
 
-  const assignedToName = (() => {
-    if (!lead.assignedTo || lead.assignedTo === "UNASSIGNED") return "Unassigned";
-    if (lead.assignedTo === "POND") return "Lead Pond";
-    return lead.assignedTo;
-  })();
-
+  // ---------------- Status Change ----------------
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
@@ -32,6 +34,7 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
     }
   };
 
+  // ---------------- Interaction Logging ----------------
   const handleInteraction = async () => {
     if (!interactionNote.trim()) return;
     try {
@@ -51,16 +54,25 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
     }
   };
 
+  // ---------------- Reassignment ----------------
+  const handleAssignChange = async (e) => {
+    const newAssignee = e.target.value;
+    setAssignedTo(newAssignee);
+    if (onAssign) {
+      onAssign(lead._id, newAssignee);
+    }
+  };
+
   return (
     <div className="lead-card">
       <div className="lead-info">
         <p><strong>Name:</strong> {lead.name}</p>
         <p><strong>Email:</strong> {lead.email}</p>
         <p><strong>Phone:</strong> {lead.phone}</p>
-        <p><strong>Assigned To:</strong> {assignedToName}</p>
+        <p><strong>Assigned To:</strong> {assignedTo || "Unassigned"}</p>
 
         <p>
-          <strong>Status:</strong>
+          <strong>Status:</strong>{" "}
           <select value={status} onChange={handleStatusChange}>
             <option>New</option>
             <option>Contacted</option>
@@ -71,27 +83,24 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
 
         {isAdmin && onAssign && users.length > 0 && (
           <p>
-            <strong>Reassign:</strong>
-            <select
-  value={lead.assignedTo?._id || ""}
-  onChange={(e) => onAssign(lead._id, e.target.value)}
->
-  <option value="">Unassigned</option>
-  <option value="POND">Lead Pond</option>
-
-  {users.map(u => (
-    <option key={u._id} value={u._id}>
-      {u.name} ({u.email})
-    </option>
-  ))}
-</select>
-
+            <strong>Reassign:</strong>{" "}
+            <select value={assignedTo} onChange={handleAssignChange}>
+              <option value="">Unassigned</option>
+              <option value="POND">Lead Pond</option>
+              {users.map((u) => (
+                <option key={u._id} value={u.email}>
+                  {u.name}
+                </option>
+              ))}
+            </select>
           </p>
         )}
       </div>
 
       {isAdmin && onDelete && (
-        <button className="delete-button" onClick={() => onDelete(lead._id)}>Delete Lead</button>
+        <button className="delete-button" onClick={() => onDelete(lead._id)}>
+          Delete Lead
+        </button>
       )}
 
       <div className="interaction-form">
@@ -112,14 +121,18 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
 
       <div className="interaction-history">
         <h4>Interaction History</h4>
-        {interactions.length === 0 ? <p>No interactions yet</p> :
+        {interactions.length === 0 ? (
+          <p>No interactions logged yet.</p>
+        ) : (
           interactions.map((i, idx) => (
             <div key={idx} className="interaction-item">
-              <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on {new Date(i.date).toLocaleString()}<br />
+              <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on{" "}
+              {new Date(i.date).toLocaleString()}
+              <br />
               {i.note}
             </div>
           ))
-        }
+        )}
       </div>
     </div>
   );
