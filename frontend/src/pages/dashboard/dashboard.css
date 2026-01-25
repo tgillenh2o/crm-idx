@@ -1,266 +1,242 @@
-/* ===============================
-   THEME VARIABLES
-================================ */
-:root {
-  --bg-app: #0b0f19;
-  --bg-panel: #111827;
-  --bg-card: #1f2937;
-  --bg-card-hover: #243144;
-  --bg-sidebar: #0f172a;
-
-  --border-subtle: #2d3748;
-
-  --text-primary: #f9fafb;
-  --text-secondary: #cbd5f5;
-  --text-muted: #94a3b8;
-
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
-
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-}
-
-/* ===============================
-   BASE
-================================ */
-body {
+/* ================== General ================== */
+body, .dashboard, .main-panel {
   margin: 0;
-  background: var(--bg-app);
-  color: var(--text-primary);
+  padding: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-/* ===============================
-   DASHBOARD LAYOUT
-================================ */
-.dashboard {
-  display: flex;
+  background-color: #121212;
+  color: #e0e0e0;
   min-height: 100vh;
 }
 
-/* Sidebar is fixed */
+/* ================== Sidebar ================== */
 .sidebar {
   width: 240px;
   min-width: 240px;
   height: 100vh;
-  background: var(--bg-sidebar);
+  background-color: #0f172a;
+  color: #e5e7eb;
   padding: 20px;
   position: fixed;
   top: 0;
   left: 0;
-  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  box-shadow: 2px 0 6px rgba(0,0,0,0.5);
 }
 
-/* Main content must offset sidebar */
-.main-panel {
-  margin-left: 240px;
-  padding: 24px;
-  flex: 1;
-  background: var(--bg-app);
-}
-
-/* ===============================
-   SIDEBAR NAV
-================================ */
 .sidebar h2 {
   font-size: 18px;
   margin-bottom: 30px;
-  color: var(--text-primary);
+  color: #fff;
 }
 
-.sidebar a {
+.sidebar a, .sidebar .navlink {
   display: block;
   padding: 12px 14px;
   margin-bottom: 8px;
   border-radius: 8px;
-  color: var(--text-secondary);
+  color: #cbd5f5;
   text-decoration: none;
   transition: all 0.2s ease;
 }
 
-.sidebar a:hover {
-  background: rgba(59, 130, 246, 0.15);
-  color: var(--text-primary);
+.sidebar a:hover, .sidebar .navlink:hover {
+  background: #1e293b;
+  color: #fff;
 }
 
-.sidebar a.active {
-  background: var(--accent);
-  color: #ffffff;
+.sidebar a.active, .sidebar .navlink.active {
+  background: #2563eb;
+  color: #fff;
+  font-weight: 500;
 }
 
-/* ===============================
-   TOP BAR
-================================ */
+/* ================== Topbar ================== */
 .topbar {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: 14px;
-  padding: 14px 20px;
-  margin-bottom: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+  padding: 12px 20px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border-bottom: 1px solid #333;
 }
 
-/* ===============================
-   STATS CARDS
-================================ */
+/* ================== Main Panel ================== */
+.main-panel {
+  margin-left: 240px;
+  padding: 30px;
+  background-color: #121212;
+  min-height: 100vh;
+}
+
+/* ================== Stats Cards ================== */
 .stats-cards {
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
-
-.stat-card {
+.stats-cards .stat-card {
   flex: 1;
-  background: var(--bg-panel);
-  border-radius: 16px;
-  padding: 18px;
-  border: 1px solid var(--border-subtle);
-  text-align: center;
-}
-
-.stat-card p {
-  margin: 0;
-  color: var(--text-muted);
-}
-
-.stat-card h3 {
-  margin-top: 6px;
-  font-size: 24px;
-}
-
-/* ===============================
-   ADD LEAD FORM (FIXES WHITE FORM)
-================================ */
-.add-lead-container,
-.add-lead-form {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: 16px;
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 12px;
   padding: 16px;
-  margin-bottom: 24px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
 }
 
-/* ===============================
-   INPUTS & SELECTS
-================================ */
-input,
-select,
-textarea {
-  background: #0b1220;
-  color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  padding: 8px 10px;
+/* ================== Lead Sections ================== */
+#lead-pond h3,
+#my-leads h3 {
+  border-bottom: 2px solid #2563eb;
+  padding-bottom: 4px;
+  margin-bottom: 12px;
+  color: #64b5f6;
 }
 
-input::placeholder {
-  color: var(--text-muted);
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-/* ===============================
-   BUTTONS
-================================ */
-button {
-  background: var(--accent);
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 14px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-button:hover {
-  background: var(--accent-hover);
-}
-
-.delete-button {
-  background: var(--danger);
-}
-
-.delete-button:hover {
-  background: #dc2626;
-}
-
-/* ===============================
-   LEADS GRID
-================================ */
+/* ================== Leads Grid ================== */
 .leads-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
 
-/* ===============================
-   LEAD CARD
-================================ */
+/* ================== Lead Card ================== */
 .lead-card {
-  background: var(--bg-card);
-  border-radius: 16px;
-  padding: 18px;
-  border: 1px solid var(--border-subtle);
-  transition: all 0.2s ease;
+  background-color: #1e1e1e;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  transition: all 0.2s;
 }
 
 .lead-card:hover {
-  background: var(--bg-card-hover);
-  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.6);
 }
 
 .lead-card.lead-pond {
-  border-left: 5px solid var(--warning);
+  border-left: 5px solid #64b5f6;
 }
 
-/* ===============================
-   LEAD INFO
-================================ */
 .lead-info p {
   margin: 6px 0;
-  color: var(--text-secondary);
 }
 
-.lead-info strong {
-  color: var(--text-primary);
-}
+/* ================== Status Colors ================== */
+.status-New select { border-color: #3b82f6; }
+.status-Contacted select { border-color: #f59e0b; }
+.status-Follow-up select { border-color: #ffb74d; }
+.status-Closed select { border-color: #10b981; }
 
-/* ===============================
-   STATUS COLORS
-================================ */
-.status-New strong { color: var(--accent); }
-.status-Contacted strong { color: var(--warning); }
-.status-Follow-up strong { color: #fb923c; }
-.status-Closed strong { color: var(--success); }
+.lead-card p.status-New { color: #90caf9; }
+.lead-card p.status-Contacted { color: #64b5f6; }
+.lead-card p.status-Follow-up { color: #ffb74d; }
+.lead-card p.status-Closed { color: #81c784; }
 
-/* ===============================
-   INTERACTIONS
-================================ */
+/* ================== Interaction Form ================== */
 .interaction-form {
   display: flex;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: 15px;
 }
 
+.interaction-form input,
+.interaction-form select,
+.interaction-form button {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.interaction-form button {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.interaction-form button:hover {
+  background-color: #505050;
+}
+
+/* ================== Interaction History ================== */
 .interaction-history {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-subtle);
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #333;
 }
 
 .interaction-item {
-  padding: 8px 0;
-  font-size: 14px;
-  color: var(--text-secondary);
+  background-color: #1b1b1b;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 6px;
+  border-left: 3px solid #2563eb;
 }
 
-html {
-  scroll-behavior: smooth;
+/* ================== Inputs and Selects ================== */
+.lead-card input,
+.lead-card select,
+.add-lead-form input,
+.add-lead-form select {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 8px;
+  margin-right: 8px;
 }
 
+.lead-card input::placeholder,
+.add-lead-form input::placeholder {
+  color: #aaa;
+}
+
+/* ================== Buttons ================== */
+button {
+  background-color: #3a3a3a;
+  color: #e0e0e0;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+button:hover {
+  background-color: #505050;
+}
+
+/* ================== Add Lead Form ================== */
+.add-lead-container {
+  margin: 16px 0;
+}
+
+.toggle-form-btn {
+  margin-bottom: 12px;
+}
+
+/* ================== Responsive ================== */
+@media (max-width: 768px) {
+  .main-panel {
+    margin-left: 0;
+    padding: 20px;
+  }
+
+  .sidebar {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    box-shadow: none;
+  }
+
+  .leads-grid {
+    grid-template-columns: 1fr;
+  }
+}
