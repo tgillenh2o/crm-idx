@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const auth = require("../middleware/auth"); // use auth consistently
+const verifyToken = require("../middleware/auth");
 const Lead = require("../models/Lead");
 
 // ================== GET LEADS ==================
