@@ -10,34 +10,50 @@ export default function AddLead({ onLeadAdded, currentUser, isAdmin = false, use
   const [assignedTo, setAssignedTo] = useState(isAdmin ? "" : currentUser.email);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          phone,
-          status,
-          assignedTo: isAdmin ? assignedTo : currentUser.email,
-        }),
-      });
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-      const newLead = await res.json();
-      onLeadAdded(newLead);
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        phone,
+        status,
+        assignedTo: isAdmin ? assignedTo : currentUser.email,
+      }),
+    });
 
-      // reset form
-      setName(""); setEmail(""); setPhone(""); setStatus("New"); setAssignedTo(isAdmin ? "" : currentUser.email);
-      setShowForm(false);
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
-  };
+    if (!res.ok) {
+      const err = await res.json();
+      console.error("❌ Lead create failed:", err);
+      alert(err.message || "Failed to create lead");
+      return;
+    }
+
+    const newLead = await res.json();
+    onLeadAdded(newLead);
+
+    // reset form
+    setName("");
+    setEmail("");
+    setPhone("");
+    setStatus("New");
+    setAssignedTo(isAdmin ? "" : currentUser.email);
+    setShowForm(false);
+  } catch (err) {
+    console.error("🔥 Network error:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="add-lead-container">
