@@ -22,6 +22,7 @@ router.get("/", auth, async (req, res) => {
 });
 
 // ================== POST NEW LEAD ==================
+// ================== POST NEW LEAD ==================
 router.post("/", auth, async (req, res) => {
   try {
     const { name, email, phone, status, assignedTo: requestedAssignedTo } = req.body;
@@ -56,6 +57,7 @@ router.post("/", auth, async (req, res) => {
     res.status(500).json({ message: "Failed to add lead" });
   }
 });
+
 
 
 
