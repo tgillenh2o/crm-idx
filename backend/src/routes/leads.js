@@ -20,7 +20,6 @@ router.get("/", verifyToken, async (req, res) => {
 
 // ================== POST NEW LEAD ==================
 router.post("/", verifyToken, async (req, res) => {
-router.post("/", verifyToken, async (req, res) => {
   console.log("🔥 POST /leads HIT");
   console.log("USER:", req.user);
   console.log("BODY:", req.body);
@@ -41,7 +40,10 @@ router.post("/", verifyToken, async (req, res) => {
     // Assign lead
     let assignedToFinal;
     if (req.user.role === "teamAdmin") {
-      assignedToFinal = requestedAssignedTo && requestedAssignedTo.trim() !== "" ? requestedAssignedTo : "POND";
+      assignedToFinal =
+        requestedAssignedTo && requestedAssignedTo.trim() !== ""
+          ? requestedAssignedTo
+          : req.user.email; // fallback to admin
     } else {
       assignedToFinal = req.user.email;
     }
