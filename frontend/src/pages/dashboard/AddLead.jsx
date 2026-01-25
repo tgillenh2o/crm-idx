@@ -12,8 +12,11 @@ export default function AddLead({ onLeadAdded, currentUser }) {
   const handleAddLead = async (e) => {
     e.preventDefault();
 
-    // Only send assignedTo for admin override in future, otherwise backend handles it
-    const leadToAdd = { ...newLead };
+    // ALWAYS include assignedTo in the POST body
+    const leadToAdd = { 
+      ...newLead, 
+      assignedTo: currentUser?.email || "POND" 
+    };
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
@@ -68,24 +71,4 @@ export default function AddLead({ onLeadAdded, currentUser }) {
           <input
             type="text"
             placeholder="Phone"
-            value={newLead.phone}
-            onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
-            required
-          />
-          <select
-            value={newLead.status}
-            onChange={(e) => setNewLead({ ...newLead, status: e.target.value })}
-          >
-            <option value="New">New</option>
-            <option value="Follow-up">Follow-up</option>
-            <option value="Contacted">Contacted</option>
-            <option value="Closed">Closed</option>
-          </select>
-          <button type="submit" className="submit-lead-btn">
-            Add Lead
-          </button>
-        </form>
-      )}
-    </div>
-  );
-}
+            value
