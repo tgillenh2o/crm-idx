@@ -26,9 +26,11 @@ router.post("/", auth, async (req, res) => {
   try {
     const { name, email, phone, assignedTo, status } = req.body;
 
-    // Members cannot assign to others
+    // 👇 THIS IS THE LEAD POND LOGIC
     const assignedEmail =
-      req.user.role === "teamAdmin" ? assignedTo : req.user.email;
+      req.user.role === "teamAdmin"
+        ? assignedTo || "POND"
+        : req.user.email;
 
     const newLead = new Lead({
       name,
@@ -45,6 +47,7 @@ router.post("/", auth, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 // ================== PATCH LEAD (Status update) ==================
 router.patch("/:id", auth, async (req, res) => {

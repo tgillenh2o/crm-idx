@@ -11,6 +11,9 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   // Add Lead Form State
+  const [users, setUsers] = useState([]);
+const [assignedTo, setAssignedTo] = useState("POND");
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [newLead, setNewLead] = useState({
     name: "",
@@ -22,6 +25,23 @@ export default function AdminDashboard() {
 
   // Fetch all leads
   useEffect(() => {
+useEffect(() => {
+  if (user?.role !== "teamAdmin") return;
+
+  const fetchUsers = async () => {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    const data = await res.json();
+    setUsers(data);
+  };
+
+  fetchUsers();
+}, [user]);
+
     const fetchLeads = async () => {
       setLoading(true);
       try {
@@ -52,6 +72,17 @@ export default function AdminDashboard() {
   // Add new lead
   const handleAddLead = async (e) => {
     e.preventDefault();
+{user?.role === "teamAdmin" && (
+  <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
+    <option value="POND">Lead Pond</option>
+    {users.map((u) => (
+      <option key={u.email} value={u.email}>
+        {u.name}
+      </option>
+    ))}
+  </select>
+)}
+
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {

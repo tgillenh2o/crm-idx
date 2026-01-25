@@ -18,6 +18,7 @@ router.post("/register", async (req, res) => {
 
     // Default role if not provided
     const newUser = new User({
+      name,
       email,
       password: hashedPassword,
       role: role || "teamMember",

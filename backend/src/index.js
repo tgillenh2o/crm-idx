@@ -29,6 +29,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /* ================== ROUTES ================== */
+app.use("/api/users", require("./routes/users"));
+
 
 // Leads
 app.use("/api/leads", leadRoutes);
