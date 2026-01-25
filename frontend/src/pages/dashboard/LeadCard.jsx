@@ -102,25 +102,28 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
 
         {showInteractions && (
           <div className="interactions">
-            {interactions.length === 0 ? <p>No interactions yet</p> :
-              interactions.map((i, idx) => (
-                <div key={idx} className="interaction-item">
-                  <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on {new Date(i.date).toLocaleString()}<br />
-                  {i.note}
-                </div>
-              ))
-            )}
-            <div className="interaction-form">
-              <select value={interactionType} onChange={(e) => setInteractionType(e.target.value)}>
-                <option value="call">Call</option>
-                <option value="email">Email</option>
-                <option value="meeting">Meeting</option>
-                <option value="note">Note</option>
-              </select>
-              <input type="text" placeholder="Add note..." value={interactionNote} onChange={(e) => setInteractionNote(e.target.value)} />
-              <button onClick={handleInteraction}>Add</button>
-            </div>
-          </div>
+           {interactions.length === 0 ? (
+  <p>No interactions yet</p>
+) : (
+  interactions.map((i, idx) => (
+    <div key={idx} className="interaction-item">
+      <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on {new Date(i.date).toLocaleString()}<br />
+      {i.note}
+    </div>
+  ))
+)}
+
+<div className="interaction-form">
+  <select value={interactionType} onChange={(e) => setInteractionType(e.target.value)}>
+    <option value="call">Call</option>
+    <option value="email">Email</option>
+    <option value="meeting">Meeting</option>
+    <option value="note">Note</option>
+  </select>
+  <input type="text" placeholder="Add note..." value={interactionNote} onChange={(e) => setInteractionNote(e.target.value)} />
+  <button onClick={handleInteraction}>Add</button>
+</div>
+
         )}
       </div>
     </div>
