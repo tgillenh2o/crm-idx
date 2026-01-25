@@ -7,14 +7,12 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
   const [interactionNote, setInteractionNote] = useState("");
   const [interactions, setInteractions] = useState(lead.interactions || []);
 
-  // Display name for assignedTo
   const assignedToName = (() => {
     if (!lead.assignedTo || lead.assignedTo === "UNASSIGNED") return "Unassigned";
     if (lead.assignedTo === "POND") return "Lead Pond";
     return lead.assignedTo;
   })();
 
-  // Handle status change
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
@@ -29,32 +27,24 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
       });
       const updated = await res.json();
       setStatus(updated.status);
-    } catch (err) {
-      console.error("Failed to update status:", err);
-    }
+    } catch (err) { console.error("Failed to update status:", err); }
   };
 
-  // Handle interaction logging
   const handleInteraction = async () => {
     if (!interactionNote.trim()) return;
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ type: interactionType, note: interactionNote }),
-        }
-      );
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ type: interactionType, note: interactionNote }),
+      });
       const data = await res.json();
       setInteractions(data.interactions || []);
       setInteractionNote("");
-    } catch (err) {
-      console.error("Failed to log interaction:", err);
-    }
+    } catch (err) { console.error("Failed to log interaction:", err); }
   };
 
   return (
@@ -65,8 +55,7 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
         <p><strong>Phone:</strong> {lead.phone}</p>
         <p><strong>Assigned To:</strong> {assignedToName}</p>
 
-        <p>
-          <strong>Status:</strong>
+        <p className={`status-${status}`}><strong>Status:</strong> 
           <select value={status} onChange={handleStatusChange}>
             <option>New</option>
             <option>Contacted</option>
@@ -85,22 +74,16 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
             >
               <option value="">Unassigned</option>
               <option value="POND">Lead Pond</option>
-              {users.map((u) => (
-                <option key={u._id} value={u.email}>{u.name}</option>
-              ))}
+              {users.map(u => <option key={u._id} value={u.email}>{u.name}</option>)}
             </select>
           </p>
         )}
       </div>
 
-      {/* Delete Button */}
       {isAdmin && onDelete && (
-        <button className="delete-button" onClick={() => onDelete(lead._id)}>
-          Delete Lead
-        </button>
+        <button className="delete-button" onClick={() => onDelete(lead._id)}>Delete Lead</button>
       )}
 
-      {/* Interaction Logger */}
       <div className="interaction-form">
         <select value={interactionType} onChange={(e) => setInteractionType(e.target.value)}>
           <option value="call">Call</option>
@@ -108,30 +91,23 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
           <option value="meeting">Meeting</option>
           <option value="note">Note</option>
         </select>
-        <input
-          type="text"
-          placeholder="Add note..."
-          value={interactionNote}
-          onChange={(e) => setInteractionNote(e.target.value)}
-        />
+        <input type="text" placeholder="Add note..." value={interactionNote} onChange={(e) => setInteractionNote(e.target.value)} />
         <button onClick={handleInteraction}>Add Interaction</button>
       </div>
 
-      {/* Interaction History */}
+<div className={`lead-card ${isLeadPond ? "lead-pond" : ""}`}>
+
+
       <div className="interaction-history">
         <h4>Interaction History</h4>
-        {interactions.length === 0 ? (
-          <p>No interactions yet</p>
-        ) : (
+        {interactions.length === 0 ? <p>No interactions yet</p> :
           interactions.map((i, idx) => (
             <div key={idx} className="interaction-item">
-              <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on{" "}
-              {new Date(i.date).toLocaleString()}
-              <br />
+              <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on {new Date(i.date).toLocaleString()}<br />
               {i.note}
             </div>
           ))
-        )}
+        }
       </div>
     </div>
   );

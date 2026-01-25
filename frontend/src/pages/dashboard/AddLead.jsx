@@ -10,50 +10,33 @@ export default function AddLead({ onLeadAdded, currentUser, isAdmin = false, use
   const [assignedTo, setAssignedTo] = useState(isAdmin ? "" : currentUser.email);
   const [loading, setLoading] = useState(false);
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          status,
+          assignedTo: isAdmin ? assignedTo : currentUser.email,
+        }),
+      });
 
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify({
-        name,
-        email,
-        phone,
-        status,
-        assignedTo: isAdmin ? assignedTo : currentUser.email,
-      }),
-    });
+      const newLead = await res.json();
+      onLeadAdded(newLead);
 
-    if (!res.ok) {
-      const err = await res.json();
-      console.error("❌ Lead create failed:", err);
-      alert(err.message || "Failed to create lead");
-      return;
-    }
-
-    const newLead = await res.json();
-    onLeadAdded(newLead);
-
-    // reset form
-    setName("");
-    setEmail("");
-    setPhone("");
-    setStatus("New");
-    setAssignedTo(isAdmin ? "" : currentUser.email);
-    setShowForm(false);
-  } catch (err) {
-    console.error("🔥 Network error:", err);
-  } finally {
-    setLoading(false);
-  }
-};
-
+      setName(""); setEmail(""); setPhone(""); setStatus("New"); setAssignedTo(isAdmin ? "" : currentUser.email);
+      setShowForm(false);
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
+  };
 
   return (
     <div className="add-lead-container">
@@ -80,6 +63,7 @@ const handleSubmit = async (e) => {
             {isAdmin && users.length > 0 && (
               <select value={assignedTo} onChange={e => setAssignedTo(e.target.value)}>
                 <option value="">Unassigned</option>
+                <option value="POND">Lead Pond</option>
                 {users.map(u => <option key={u._id} value={u.email}>{u.name}</option>)}
               </select>
             )}
