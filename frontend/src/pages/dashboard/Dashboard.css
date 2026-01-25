@@ -38,17 +38,46 @@ body, .dashboard, .main-panel {
 
 /* ========== Lead Card ========== */
 .lead-card {
-  background-color: #1e1e1e;
-  border: 1px solid #333;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-  transition: all 0.2s;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
 }
 
 .lead-card:hover {
   box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+}
+
+.lead-card.lead-pond {
+  border-left: 5px solid #f59e0b;
+}
+
+.lead-info p {
+  margin: 6px 0;
+}
+
+.status-New select { border-color: #3b82f6; }
+.status-Contacted select { border-color: #f59e0b; }
+.status-Closed select { border-color: #10b981; }
+
+.interaction-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.interaction-form input,
+.interaction-form select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+}
+
+.interaction-history {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
 }
 
 /* Status Colors */
@@ -95,4 +124,48 @@ button:hover { background-color: #505050; }
   border: 2px solid #64b5f6;
   background-color: #1a2332;
 }
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  height: 100vh;
+  background: #0f172a; /* deep slate */
+  color: #e5e7eb;
+  padding: 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.sidebar h2 {
+  font-size: 18px;
+  margin-bottom: 30px;
+  color: #fff;
+}
+
+.sidebar a {
+  display: block;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  color: #cbd5f5;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.sidebar a:hover {
+  background: #1e293b;
+  color: #fff;
+}
+
+.sidebar a.active {
+  background: #2563eb;
+  color: #fff;
+}
+.dashboard-container {
+  margin-left: 240px; /* MUST match sidebar width */
+  padding: 30px;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
 

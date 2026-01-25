@@ -8,10 +8,22 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
   const [interactions, setInteractions] = useState(lead.interactions || []);
 
   const assignedToName = (() => {
-    if (!lead.assignedTo || lead.assignedTo === "UNASSIGNED") return "Unassigned";
-    if (lead.assignedTo === "POND") return "Lead Pond";
-    return lead.assignedTo;
-  })();
+  if (!lead.assignedTo || lead.assignedTo === "UNASSIGNED") {
+    return "Unassigned";
+  }
+
+  if (lead.assignedTo === "POND") {
+    return "Lead Pond";
+  }
+
+  // If assignedTo is an email, display nicely
+  if (lead.assignedTo.includes("@")) {
+    return lead.assignedTo.split("@")[0];
+  }
+
+  return lead.assignedTo;
+})();
+
 
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
@@ -72,7 +84,7 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
           <p>
             <strong>Reassign:</strong>
             <select
-              value={lead.assignedTo === "UNASSIGNED" ? "" : lead.assignedTo || ""}
+              value={lead.assignedTo || ""}
               onChange={(e) => onAssign(lead._id, e.target.value)}
             >
               <option value="">Unassigned</option>
