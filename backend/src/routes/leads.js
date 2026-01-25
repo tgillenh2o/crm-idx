@@ -23,17 +23,20 @@ router.get("/", auth, async (req, res) => {
 
 // ================== POST NEW LEAD ==================
 // ================== POST NEW LEAD ==================
+
 router.post("/", auth, async (req, res) => {
   try {
-    const { name, email, phone, status, assignedTo } = req.body;
+    const { name, email, phone, status } = req.body;
 
     if (!name || !email || !phone) {
       return res.status(400).json({ message: "Missing required lead info" });
     }
 
-    // If user is a member, assign lead to themselves; otherwise admin can assign or default to POND
+    // Assign lead to the user if member, or allow admin to choose assignedTo
     const assignedEmail =
-      req.user.role === "teamMember" ? req.user.email : assignedTo || "POND";
+      req.user.role === "teamAdmin"
+        ? req.body.assignedTo || "POND"
+        : req.user.email;
 
     const lead = new Lead({
       name,
