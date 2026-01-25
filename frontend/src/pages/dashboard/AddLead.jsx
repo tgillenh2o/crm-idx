@@ -6,7 +6,7 @@ export default function AddLead({ onLeadAdded, members = [], currentUser, isAdmi
     name: "",
     email: "",
     phone: "",
-    assignedTo: isAdmin ? "" : currentUser.email,
+    assignedTo: newLead.assignedTo || "POND",
     status: "New",
   });
 

@@ -24,27 +24,35 @@ router.get("/", auth, async (req, res) => {
 // ================== POST NEW LEAD ==================
 router.post("/", auth, async (req, res) => {
   try {
-    const { name, email, phone, assignedTo, status } = req.body;
+    const { name, email, phone, status, assignedTo } = req.body;
 
-    // 👇 THIS IS THE LEAD POND LOGIC
+    if (!name || !email || !phone) {
+      return res.status(400).json({ message: "Missing required lead info" });
+    }
+
+    const lead = new Lead({
+      name,
+      email,
+      phone,
+      status: status || "New",
+      assignedTo: assignedTo || "POND", // default to Lead Pond if missing
+      interactions: [],
+    });
+
+    const savedLead = await lead.save();
+    res.status(201).json(savedLead);
+  } catch (err) {
+    console.error("Add lead error:", err);
+    res.status(500).json({ message: "Failed to add lead" });
+  }
+});
+
+
+// 👇 THIS IS THE LEAD POND LOGIC
     const assignedEmail =
       req.user.role === "teamAdmin"
         ? assignedTo || "POND"
         : req.user.email;
-
-    const newLead = new Lead({
-      name,
-      email,
-      phone,
-      assignedTo: assignedEmail,
-      status: status || "New",
-    });
-
-    await newLead.save();
-    res.status(201).json(newLead);
-  } catch (err) {
-    console.error("POST lead error:", err);
-    res.status(500).json({ message: "Server error" });
   }
 });
 
