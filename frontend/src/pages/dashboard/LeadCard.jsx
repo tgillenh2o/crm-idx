@@ -81,7 +81,7 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
           </select>
         </p>
 
-  {isAdmin && onAssign && (
+ {isAdmin && onAssign && users.length > 0 && (
   <p>
     <strong>Reassign:</strong>
     <select
@@ -98,6 +98,7 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
     </select>
   </p>
 )}
+
 
 
       </div>
