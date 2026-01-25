@@ -7,7 +7,7 @@ const User = require("../models/User"); // path to your User model
 // -------------------- REGISTER --------------------
 router.post("/register", async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { name, email, password, role } = req.body;
 
     // Check if user exists
     const existingUser = await User.findOne({ email });
@@ -16,7 +16,7 @@ router.post("/register", async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Default role if not provided
+    // Create new user
     const newUser = new User({
       name,
       email,
@@ -26,12 +26,24 @@ router.post("/register", async (req, res) => {
 
     await newUser.save();
 
+    // ✅ Return user info and name in one response
     return res.status(201).json({
-      user: { email: newUser.email, role: newUser.role },
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+      },
     });
+
   } catch (err) {
     console.error("Register error:", err);
     return res.status(500).json({ msg: "Server error" });
+  }
+});
+
+});
+
   }
 });
 
@@ -40,22 +52,27 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Find user
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
+    // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
+    // Create JWT (optional: include name if needed in token)
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
+    // Return token + full user info
     res.json({
       token,
       user: {
         id: user._id,
+        name: user.name,      // ✅ Add name
         email: user.email,
         role: user.role,
       },
