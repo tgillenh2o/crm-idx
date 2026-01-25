@@ -45,6 +45,9 @@ body {
   top: 0;
   left: 0;
   border-right: 1px solid var(--border-subtle);
+  box-sizing: border-box;
+  z-index: 100;
+
 }
 
 .sidebar h2 {
@@ -241,3 +244,34 @@ button:hover {
   padding: 16px;
   margin-bottom: 20px;
 }
+/* ====== FORCE DASHBOARD LAYOUT FIX ====== */
+.dashboard,
+.main-panel,
+.dashboard-container {
+  margin-left: 240px !important;
+  padding: 28px !important;
+  min-height: 100vh;
+  background: #0b0f19;
+}
+/* ====== FORCE DARK FORMS ====== */
+.add-lead-form,
+.add-lead-container {
+  background: #111827 !important;
+  border: 1px solid #2d3748;
+  border-radius: 14px;
+  padding: 16px;
+  color: #f9fafb;
+}
+
+.add-lead-form input,
+.add-lead-form select,
+.add-lead-form textarea {
+  background: #0b1220 !important;
+  color: #f9fafb !important;
+  border: 1px solid #2d3748 !important;
+}
+
+.add-lead-form input::placeholder {
+  color: #94a3b8;
+}
+
