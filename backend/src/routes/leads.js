@@ -3,7 +3,7 @@ const router = express.Router();
 const verifyToken = require("../middleware/auth");
 const Lead = require("../models/Lead");
 
-// ================== GET LEADS ==================
+/* ================== GET LEADS ================== */
 router.get("/", verifyToken, async (req, res) => {
   try {
     const leads =
@@ -18,39 +18,34 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-// ================== POST NEW LEAD ==================
+/* ================== POST NEW LEAD ================== */
 router.post("/", verifyToken, async (req, res) => {
-  console.log("🔥 POST /leads HIT");
+  console.log("🔥 POST /api/leads HIT");
   console.log("USER:", req.user);
   console.log("BODY:", req.body);
 
   try {
-    const { name, email, phone, status, assignedTo: requestedAssignedTo } = req.body;
+    const { name, email, phone, status, assignedTo } = req.body;
 
     if (!name || !email || !phone) {
       return res.status(400).json({ message: "Missing required lead info" });
     }
 
-    // Prevent duplicate leads by email
-    const existingLead = await Lead.findOne({ email: email.trim().toLowerCase() });
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const existingLead = await Lead.findOne({ email: normalizedEmail });
     if (existingLead) {
-      return res.status(400).json({ message: "Lead with this email already exists" });
+      return res.status(400).json({ message: "Lead already exists" });
     }
 
-    // Assign lead
-    let assignedToFinal;
-    if (req.user.role === "teamAdmin") {
-      assignedToFinal =
-        requestedAssignedTo && requestedAssignedTo.trim() !== ""
-          ? requestedAssignedTo
-          : req.user.email; // fallback to admin
-    } else {
-      assignedToFinal = req.user.email;
-    }
+    let assignedToFinal =
+      req.user.role === "teamAdmin"
+        ? assignedTo?.trim() || "POND"
+        : req.user.email;
 
     const lead = new Lead({
       name: name.trim(),
-      email: email.trim().toLowerCase(),
+      email: normalizedEmail,
       phone: phone.trim(),
       status: status || "New",
       assignedTo: assignedToFinal,
@@ -58,14 +53,17 @@ router.post("/", verifyToken, async (req, res) => {
     });
 
     const savedLead = await lead.save();
+
+    console.log("✅ LEAD SAVED:", savedLead);
+
     res.status(201).json(savedLead);
   } catch (err) {
-    console.error("Add lead error:", err);
+    console.error("POST lead error:", err);
     res.status(500).json({ message: "Failed to add lead" });
   }
 });
 
-// ================== PATCH LEAD (Status update) ==================
+/* ================== PATCH LEAD ================== */
 router.patch("/:id", verifyToken, async (req, res) => {
   try {
     const lead = await Lead.findById(req.params.id);
@@ -76,6 +74,7 @@ router.patch("/:id", verifyToken, async (req, res) => {
     }
 
     if (req.body.status) lead.status = req.body.status;
+
     await lead.save();
     res.json(lead);
   } catch (err) {
@@ -84,44 +83,17 @@ router.patch("/:id", verifyToken, async (req, res) => {
   }
 });
 
-// ================== DELETE LEAD (Admin only) ==================
+/* ================== DELETE LEAD ================== */
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
-    if (req.user.role !== "teamAdmin") return res.status(403).json({ message: "Forbidden" });
-
-    const lead = await Lead.findById(req.params.id);
-    if (!lead) return res.status(404).json({ message: "Lead not found" });
+    if (req.user.role !== "teamAdmin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
 
     await Lead.findByIdAndDelete(req.params.id);
     res.json({ success: true });
   } catch (err) {
     console.error("DELETE lead error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// ================== POST INTERACTION ==================
-router.post("/:id/interactions", verifyToken, async (req, res) => {
-  try {
-    const { type, note } = req.body;
-    const lead = await Lead.findById(req.params.id);
-    if (!lead) return res.status(404).json({ message: "Lead not found" });
-
-    if (req.user.role !== "teamAdmin" && lead.assignedTo !== req.user.email) {
-      return res.status(403).json({ message: "Forbidden" });
-    }
-
-    lead.interactions.push({
-      type,
-      note,
-      createdBy: req.user.email,
-      date: new Date(),
-    });
-
-    await lead.save();
-    res.json(lead);
-  } catch (err) {
-    console.error("Add interaction error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
