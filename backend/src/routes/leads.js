@@ -109,7 +109,7 @@ router.post("/:id/interactions", verifyToken, async (req, res) => {
 });
 
 module.exports = router;
-const express = require("express");
+
 const router = express.Router();
 const { verifyToken } = require("../middleware/auth");
 const Lead = require("../models/Lead");
