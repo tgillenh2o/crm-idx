@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { verifyToken } = require("../middleware/auth");
+const auth = require("../middleware/auth"); // use auth consistently
 const Lead = require("../models/Lead");
 
-// GET leads
-router.get("/", verifyToken, async (req, res) => {
+// ================== GET LEADS ==================
+router.get("/", auth, async (req, res) => {
   try {
     const leads =
       req.user.role === "teamAdmin"
@@ -18,7 +18,7 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-// POST new lead
+// ================== POST NEW LEAD ==================
 router.post("/", auth, async (req, res) => {
   try {
     const { name, email, phone, status, assignedTo: requestedAssignedTo } = req.body;
@@ -27,18 +27,18 @@ router.post("/", auth, async (req, res) => {
       return res.status(400).json({ message: "Missing required lead info" });
     }
 
-    // Prevent duplicate by email
+    // Prevent duplicate leads by email
     const existingLead = await Lead.findOne({ email: email.trim().toLowerCase() });
     if (existingLead) {
       return res.status(400).json({ message: "Lead with this email already exists" });
     }
 
-    // Determine who the lead should be assigned to
+    // Assign lead
     let assignedToFinal;
     if (req.user.role === "teamAdmin") {
       assignedToFinal = requestedAssignedTo && requestedAssignedTo.trim() !== "" ? requestedAssignedTo : "POND";
     } else {
-      assignedToFinal = req.user.email; // member always gets the lead
+      assignedToFinal = req.user.email;
     }
 
     const lead = new Lead({
@@ -58,8 +58,8 @@ router.post("/", auth, async (req, res) => {
   }
 });
 
-// PATCH lead
-router.patch("/:id", verifyToken, async (req, res) => {
+// ================== PATCH LEAD (Status update) ==================
+router.patch("/:id", auth, async (req, res) => {
   try {
     const lead = await Lead.findById(req.params.id);
     if (!lead) return res.status(404).json({ message: "Lead not found" });
@@ -77,8 +77,8 @@ router.patch("/:id", verifyToken, async (req, res) => {
   }
 });
 
-// DELETE lead (admin only)
-router.delete("/:id", verifyToken, async (req, res) => {
+// ================== DELETE LEAD (Admin only) ==================
+router.delete("/:id", auth, async (req, res) => {
   try {
     if (req.user.role !== "teamAdmin") return res.status(403).json({ message: "Forbidden" });
 
@@ -93,8 +93,8 @@ router.delete("/:id", verifyToken, async (req, res) => {
   }
 });
 
-// POST interaction
-router.post("/:id/interactions", verifyToken, async (req, res) => {
+// ================== POST INTERACTION ==================
+router.post("/:id/interactions", auth, async (req, res) => {
   try {
     const { type, note } = req.body;
     const lead = await Lead.findById(req.params.id);

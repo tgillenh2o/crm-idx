@@ -7,14 +7,16 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
   const [interactionNote, setInteractionNote] = useState("");
   const [interactions, setInteractions] = useState(lead.interactions || []);
 
-  const assignedToName = lead.assignedTo
-    ? typeof lead.assignedTo === "string"
-      ? lead.assignedTo === "POND"
-        ? "Lead Pond"
-        : lead.assignedTo
-      : lead.assignedTo.name || lead.assignedTo.email || "Unassigned"
-    : "Unassigned";
+  // Determine display name for "Assigned To"
+  const assignedToName = (() => {
+    if (!lead.assignedTo || lead.assignedTo === "UNASSIGNED") return "Unassigned";
+    if (typeof lead.assignedTo === "string") {
+      return lead.assignedTo === "POND" ? "Lead Pond" : lead.assignedTo;
+    }
+    return lead.assignedTo.name || lead.assignedTo.email || "Unassigned";
+  })();
 
+  // Handle status change
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
@@ -28,11 +30,14 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
         body: JSON.stringify({ status: newStatus }),
       });
     } catch (err) {
-      console.error(err);
+      console.error("Failed to update status:", err);
     }
   };
 
+  // Handle interaction logging
   const logInteraction = async () => {
+    if (!interactionNote.trim()) return;
+
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`,
@@ -42,14 +47,11 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify({
-            type: interactionType,
-            note: interactionNote,
-          }),
+          body: JSON.stringify({ type: interactionType, note: interactionNote }),
         }
       );
       const data = await res.json();
-      setInteractions(data.interactions);
+      setInteractions(data.interactions || []);
       setInteractionNote("");
     } catch (err) {
       console.error("Failed to log interaction:", err);
@@ -74,14 +76,20 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
           </select>
         </p>
 
+        {/* Admin Reassign Dropdown */}
         {isAdmin && users.length > 0 && onAssign && (
           <p>
             <strong>Reassign:</strong>{" "}
             <select
-              value={typeof lead.assignedTo === "string" ? lead.assignedTo : lead.assignedTo?.email || ""}
+              value={
+                typeof lead.assignedTo === "string"
+                  ? lead.assignedTo === "UNASSIGNED" ? "" : lead.assignedTo
+                  : lead.assignedTo?.email || ""
+              }
               onChange={(e) => onAssign(lead._id, e.target.value)}
             >
               <option value="">Unassigned</option>
+              <option value="POND">Lead Pond</option>
               {users.map((u) => (
                 <option key={u._id} value={u.email}>{u.name}</option>
               ))}
@@ -90,6 +98,7 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
         )}
       </div>
 
+      {/* Delete Button */}
       {isAdmin && onDelete && (
         <button onClick={() => onDelete(lead._id)} className="delete-button">
           Delete Lead
@@ -98,10 +107,7 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
 
       {/* Interaction Logger */}
       <div className="interaction-form">
-        <select
-          value={interactionType}
-          onChange={(e) => setInteractionType(e.target.value)}
-        >
+        <select value={interactionType} onChange={(e) => setInteractionType(e.target.value)}>
           <option value="call">Call</option>
           <option value="email">Email</option>
           <option value="meeting">Meeting</option>
@@ -119,13 +125,18 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
       {/* Interaction History */}
       <div className="interaction-history">
         <h4>Interaction History</h4>
-        {interactions.map((i, idx) => (
-          <div key={idx} className="interaction-item">
-            <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on {new Date(i.date).toLocaleString()}
-            <br />
-            {i.note}
-          </div>
-        ))}
+        {interactions.length === 0 ? (
+          <p>No interactions logged yet.</p>
+        ) : (
+          interactions.map((i, idx) => (
+            <div key={idx} className="interaction-item">
+              <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on{" "}
+              {new Date(i.date).toLocaleString()}
+              <br />
+              {i.note}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
