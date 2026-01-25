@@ -71,4 +71,24 @@ export default function AddLead({ onLeadAdded, currentUser }) {
           <input
             type="text"
             placeholder="Phone"
-            value
+            value={newLead.phone}
+            onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
+            required
+          />
+          <select
+            value={newLead.status}
+            onChange={(e) => setNewLead({ ...newLead, status: e.target.value })}
+          >
+            <option value="New">New</option>
+            <option value="Follow-up">Follow-up</option>
+            <option value="Contacted">Contacted</option>
+            <option value="Closed">Closed</option>
+          </select>
+          <button type="submit" className="submit-lead-btn">
+            Add Lead
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
