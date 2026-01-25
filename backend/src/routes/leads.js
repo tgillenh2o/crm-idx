@@ -19,9 +19,7 @@ router.get("/", verifyToken, async (req, res) => {
 });
 
 // POST new lead
-router.post("/", verifyToken, async (req, res) => {
-console.log("POST /leads req.user:", req.user); // ✅ inside route handler
-
+router.post("/", auth, async (req, res) => {
   try {
     const { name, email, phone, status, assignedTo: requestedAssignedTo } = req.body;
 
@@ -29,24 +27,22 @@ console.log("POST /leads req.user:", req.user); // ✅ inside route handler
       return res.status(400).json({ message: "Missing required lead info" });
     }
 
-    // Prevent duplicates by email
+    // Prevent duplicate by email
     const existingLead = await Lead.findOne({ email: email.trim().toLowerCase() });
     if (existingLead) {
       return res.status(400).json({ message: "Lead with this email already exists" });
     }
 
+    // Determine who the lead should be assigned to
     let assignedToFinal;
-
-    if (req.user && req.user.role === "teamAdmin") {
+    if (req.user.role === "teamAdmin") {
       assignedToFinal = requestedAssignedTo && requestedAssignedTo.trim() !== "" ? requestedAssignedTo : "POND";
-    } else if (req.user && req.user.email) {
-      assignedToFinal = req.user.email;
     } else {
-      assignedToFinal = "UNASSIGNED";
+      assignedToFinal = req.user.email; // member always gets the lead
     }
 
     const lead = new Lead({
-      name,
+      name: name.trim(),
       email: email.trim().toLowerCase(),
       phone: phone.trim(),
       status: status || "New",

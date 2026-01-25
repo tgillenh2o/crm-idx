@@ -1,10 +1,9 @@
 const jwt = require("jsonwebtoken");
 
-function verifyToken(req, res, next) {
+module.exports = function (req, res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    req.user = null;
     return res.status(401).json({ message: "No token provided" });
   }
 
@@ -13,18 +12,20 @@ function verifyToken(req, res, next) {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    // Ensure email is always set
+    if (!decoded.email) {
+      return res.status(401).json({ message: "Token missing email" });
+    }
+
     req.user = {
       id: decoded.id || null,
-      email: decoded.email || null,
+      email: decoded.email,
       role: decoded.role || "teamMember",
     };
 
     next();
   } catch (err) {
     console.error("JWT ERROR:", err.message);
-    req.user = null;
     return res.status(401).json({ message: "Invalid token" });
   }
-}
-
-module.exports = { verifyToken };
+};
