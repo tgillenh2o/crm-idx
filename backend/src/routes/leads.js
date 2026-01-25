@@ -22,33 +22,35 @@ router.get("/", auth, async (req, res) => {
 });
 
 // ================== POST NEW LEAD ==================
-
 router.post("/", auth, async (req, res) => {
   try {
-    const { name, email, phone, status, assignedTo } = req.body;
+    const { name, email, phone, status, assignedTo: requestedAssignedTo } = req.body;
 
+    // Validate required fields
     if (!name || !email || !phone) {
       return res.status(400).json({ message: "Missing required lead info" });
     }
 
-    // Determine who the lead is assigned to
-    let assignedEmail;
+    // Determine who the lead should be assigned to
+    let assignedToFinal;
     if (req.user.role === "teamAdmin") {
-      assignedEmail = assignedTo || "POND"; // Admin can assign or default to Pond
+      // Admin can assign to someone or default to "POND"
+      assignedToFinal = requestedAssignedTo || "POND";
     } else {
-      assignedEmail = req.user.email; // Member always assigned to themselves
+      // Members always assigned to themselves
+      assignedToFinal = req.user.email;
     }
 
-    const lead = new Lead({
+    const newLead = new Lead({
       name,
       email,
       phone,
       status: status || "New",
-      assignedTo: assignedEmail,
+      assignedTo: assignedToFinal,
       interactions: [],
     });
 
-    const savedLead = await lead.save();
+    const savedLead = await newLead.save();
     res.status(201).json(savedLead);
   } catch (err) {
     console.error("Add lead error:", err);
