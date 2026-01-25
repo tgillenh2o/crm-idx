@@ -81,7 +81,7 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
           </select>
         </p>
 
- {isAdmin && onAssign && users.length > 0 && (
+ {isAdmin && onAssign && (
   <p>
     <strong>Reassign:</strong>
     <select
@@ -95,9 +95,14 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
           {u.name} {u.role === "teamAdmin" ? "(Admin)" : ""}
         </option>
       ))}
+      {/* Include yourself if not in users array */}
+      {!users.find(u => u.email === currentUser.email) && (
+        <option value={currentUser.email}>{currentUser.name} (You)</option>
+      )}
     </select>
   </p>
 )}
+
 
 
 
