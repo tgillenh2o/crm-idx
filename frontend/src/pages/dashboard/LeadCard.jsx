@@ -1,26 +1,32 @@
 import React, { useState } from "react";
 import "./Dashboard.css";
 
-export default function LeadCard({ lead, isAdmin = false, onDelete }) {
+export default function LeadCard({ lead, isAdmin = false, onDelete, users, onAssign }) {
   const [status, setStatus] = useState(lead.status || "New");
   const [interactionType, setInteractionType] = useState("call");
   const [interactionNote, setInteractionNote] = useState("");
   const [interactions, setInteractions] = useState(lead.interactions || []);
 
+  // Update status
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
 
-    await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify({ status: newStatus }),
-    });
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+    } catch (err) {
+      console.error("Failed to update status:", err);
+    }
   };
 
+  // Log interaction
   const logInteraction = async () => {
     try {
       const res = await fetch(
@@ -37,7 +43,6 @@ export default function LeadCard({ lead, isAdmin = false, onDelete }) {
           }),
         }
       );
-
       const data = await res.json();
       setInteractions(data.interactions);
       setInteractionNote("");
@@ -46,6 +51,15 @@ export default function LeadCard({ lead, isAdmin = false, onDelete }) {
     }
   };
 
+  // Safe Assigned To display
+  const assignedToName = lead.assignedTo
+    ? typeof lead.assignedTo === "string"
+      ? lead.assignedTo === "POND"
+        ? "Lead Pond"
+        : lead.assignedTo
+      : lead.assignedTo.name || "Unassigned"
+    : "Unassigned";
+
   return (
     <div className="lead-card">
       <div className="lead-info">
@@ -53,27 +67,44 @@ export default function LeadCard({ lead, isAdmin = false, onDelete }) {
         <p><strong>Email:</strong> {lead.email}</p>
         <p><strong>Phone:</strong> {lead.phone}</p>
 
-        <p>
-          <strong>Assigned To:</strong>{" "}
-          {lead.assignedTo === "POND" ? "Lead Pond" : lead.assignedTo}
-        </p>
+        <p><strong>Assigned To:</strong> {assignedToName}</p>
 
         <p>
           <strong>Status:</strong>{" "}
-          <select value={status} onChange={handleStatusChange}>
-            <option>New</option>
-            <option>Contacted</option>
-            <option>Follow-up</option>
-            <option>Closed</option>
-          </select>
+          {isAdmin ? (
+            <select value={status} onChange={handleStatusChange}>
+              <option>New</option>
+              <option>Contacted</option>
+              <option>Follow-up</option>
+              <option>Closed</option>
+            </select>
+          ) : (
+            <span className={`status-badge status-${status.replace(" ", "-")}`}>
+              {status}
+            </span>
+          )}
         </p>
+
+        {isAdmin && users && users.length > 0 && (
+          <p>
+            <strong>Reassign Lead:</strong>{" "}
+            <select
+              value={lead.assignedTo?.id || ""}
+              onChange={(e) => onAssign(lead._id, e.target.value)}
+            >
+              <option value="">Unassigned</option>
+              {users.map((u) => (
+                <option key={u._id} value={u._id}>
+                  {u.name}
+                </option>
+              ))}
+            </select>
+          </p>
+        )}
       </div>
 
       {isAdmin && onDelete && (
-        <button
-          onClick={() => onDelete(lead._id)}
-          className="delete-button"
-        >
+        <button className="delete-button" onClick={() => onDelete(lead._id)}>
           Delete Lead
         </button>
       )}
@@ -103,15 +134,19 @@ export default function LeadCard({ lead, isAdmin = false, onDelete }) {
       {/* Interaction History */}
       <div className="interaction-history">
         <h4>Interaction History</h4>
-        {interactions.map((i, idx) => (
-          <div key={idx} className="interaction-item">
-            <strong>{i.type}</strong>{" "}
-            {i.createdBy && <>by {i.createdBy}</>} on{" "}
-            {new Date(i.date).toLocaleString()}
-            <br />
-            {i.note}
-          </div>
-        ))}
+        {interactions.length > 0 ? (
+          interactions.map((i, idx) => (
+            <div key={idx} className="interaction-item">
+              <strong>{i.type}</strong>{" "}
+              {i.createdBy && <>by {i.createdBy}</>} on{" "}
+              {new Date(i.date).toLocaleString()}
+              <br />
+              {i.note}
+            </div>
+          ))
+        ) : (
+          <p>No interactions yet.</p>
+        )}
       </div>
     </div>
   );

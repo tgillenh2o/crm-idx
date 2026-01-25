@@ -9,46 +9,60 @@ import "./Dashboard.css";
 export default function AdminDashboard() {
   const { user } = useContext(AuthContext);
   const [leads, setLeads] = useState([]);
-  const [members, setMembers] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch leads
   const fetchLeads = async () => {
     setLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      if (!res.ok) throw new Error("Failed to fetch leads");
       const data = await res.json();
       setLeads(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Leads fetch error:", err);
+      console.error(err);
       setLeads([]);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
-  // Fetch members for dropdown
-  const fetchMembers = async () => {
+  const fetchUsers = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      if (!res.ok) throw new Error("Failed to fetch members");
       const data = await res.json();
-      setMembers(data);
+      setUsers(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Members fetch error:", err);
-      setMembers([]);
+      console.error(err);
+      setUsers([]);
     }
   };
 
-  useEffect(() => {
-    fetchLeads();
-    fetchMembers();
-  }, []);
+  useEffect(() => { fetchLeads(); fetchUsers(); }, []);
+
+  const handleDelete = async (leadId) => {
+    if (!window.confirm("Are you sure?")) return;
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, { method: "DELETE", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+      setLeads(leads.filter(l => l._id !== leadId));
+    } catch (err) { console.error(err); }
+  };
+
+  const handleAssign = async (leadId, userId) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({ userId })
+      });
+      const updatedLead = await res.json();
+      setLeads(prev => prev.map(l => l._id === leadId ? updatedLead : l));
+    } catch (err) { console.error(err); }
+  };
 
   return (
     <div className="dashboard">
@@ -56,39 +70,22 @@ export default function AdminDashboard() {
       <div className="main-panel">
         <Topbar />
 
-        {/* Stats */}
         <div className="stats-cards">
-          <div className="stat-card">
-            <p>Total Leads</p>
-            <h3>{leads.length}</h3>
-          </div>
-          <div className="stat-card">
-            <p>Follow-ups</p>
-            <h3>{leads.filter((l) => l.status === "Follow-up").length}</h3>
-          </div>
-          <div className="stat-card">
-            <p>Contacted</p>
-            <h3>{leads.filter((l) => l.status === "Contacted").length}</h3>
-          </div>
+          <div className="stat-card"><p>Total Leads</p><h3>{leads.length}</h3></div>
+          <div className="stat-card"><p>Follow-ups</p><h3>{leads.filter(l=>l.status==="Follow-up").length}</h3></div>
+          <div className="stat-card"><p>Contacted</p><h3>{leads.filter(l=>l.status==="Contacted").length}</h3></div>
         </div>
 
-        {/* Add Lead */}
-        <AddLead
-          onLeadAdded={(newLead) => setLeads([newLead, ...leads])}
-          currentUser={user}
-          members={members}
-          isAdmin={true}
-        />
+        <AddLead onLeadAdded={l=>setLeads([l,...leads])} currentUser={user} isAdmin={true} users={users} />
 
-        {/* Lead List */}
         <div className="main-content">
-          {loading ? (
-            <p>Loading leads...</p>
-          ) : leads.length > 0 ? (
-            leads.map((lead) => <LeadCard key={lead._id} lead={lead} isAdmin={true} onDelete={fetchLeads} />)
-          ) : (
-            <p>No leads yet.</p>
-          )}
+          {loading ? <p>Loading leads...</p> :
+            leads.length>0 ? <div className="leads-grid">
+              {leads.map(lead=>(
+                <LeadCard key={lead._id} lead={lead} isAdmin={true} onDelete={handleDelete} users={users} onAssign={handleAssign} />
+              ))}
+            </div> : <p>No leads found.</p>
+          }
         </div>
       </div>
     </div>
