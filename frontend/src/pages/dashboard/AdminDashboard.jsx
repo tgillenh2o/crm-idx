@@ -54,24 +54,40 @@ export default function AdminDashboard() {
     } catch (err) { console.error(err); }
   };
 
-  const handleAssign = async (leadId, assignedTo) => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`, {
+const handleAssign = async (leadId, userId) => {
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`,
+      {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ assignedTo })
-      });
-      const updatedLead = await res.json();
-      setLeads(prev => prev.map(l => l._id === leadId ? updatedLead : l));
-    } catch (err) { console.error(err); }
-  };
+        body: JSON.stringify({ userId }),
+      }
+    );
+
+    const updatedLead = await res.json();
+
+    setLeads(prev =>
+      prev.map(l => (l._id === leadId ? updatedLead : l))
+    );
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 
   // Separate Lead Pond leads
-  const leadPondLeads = leads.filter(l => l.assignedTo === "POND" || !l.assignedTo || l.assignedTo === "UNASSIGNED");
-  const otherLeads = leads.filter(l => !leadPondLeads.includes(l));
+const leadPondLeads = leads.filter(
+  l => !l.assignedTo
+);
+
+const otherLeads = leads.filter(
+  l => l.assignedTo
+);
+
 
   return (
     <div className="dashboard">

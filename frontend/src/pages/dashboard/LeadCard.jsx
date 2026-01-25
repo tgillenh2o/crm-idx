@@ -85,7 +85,7 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
             <strong>Reassign:</strong>
             <select
               value={lead.assignedTo || ""}
-              onChange={(e) => onAssign(lead._id, e.target.value)}
+              onChange={(e) => onAssign(lead.Id, user._id)}
             >
               <option value="">Unassigned</option>
               <option value="POND">Lead Pond</option>
