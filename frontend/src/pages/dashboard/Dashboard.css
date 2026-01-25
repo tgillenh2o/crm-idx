@@ -259,3 +259,8 @@ button:hover {
   font-size: 14px;
   color: var(--text-secondary);
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
