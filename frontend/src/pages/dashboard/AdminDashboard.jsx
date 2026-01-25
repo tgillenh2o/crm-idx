@@ -44,20 +44,23 @@ export default function AdminDashboard() {
   const handleDelete = async (leadId) => {
     if (!window.confirm("Are you sure?")) return;
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, { method: "DELETE", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+      await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
       setLeads(leads.filter(l => l._id !== leadId));
     } catch (err) { console.error(err); }
   };
 
-  const handleAssign = async (leadId, userId) => {
+  const handleAssign = async (leadId, userEmail) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ userId })
+        body: JSON.stringify({ assignedTo: userEmail || "UNASSIGNED" }),
       });
       const updatedLead = await res.json();
       setLeads(prev => prev.map(l => l._id === leadId ? updatedLead : l));
@@ -76,13 +79,20 @@ export default function AdminDashboard() {
           <div className="stat-card"><p>Contacted</p><h3>{leads.filter(l=>l.status==="Contacted").length}</h3></div>
         </div>
 
-        <AddLead onLeadAdded={l=>setLeads([l,...leads])} currentUser={user} isAdmin={true} users={users} />
+        <AddLead onLeadAdded={l => setLeads([l, ...leads])} currentUser={user} isAdmin={true} users={users} />
 
         <div className="main-content">
           {loading ? <p>Loading leads...</p> :
-            leads.length>0 ? <div className="leads-grid">
-              {leads.map(lead=>(
-                <LeadCard key={lead._id} lead={lead} isAdmin={true} onDelete={handleDelete} users={users} onAssign={handleAssign} />
+            leads.length > 0 ? <div className="leads-grid">
+              {leads.map(l => (
+                <LeadCard
+                  key={l._id}
+                  lead={l}
+                  isAdmin={true}
+                  onDelete={handleDelete}
+                  users={users}
+                  onAssign={handleAssign}
+                />
               ))}
             </div> : <p>No leads found.</p>
           }

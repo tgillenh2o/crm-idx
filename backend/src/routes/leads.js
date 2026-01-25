@@ -97,5 +97,32 @@ router.delete("/:id", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+/* ================== ADMIN REASSIGN LEAD ================== */
+router.patch("/:id/assign", verifyToken, async (req, res) => {
+  try {
+    if (req.user.role !== "teamAdmin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const { assignedTo } = req.body;
+
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+
+    lead.assignedTo = assignedTo && assignedTo.trim() !== ""
+      ? assignedTo
+      : "UNASSIGNED";
+
+    await lead.save();
+
+    res.json(lead);
+  } catch (err) {
+    console.error("ASSIGN lead error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 
 module.exports = router;
