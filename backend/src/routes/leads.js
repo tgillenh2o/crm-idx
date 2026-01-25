@@ -22,6 +22,7 @@ router.get("/", auth, async (req, res) => {
 });
 
 // ================== POST NEW LEAD ==================
+// ================== POST NEW LEAD ==================
 router.post("/", auth, async (req, res) => {
   try {
     const { name, email, phone, status, assignedTo } = req.body;
@@ -30,12 +31,16 @@ router.post("/", auth, async (req, res) => {
       return res.status(400).json({ message: "Missing required lead info" });
     }
 
+    // If user is a member, assign lead to themselves; otherwise admin can assign or default to POND
+    const assignedEmail =
+      req.user.role === "teamMember" ? req.user.email : assignedTo || "POND";
+
     const lead = new Lead({
       name,
       email,
       phone,
       status: status || "New",
-      assignedTo: assignedTo || "POND", // default to Lead Pond if missing
+      assignedTo: assignedEmail,
       interactions: [],
     });
 
@@ -47,14 +52,6 @@ router.post("/", auth, async (req, res) => {
   }
 });
 
-
-// 👇 THIS IS THE LEAD POND LOGIC
-    const assignedEmail =
-      req.user.role === "teamAdmin"
-        ? assignedTo || "POND"
-        : req.user.email;
-  }
-});
 
 
 // ================== PATCH LEAD (Status update) ==================
