@@ -19,6 +19,7 @@ router.get("/", verifyToken, async (req, res) => {
 });
 
 // POST new lead
+// POST new lead
 router.post("/", verifyToken, async (req, res) => {
   try {
     const { name, email, phone, status, assignedTo: requestedAssignedTo } = req.body;
@@ -27,8 +28,19 @@ router.post("/", verifyToken, async (req, res) => {
       return res.status(400).json({ message: "Missing required lead info" });
     }
 
-    const assignedToFinal =
-      req.user.role === "teamAdmin" ? requestedAssignedTo || "POND" : req.user.email;
+    // Determine who this lead should be assigned to
+    let assignedToFinal;
+
+    if (req.user && req.user.role === "teamAdmin") {
+      // Admin can assign to anyone, default to "POND" if nothing provided
+      assignedToFinal = requestedAssignedTo && requestedAssignedTo.trim() !== "" ? requestedAssignedTo : "POND";
+    } else if (req.user && req.user.email) {
+      // Members always assign to themselves
+      assignedToFinal = req.user.email;
+    } else {
+      // Fallback if somehow req.user.email is missing
+      assignedToFinal = "UNASSIGNED";
+    }
 
     const lead = new Lead({
       name,
