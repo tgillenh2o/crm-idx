@@ -12,6 +12,7 @@ export default function MemberDashboard() {
   const [loading, setLoading] = useState(true);
 
   const fetchLeads = async () => {
+    if (!user?.email) return; // safety check
     setLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
@@ -30,7 +31,7 @@ export default function MemberDashboard() {
 
   useEffect(() => {
     fetchLeads();
-  }, [user.email]);
+  }, [user]); // runs when user loads
 
   return (
     <div className="dashboard">
