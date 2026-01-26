@@ -8,6 +8,7 @@ body, .dashboard, .main-panel {
 }
 
 /* ================= Sidebar ================= */
+
 .sidebar {
   width: 240px;
   min-width: 240px;
@@ -26,7 +27,7 @@ body, .dashboard, .main-panel {
 
 .sidebar.collapsed {
   width: 60px;
-  padding: 20px 8px;
+  padding: 20px 10px;
 }
 
 .sidebar-header {
@@ -36,42 +37,52 @@ body, .dashboard, .main-panel {
   margin-bottom: 30px;
 }
 
+.sidebar-header h2 {
+  font-size: 18px;
+  margin: 0;
+  color: #fff;
+}
+
 .collapse-btn {
-  background: #2563eb;
+  background: none;
   border: none;
   color: #fff;
-  border-radius: 6px;
-  padding: 4px 8px;
+  font-size: 1.2rem;
   cursor: pointer;
-  transition: background 0.2s;
 }
 
-.collapse-btn:hover {
-  background: #3b82f6;
+.sidebar-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.sidebar a {
-  display: block;
-  padding: 12px 14px;
-  margin-bottom: 8px;
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
   border-radius: 8px;
+  cursor: pointer;
   color: #cbd5f5;
-  text-decoration: none;
   transition: all 0.2s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.sidebar a.active {
-  background: #2563eb;
+.sidebar-link:hover {
+  background: #1e293b;
   color: #fff;
 }
 
-.sidebar.collapsed a {
-  text-align: center;
-  padding: 12px 0;
+.sidebar-link .icon {
+  font-size: 1.1rem;
 }
+
+/* Adjust main panel when collapsed */
+.main-panel.sidebar-collapsed {
+  margin-left: 60px; /* must match collapsed sidebar width */
+  transition: margin-left 0.3s ease;
+}
+
 
 .dashboard-container {
   margin-left: 240px; /* adjust when collapsed via JS or media query */

@@ -1,29 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import "./Dashboard.css";
+import { FaUser, FaUsers, FaClipboardList, FaBars } from "react-icons/fa";
 
-export default function Sidebar() {
-  
-
-  // Handle scroll to detect which section is active
-  useEffect(() => {
-    const handleScroll = () => {
-      const profile = document.getElementById("profile");
-      const leadPond = document.getElementById("lead-pond");
-      const myLeads = document.getElementById("my-leads");
-      const scrollY = window.scrollY + 120; // offset for topbar
-
-      if (profile && scrollY < (leadPond?.offsetTop || 0)) {
-        setActiveSection("profile");
-      } else if (leadPond && scrollY >= leadPond.offsetTop && scrollY < (myLeads?.offsetTop || Infinity)) {
-        setActiveSection("lead-pond");
-      } else if (myLeads && scrollY >= myLeads.offsetTop) {
-        setActiveSection("my-leads");
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+export default function Sidebar({ collapsed, setCollapsed }) {
+  const sections = [
+    { id: "profile", label: "Profile", icon: <FaUser /> },
+    { id: "lead-pond", label: "Lead Pond", icon: <FaUsers /> },
+    { id: "my-leads", label: "My Leads", icon: <FaClipboardList /> },
+  ];
 
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
@@ -34,39 +18,23 @@ export default function Sidebar() {
     <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
       <div className="sidebar-header">
         {!collapsed && <h2>CRM Dashboard</h2>}
-        <button 
-          className="collapse-btn"
-          onClick={() => setCollapsed(prev => !prev)}
-        >
-          {collapsed ? "→" : "←"}
+        <button className="collapse-btn" onClick={() => setCollapsed(!collapsed)}>
+          <FaBars />
         </button>
       </div>
 
-      <nav className="sidebar-nav">
-        <a
-          href="#profile"
-          className={activeSection === "profile" ? "active" : ""}
-          onClick={(e) => { e.preventDefault(); scrollToSection("profile"); }}
-        >
-          {collapsed ? "P" : "Profile"}
-        </a>
-
-        <a
-          href="#lead-pond"
-          className={activeSection === "lead-pond" ? "active" : ""}
-          onClick={(e) => { e.preventDefault(); scrollToSection("lead-pond"); }}
-        >
-          {collapsed ? "LP" : "Lead Pond"}
-        </a>
-
-        <a
-          href="#my-leads"
-          className={activeSection === "my-leads" ? "active" : ""}
-          onClick={(e) => { e.preventDefault(); scrollToSection("my-leads"); }}
-        >
-          {collapsed ? "ML" : "My Leads"}
-        </a>
-      </nav>
+      <div className="sidebar-links">
+        {sections.map((sec) => (
+          <div
+            key={sec.id}
+            className="sidebar-link"
+            onClick={() => scrollToSection(sec.id)}
+          >
+            <span className="icon">{sec.icon}</span>
+            {!collapsed && <span className="label">{sec.label}</span>}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
