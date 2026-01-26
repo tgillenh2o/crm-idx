@@ -1,9 +1,10 @@
-import React, { useContext, useState, useEffect } from "react";
+// src/pages/dashboard/Profile.jsx
+import React, { useContext, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import "./Dashboard.css";
 
 export default function Profile() {
-  const { user, refreshUser } = useContext(AuthContext); // assume refreshUser fetches updated data
+  const { user, refreshUser } = useContext(AuthContext);
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [saving, setSaving] = useState(false);
@@ -23,7 +24,7 @@ export default function Profile() {
       const data = await res.json();
       if (res.ok) {
         setMessage("Profile updated successfully!");
-        refreshUser(); // update context
+        refreshUser();
       } else {
         setMessage(data.message || "Failed to update profile.");
       }
