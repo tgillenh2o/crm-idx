@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Dashboard.css";
 
-export default function Sidebar({ pondCount = 0, myLeadsCount = 0 }) {
+export default function Sidebar() {
   const [activeSection, setActiveSection] = useState("profile");
 
   useEffect(() => {
@@ -9,11 +9,15 @@ export default function Sidebar({ pondCount = 0, myLeadsCount = 0 }) {
       const profile = document.getElementById("profile");
       const leadPond = document.getElementById("lead-pond");
       const myLeads = document.getElementById("my-leads");
-      const scrollY = window.scrollY + 120;
+      const scrollY = window.scrollY + 120; // offset for topbar
 
-      if (profile && scrollY < (leadPond?.offsetTop || 0)) setActiveSection("profile");
-      else if (leadPond && scrollY >= leadPond.offsetTop && scrollY < (myLeads?.offsetTop || Infinity)) setActiveSection("lead-pond");
-      else if (myLeads && scrollY >= myLeads.offsetTop) setActiveSection("my-leads");
+      if (profile && scrollY < (leadPond?.offsetTop || Infinity)) {
+        setActiveSection("profile");
+      } else if (leadPond && scrollY >= leadPond.offsetTop && scrollY < (myLeads?.offsetTop || Infinity)) {
+        setActiveSection("lead-pond");
+      } else if (myLeads && scrollY >= myLeads.offsetTop) {
+        setActiveSection("my-leads");
+      }
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -28,12 +32,38 @@ export default function Sidebar({ pondCount = 0, myLeadsCount = 0 }) {
   return (
     <div className="sidebar">
       <h2>CRM Dashboard</h2>
-      <a href="#profile" className={activeSection==="profile" ? "active" : ""} onClick={e=>{e.preventDefault(); scrollToSection("profile");}}>Profile</a>
-      <a href="#lead-pond" className={activeSection==="lead-pond" ? "active" : ""} onClick={e=>{e.preventDefault(); scrollToSection("lead-pond");}}>
-        Lead Pond <span className="badge">{pondCount}</span>
+
+      <a
+        href="#profile"
+        className={activeSection === "profile" ? "active" : ""}
+        onClick={(e) => {
+          e.preventDefault();
+          scrollToSection("profile");
+        }}
+      >
+        Profile
       </a>
-      <a href="#my-leads" className={activeSection==="my-leads" ? "active" : ""} onClick={e=>{e.preventDefault(); scrollToSection("my-leads");}}>
-        My Leads <span className="badge">{myLeadsCount}</span>
+
+      <a
+        href="#lead-pond"
+        className={activeSection === "lead-pond" ? "active" : ""}
+        onClick={(e) => {
+          e.preventDefault();
+          scrollToSection("lead-pond");
+        }}
+      >
+        Lead Pond
+      </a>
+
+      <a
+        href="#my-leads"
+        className={activeSection === "my-leads" ? "active" : ""}
+        onClick={(e) => {
+          e.preventDefault();
+          scrollToSection("my-leads");
+        }}
+      >
+        My Leads
       </a>
     </div>
   );

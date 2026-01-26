@@ -6,6 +6,9 @@ import LeadCard from "./LeadCard";
 import AddLead from "./AddLead";
 import "./Dashboard.css";
 
+
+
+
 export default function AdminDashboard() {
   const { user } = useContext(AuthContext);
   const [leads,setLeads] = useState([]);
@@ -68,6 +71,9 @@ export default function AdminDashboard() {
         </div>
 
         <AddLead onLeadAdded={l=>setLeads([l,...leads])} currentUser={user} isAdmin={true} users={users}/>
+<div id="profile">
+  <Profile /> {/* import Profile from "./Profile" */}
+</div>
 
         <div className="main-content">
           {loading ? <p>Loading leads...</p> :
