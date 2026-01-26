@@ -75,20 +75,32 @@ body, .dashboard, .main-panel {
 
 /* ================== Stats Cards ================== */
 .stats-cards {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
-  margin-bottom: 20px;
+  margin: 20px 0;
 }
-.stats-cards .stat-card {
-  flex: 1;
-  background-color: #1e1e1e;
-  border: 1px solid #333;
-  border-radius: 12px;
-  padding: 16px;
+
+.stat-card {
+  background: linear-gradient(135deg, #020617, #0f172a);
+  border: 1px solid #1e293b;
+  border-radius: 18px;
+  padding: 18px;
   text-align: center;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
 }
+
+.stat-card p {
+  margin: 0;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.stat-card h3 {
+  margin-top: 6px;
+  font-size: 26px;
+  color: #e5e7eb;
+}
+
 
 /* ================== Lead Sections ================== */
 #lead-pond h3,
@@ -108,24 +120,79 @@ body, .dashboard, .main-panel {
 
 /* ================== Lead Card ================== */
 .lead-card {
-  background-color: #1e1e1e;
-  border-radius: 14px;
-  padding: 20px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  transition: all 0.2s;
+  background: #0f172a;
+  border-radius: 16px;
+  padding: 18px;
+  border: 1px solid #1e293b;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  transition: all 0.2s ease;
 }
 
 .lead-card:hover {
-  box-shadow: 0 6px 12px rgba(0,0,0,0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.6);
 }
 
 .lead-card.lead-pond {
-  border-left: 5px solid #64b5f6;
+  border-left: 4px solid #38bdf8;
+  background: linear-gradient(135deg, #0f172a, #020617);
 }
 
-.lead-info p {
-  margin: 6px 0;
+/* Header */
+.lead-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 }
+
+.lead-header h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #e5e7eb;
+}
+
+/* Status pill */
+.status-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-New { background: #2563eb; color: #fff; }
+.status-Contacted { background: #f59e0b; color: #000; }
+.status-Follow-up { background: #22c55e; color: #000; }
+.status-Closed { background: #64748b; color: #fff; }
+
+/* Meta */
+.lead-meta p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #cbd5f5;
+}
+
+.lead-meta .assigned {
+  margin-top: 6px;
+  color: #e5e7eb;
+}
+
+/* Actions */
+.lead-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.lead-actions select {
+  flex: 1;
+  background: #020617;
+  border: 1px solid #1e293b;
+  color: #e5e7eb;
+  border-radius: 8px;
+  padding: 8px;
+}
+
 
 /* ================== Status Colors ================== */
 .status-New select { border-color: #3b82f6; }
@@ -141,42 +208,44 @@ body, .dashboard, .main-panel {
 /* ================== Interaction Form ================== */
 .interaction-form {
   display: flex;
-  gap: 10px;
-  margin-top: 15px;
+  gap: 8px;
+  margin-top: 14px;
 }
 
 .interaction-form input,
-.interaction-form select,
-.interaction-form button {
-  background-color: #2a2a2a;
-  color: #e0e0e0;
-  border: 1px solid #555;
-  border-radius: 6px;
+.interaction-form select {
+  background: #020617;
+  border: 1px solid #1e293b;
+  color: #e5e7eb;
+  border-radius: 8px;
   padding: 8px;
 }
 
 .interaction-form button {
-  cursor: pointer;
-  transition: all 0.2s;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 8px;
 }
 
 .interaction-form button:hover {
-  background-color: #505050;
+  background: #1d4ed8;
 }
+
 
 /* ================== Interaction History ================== */
 .interaction-history {
-  margin-top: 15px;
+  margin-top: 14px;
+  border-top: 1px solid #1e293b;
   padding-top: 10px;
-  border-top: 1px solid #333;
 }
 
 .interaction-item {
-  background-color: #1b1b1b;
-  border-radius: 6px;
+  background: #020617;
   padding: 8px;
+  border-radius: 8px;
   margin-bottom: 6px;
-  border-left: 3px solid #2563eb;
+  font-size: 12px;
+  color: #cbd5f5;
 }
 
 /* ================== Inputs and Selects ================== */

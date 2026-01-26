@@ -66,41 +66,41 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
 
   return (
     <div className={`lead-card ${isLeadPond ? "lead-pond" : ""}`}>
-      <div className="lead-info">
-        <p><strong>Name:</strong> {lead.name}</p>
-        <p><strong>Email:</strong> {lead.email}</p>
-        <p><strong>Phone:</strong> {lead.phone}</p>
-        <p><strong>Assigned To:</strong> {assignedToName}</p>
+  <div className="lead-header">
+    <h4>{lead.name}</h4>
+    <span className={`status-pill status-${status}`}>{status}</span>
+  </div>
 
-        <p className={`status-${status}`}>
-          <strong>Status:</strong>
-          <select value={status} onChange={handleStatusChange}>
-            <option>New</option>
-            <option>Contacted</option>
-            <option>Follow-up</option>
-            <option>Closed</option>
-          </select>
-        </p>
+  <div className="lead-meta">
+    <p>{lead.email}</p>
+    <p>{lead.phone}</p>
+    <p className="assigned">
+      Assigned: <strong>{assignedToName}</strong>
+    </p>
+  </div>
 
-     {onAssign && users.length > 0 && (
-  <p>
-    <strong>Assign/Reassign:</strong>
-    <select
-      value={lead.assignedTo?._id || ""}
-      onChange={(e) => onAssign(lead._id, e.target.value)}
-    >
-      <option value="">Unassigned</option>
-      <option value="POND">Lead Pond</option>
-      {users.map((u) => (
-        <option key={u._id} value={u._id}>
-          {u.name}
-        </option>
-      ))}
+  <div className="lead-actions">
+    <select value={status} onChange={handleStatusChange}>
+      <option>New</option>
+      <option>Contacted</option>
+      <option>Follow-up</option>
+      <option>Closed</option>
     </select>
-  </p>
-)}
 
-      </div>
+    {onAssign && (
+      <select
+        value={lead.assignedTo || ""}
+        onChange={(e) => onAssign(lead._id, e.target.value)}
+      >
+        <option value="">Unassigned</option>
+        <option value="POND">Lead Pond</option>
+        {users.map(u => (
+          <option key={u._id} value={u._id}>{u.name}</option>
+        ))}
+      </select>
+    )}
+  </div>
+
 
       {isAdmin && onDelete && (
         <button className="delete-button" onClick={() => onDelete(lead._id)}>Delete Lead</button>
