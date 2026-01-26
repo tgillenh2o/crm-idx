@@ -79,7 +79,7 @@ body, .dashboard, .main-panel {
 
 /* Adjust main panel when collapsed */
 .main-panel.sidebar-collapsed {
-  margin-left: 60px; /* must match collapsed sidebar width */
+  margin-left: 60px; /* match collapsed sidebar width */
   transition: margin-left 0.3s ease;
 }
 

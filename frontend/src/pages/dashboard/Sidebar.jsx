@@ -1,12 +1,11 @@
 import React from "react";
 import "./Dashboard.css";
-import { FaUser, FaUsers, FaClipboardList, FaBars } from "react-icons/fa";
 
 export default function Sidebar({ collapsed, setCollapsed }) {
   const sections = [
-    { id: "profile", label: "Profile", icon: <FaUser /> },
-    { id: "lead-pond", label: "Lead Pond", icon: <FaUsers /> },
-    { id: "my-leads", label: "My Leads", icon: <FaClipboardList /> },
+    { id: "profile", label: "Profile", icon: "👤" },
+    { id: "lead-pond", label: "Lead Pond", icon: "🌊" },
+    { id: "my-leads", label: "My Leads", icon: "📝" },
   ];
 
   const scrollToSection = (id) => {
@@ -19,7 +18,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       <div className="sidebar-header">
         {!collapsed && <h2>CRM Dashboard</h2>}
         <button className="collapse-btn" onClick={() => setCollapsed(!collapsed)}>
-          <FaBars />
+          ☰
         </button>
       </div>
 
