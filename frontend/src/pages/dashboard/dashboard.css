@@ -7,49 +7,56 @@ body, .dashboard, .main-panel {
   color: #e0e0e0;
   min-height: 100vh;
 }
+.dashboard {
+  display: flex;
+  background: #020617;
+  min-height: 100vh;
+}
 
 /* ================== Sidebar ================== */
 .sidebar {
   width: 240px;
-  min-width: 240px;
-  height: 100vh;
-  background-color: #0f172a;
-  color: #e5e7eb;
-  padding: 20px;
-  position: fixed;
-  top: 0;
-  left: 0;
+  min-height: 100vh;
+  background: #0f172a;
+  padding: 24px 16px;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  box-shadow: 2px 0 6px rgba(0,0,0,0.5);
+  gap: 12px;
+  position: fixed;
+  left: 0;
+  top: 0;
 }
 
 .sidebar h2 {
+  color: #e5e7eb;
   font-size: 18px;
-  margin-bottom: 30px;
-  color: #fff;
+  margin-bottom: 24px;
 }
 
-.sidebar a, .sidebar .navlink {
-  display: block;
-  padding: 12px 14px;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  color: #cbd5f5;
+.sidebar a {
+  color: #94a3b8;
   text-decoration: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
   transition: all 0.2s ease;
 }
 
-.sidebar a:hover, .sidebar .navlink:hover {
+.sidebar a:hover {
   background: #1e293b;
-  color: #fff;
+  color: #e5e7eb;
 }
 
-.sidebar a.active, .sidebar .navlink.active {
+.sidebar a.active {
   background: #2563eb;
-  color: #fff;
-  font-weight: 500;
+  color: #ffffff;
+}
+
+.sidebar-disabled {
+  color: #475569;
+  font-size: 13px;
+  padding: 10px 14px;
+  cursor: not-allowed;
 }
 
 /* ================== Topbar ================== */
@@ -67,8 +74,9 @@ body, .dashboard, .main-panel {
 
 /* ================== Main Panel ================== */
 .main-panel {
-  margin-left: 240px;
-  padding: 30px;
+  margin-left: 240px; /* MATCH sidebar width */
+  width: calc(100% - 240px);
+  padding: 24px;
   background-color: #121212;
   min-height: 100vh;
 }
@@ -120,18 +128,18 @@ body, .dashboard, .main-panel {
 
 /* ================== Lead Card ================== */
 .lead-card {
-  background: #0f172a;
-  border-radius: 16px;
-  padding: 18px;
+  background: #020617;
   border: 1px solid #1e293b;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  border-radius: 10px;
+  padding: 14px;
   transition: all 0.2s ease;
 }
 
 .lead-card:hover {
+  border-color: #2563eb;
   transform: translateY(-2px);
-  box-shadow: 0 16px 40px rgba(0,0,0,0.6);
 }
+
 
 .lead-card.lead-pond {
   border-left: 4px solid #38bdf8;
@@ -308,4 +316,13 @@ button:hover {
   .leads-grid {
     grid-template-columns: 1fr;
   }
+
+.section-title {
+  color: #e5e7eb;
+  font-size: 16px;
+  margin: 32px 0 12px;
+  border-bottom: 1px solid #1e293b;
+  padding-bottom: 8px;
+}
+
 }

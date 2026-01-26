@@ -1,5 +1,17 @@
 import React, { useState } from "react";
 import "./Dashboard.css";
+input, select, textarea {
+  background: #020617;
+  color: #e5e7eb;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+input::placeholder {
+  color: #64748b;
+}
+
 
 export default function AddLead({ onLeadAdded, currentUser, isAdmin = false, users = [] }) {
   const [showForm, setShowForm] = useState(false);

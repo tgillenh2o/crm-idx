@@ -126,7 +126,7 @@ export default function AdminDashboard() {
           <>
             {leadPondLeads.length > 0 && (
               <div id="lead-pond">
-                <h3 style={{ marginBottom: "8px", color: "#64b5f6" }}>Lead Pond</h3>
+                <h3 className="section-title" id="lead-pond">Lead Pond</h3>
                 <div className="leads-grid">
                   {leadPondLeads.map((lead) => (
                     <LeadCard
@@ -145,7 +145,7 @@ export default function AdminDashboard() {
 
             {otherLeads.length > 0 && (
               <div id="my-leads">
-                <h3 style={{ marginBottom: "8px" }}>Your Leads</h3>
+                <h3 className="section-title" id="my-leads">My Leads</h3>
                 <div className="leads-grid">
                   {otherLeads.map((lead) => (
                     <LeadCard

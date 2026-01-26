@@ -82,7 +82,7 @@ export default function MemberDashboard() {
             {/* Lead Pond Section */}
             {leadPondLeads.length > 0 && (
               <div id="lead-pond">
-                <h3 style={{ marginBottom: "8px", color: "#64b5f6" }}>Lead Pond</h3>
+                <h3 className="section-title" id="lead-pond">Lead Pond</h3>
                 <div className="leads-grid">
                   {leadPondLeads.map((lead) => (
                     <LeadCard
@@ -100,7 +100,7 @@ export default function MemberDashboard() {
             {/* My Leads Section */}
             {myLeads.length > 0 && (
               <div id="my-leads">
-                <h3 style={{ marginBottom: "8px" }}>My Leads</h3>
+                <h3 className="section-title" id="my-leads">My Leads</h3>
                 <div className="leads-grid">
                   {myLeads.map((lead) => (
                     <LeadCard key={lead._id} lead={lead} isAdmin={false} onAssign={handleAssign} />

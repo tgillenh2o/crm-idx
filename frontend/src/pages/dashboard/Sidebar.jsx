@@ -2,19 +2,15 @@ import React, { useEffect, useState } from "react";
 import "./Dashboard.css";
 
 export default function Sidebar() {
-  const [activeSection, setActiveSection] = useState("profile");
+  const [activeSection, setActiveSection] = useState("lead-pond");
 
-  // Handle scroll to detect which section is active
   useEffect(() => {
     const handleScroll = () => {
-      const profile = document.getElementById("profile");
       const leadPond = document.getElementById("lead-pond");
       const myLeads = document.getElementById("my-leads");
-      const scrollY = window.scrollY + 120; // offset for topbar
+      const scrollY = window.scrollY + 120;
 
-      if (profile && scrollY < (leadPond?.offsetTop || 0)) {
-        setActiveSection("profile");
-      } else if (leadPond && scrollY >= leadPond.offsetTop && scrollY < (myLeads?.offsetTop || Infinity)) {
+      if (leadPond && scrollY < (myLeads?.offsetTop || Infinity)) {
         setActiveSection("lead-pond");
       } else if (myLeads && scrollY >= myLeads.offsetTop) {
         setActiveSection("my-leads");
@@ -27,23 +23,14 @@ export default function Sidebar() {
 
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   return (
     <div className="sidebar">
       <h2>CRM Dashboard</h2>
-
-      <a
-        href="#profile"
-        className={activeSection === "profile" ? "active" : ""}
-        onClick={(e) => {
-          e.preventDefault();
-          scrollToSection("profile");
-        }}
-      >
-        Profile
-      </a>
 
       <a
         href="#lead-pond"
@@ -66,6 +53,9 @@ export default function Sidebar() {
       >
         My Leads
       </a>
+
+      {/* Profile intentionally disabled for now */}
+      <span className="sidebar-disabled">Profile (coming soon)</span>
     </div>
   );
 }
