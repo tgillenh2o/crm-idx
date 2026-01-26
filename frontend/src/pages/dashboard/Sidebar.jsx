@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 
 export default function Sidebar() {
-  const [activeSection, setActiveSection] = useState("my-leads");
-  const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState("profile");
 
+  // Handle scroll to detect which section is active
   useEffect(() => {
     const handleScroll = () => {
+      const profile = document.getElementById("profile");
       const leadPond = document.getElementById("lead-pond");
       const myLeads = document.getElementById("my-leads");
-      const scrollY = window.scrollY + 100; // topbar offset
+      const scrollY = window.scrollY + 120; // offset for topbar
 
-      if (leadPond && myLeads) {
-        if (scrollY >= leadPond.offsetTop && scrollY < myLeads.offsetTop) {
-          setActiveSection("lead-pond");
-        } else if (scrollY >= myLeads.offsetTop) {
-          setActiveSection("my-leads");
-        }
+      if (profile && scrollY < (leadPond?.offsetTop || 0)) {
+        setActiveSection("profile");
+      } else if (leadPond && scrollY >= leadPond.offsetTop && scrollY < (myLeads?.offsetTop || Infinity)) {
+        setActiveSection("lead-pond");
+      } else if (myLeads && scrollY >= myLeads.offsetTop) {
+        setActiveSection("my-leads");
       }
     };
 
@@ -25,49 +25,47 @@ export default function Sidebar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleScrollLink = (e, id) => {
-    e.preventDefault();
+  const scrollToSection = (id) => {
     const el = document.getElementById(id);
-    if (!el) return;
-
-    // Smooth scroll with topbar offset
-    const topOffset = 80; // adjust to your topbar height
-    const y = el.getBoundingClientRect().top + window.scrollY - topOffset;
-    window.scrollTo({ top: y, behavior: "smooth" });
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
     <div className="sidebar">
       <h2>CRM Dashboard</h2>
 
-      {/* Scroll links */}
+      <a
+        href="#profile"
+        className={activeSection === "profile" ? "active" : ""}
+        onClick={(e) => {
+          e.preventDefault();
+          scrollToSection("profile");
+        }}
+      >
+        Profile
+      </a>
+
       <a
         href="#lead-pond"
         className={activeSection === "lead-pond" ? "active" : ""}
-        onClick={(e) => handleScrollLink(e, "lead-pond")}
+        onClick={(e) => {
+          e.preventDefault();
+          scrollToSection("lead-pond");
+        }}
       >
         Lead Pond
       </a>
+
       <a
         href="#my-leads"
         className={activeSection === "my-leads" ? "active" : ""}
-        onClick={(e) => handleScrollLink(e, "my-leads")}
+        onClick={(e) => {
+          e.preventDefault();
+          scrollToSection("my-leads");
+        }}
       >
         My Leads
       </a>
-
-      {/* Profile tab */}
-      <NavLink
-        to="/profile"
-        className={({ isActive }) => (isActive ? "active" : "")}
-      >
-        Profile
-      </NavLink>
-
-      {/* Optional: other nav */}
-      <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "active" : "")}>
-        Dashboard Home
-      </NavLink>
     </div>
   );
 }
