@@ -11,7 +11,9 @@ export default function AdminDashboard() {
   const [leads, setLeads] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [collapsed, setCollapsed] = useState(false); // sidebar collapse
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  useEffect(() => { fetchLeads(); fetchUsers(); }, []);
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -21,12 +23,7 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       setLeads(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error(err);
-      setLeads([]);
-    } finally {
-      setLoading(false);
-    }
+    } catch { setLeads([]); } finally { setLoading(false); }
   };
 
   const fetchUsers = async () => {
@@ -36,120 +33,66 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       setUsers(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error(err);
-      setUsers([]);
-    }
+    } catch { setUsers([]); }
   };
-
-  useEffect(() => {
-    fetchLeads();
-    fetchUsers();
-  }, []);
 
   const handleDelete = async (leadId) => {
     if (!window.confirm("Are you sure?")) return;
-    try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      setLeads(leads.filter((l) => l._id !== leadId));
-    } catch (err) {
-      console.error(err);
-    }
+    await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+    });
+    setLeads(leads.filter(l => l._id !== leadId));
   };
 
   const handleAssign = async (leadId, assignedTo) => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ userId: assignedTo }),
-      });
-      const updatedLead = await res.json();
-      setLeads((prev) => prev.map((l) => (l._id === leadId ? updatedLead : l)));
-    } catch (err) {
-      console.error(err);
-    }
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      },
+      body: JSON.stringify({ userId: assignedTo })
+    });
+    const updatedLead = await res.json();
+    setLeads(prev => prev.map(l => l._id === leadId ? updatedLead : l));
   };
 
-  // Separate Lead Pond and other leads
-  const leadPondLeads = leads.filter((l) => l.assignedTo === "POND" || !l.assignedTo || l.assignedTo === "UNASSIGNED");
-  const otherLeads = leads.filter((l) => !leadPondLeads.includes(l));
+  const leadPondLeads = leads.filter(l => l.assignedTo === "POND" || !l.assignedTo || l.assignedTo === "UNASSIGNED");
+  const otherLeads = leads.filter(l => !leadPondLeads.includes(l));
 
   return (
     <div className="dashboard">
-      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-      <div className={`main-panel ${collapsed ? "sidebar-collapsed" : ""}`}>
+      <Sidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
+      <div className={`main-panel ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <Topbar />
 
         <div className="stats-cards">
-          <div className="stat-card">
-            <p>Total Leads</p>
-            <h3>{leads.length}</h3>
-          </div>
-          <div className="stat-card">
-            <p>Follow-ups</p>
-            <h3>{leads.filter((l) => l.status === "Follow-up").length}</h3>
-          </div>
-          <div className="stat-card">
-            <p>Contacted</p>
-            <h3>{leads.filter((l) => l.status === "Contacted").length}</h3>
-          </div>
+          <div className="stat-card"><p>Total Leads</p><h3>{leads.length}</h3></div>
+          <div className="stat-card"><p>Follow-ups</p><h3>{leads.filter(l=>l.status==="Follow-up").length}</h3></div>
+          <div className="stat-card"><p>Contacted</p><h3>{leads.filter(l=>l.status==="Contacted").length}</h3></div>
         </div>
 
-        <AddLead onLeadAdded={(l) => setLeads([l, ...leads])} currentUser={user} isAdmin={true} users={users} />
+        <AddLead onLeadAdded={l => setLeads([l,...leads])} currentUser={user} isAdmin={true} users={users} />
 
-        <div className="main-content">
-          {loading ? (
-            <p>Loading leads...</p>
-          ) : (
+        <div id="lead-pond">
+          {leadPondLeads.length > 0 && (
             <>
-              {/* Lead Pond */}
-              {leadPondLeads.length > 0 && (
-                <div id="lead-pond">
-                  <h3 style={{ marginBottom: "8px", color: "#64b5f6" }}>Lead Pond</h3>
-                  <div className="leads-grid">
-                    {leadPondLeads.map((lead) => (
-                      <LeadCard
-                        key={lead._id}
-                        lead={lead}
-                        isAdmin={true}
-                        onDelete={handleDelete}
-                        users={users}
-                        onAssign={handleAssign}
-                        isLeadPond={true}
-                        currentUserEmail={user.email}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
+              <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
+              <div className="leads-grid">
+                {leadPondLeads.map(l => <LeadCard key={l._id} lead={l} isAdmin onAssign={handleAssign} users={users} isLeadPond />)}
+              </div>
+            </>
+          )}
+        </div>
 
-              {/* Other Leads */}
-              {otherLeads.length > 0 && (
-                <div id="my-leads">
-                  <h3 style={{ marginBottom: "8px" }}>My Leads</h3>
-                  <div className="leads-grid">
-                    {otherLeads.map((lead) => (
-                      <LeadCard
-                        key={lead._id}
-                        lead={lead}
-                        isAdmin={true}
-                        onDelete={handleDelete}
-                        users={users}
-                        onAssign={handleAssign}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {leads.length === 0 && <p>No leads found.</p>}
+        <div id="my-leads">
+          {otherLeads.length > 0 && (
+            <>
+              <h3>Your Leads</h3>
+              <div className="leads-grid">
+                {otherLeads.map(l => <LeadCard key={l._id} lead={l} isAdmin onAssign={handleAssign} users={users} onDelete={handleDelete} />)}
+              </div>
             </>
           )}
         </div>

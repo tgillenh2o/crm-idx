@@ -17,18 +17,12 @@ export default function Sidebar({ collapsed, setCollapsed }) {
     <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
       <div className="sidebar-header">
         {!collapsed && <h2>CRM Dashboard</h2>}
-        <button className="collapse-btn" onClick={() => setCollapsed(!collapsed)}>
-          ☰
-        </button>
+        <button className="collapse-btn" onClick={() => setCollapsed(!collapsed)}>☰</button>
       </div>
 
       <div className="sidebar-links">
         {sections.map((sec) => (
-          <div
-            key={sec.id}
-            className="sidebar-link"
-            onClick={() => scrollToSection(sec.id)}
-          >
+          <div key={sec.id} className="sidebar-link" onClick={() => scrollToSection(sec.id)}>
             <span className="icon">{sec.icon}</span>
             {!collapsed && <span className="label">{sec.label}</span>}
           </div>

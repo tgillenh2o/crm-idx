@@ -1,17 +1,15 @@
-/* ================= General ================= */
+/* ========== General ========== */
 body, .dashboard, .main-panel {
-  background-color: #020617;
-  color: #e5e7eb;
+  background-color: #121212;
+  color: #e0e0e0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   padding: 0;
 }
 
-/* ================= Sidebar ================= */
-
+/* ========== Sidebar & Topbar ========== */
 .sidebar {
   width: 240px;
-  min-width: 240px;
   height: 100vh;
   background: #0f172a;
   color: #e5e7eb;
@@ -23,11 +21,11 @@ body, .dashboard, .main-panel {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  z-index: 100;
 }
 
 .sidebar.collapsed {
   width: 60px;
-  padding: 20px 10px;
 }
 
 .sidebar-header {
@@ -77,116 +75,59 @@ body, .dashboard, .main-panel {
   font-size: 1.1rem;
 }
 
-/* Adjust main panel when collapsed */
-.main-panel.sidebar-collapsed {
-  margin-left: 60px; /* match collapsed sidebar width */
-  transition: margin-left 0.3s ease;
-}
-
-
-.dashboard-container {
-  margin-left: 240px; /* adjust when collapsed via JS or media query */
+/* ========== Main Panel ========== */
+.main-panel {
+  margin-left: 240px;
   padding: 30px;
-  background: #121212;
-  min-height: 100vh;
   transition: margin-left 0.3s ease;
+  min-height: 100vh;
 }
 
-.sidebar.collapsed ~ .dashboard-container {
+.main-panel.sidebar-collapsed {
   margin-left: 60px;
 }
 
-
-/* ================= Main Panel ================= */
-.dashboard {
-  display: flex;
-  min-height: 100vh;
-}
-
-..main-panel {
-  margin-left: 240px; /* default sidebar width */
-  transition: margin-left 0.3s ease;
-}
-
-.main-panel.sidebar-collapsed {
-  margin-left: 60px; /* match collapsed sidebar width */
-}
-/* ================= Topbar ================= */
-.topbar {
-  background-color: #1f1f1f;
-  color: #e5e7eb;
-  padding: 12px 20px;
-  font-size: 1.1rem;
-  font-weight: 500;
-  border-bottom: 1px solid #333;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-/* ================= Stats Cards ================= */
+/* ========== Stats Cards ========== */
 .stats-cards {
   display: flex;
   gap: 16px;
   margin: 20px 0;
+  flex-wrap: wrap;
 }
-
 .stats-cards .stat-card {
   flex: 1;
+  min-width: 150px;
   background-color: #1e1e1e;
-  border: 1px solid #333;
   border-radius: 12px;
   padding: 16px;
   text-align: center;
   box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.stats-cards .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.5);
-}
-
-/* ================= Section Titles ================= */
-.section-title {
-  color: #e5e7eb;
-  font-size: 16px;
-  margin: 32px 0 12px;
-  border-bottom: 1px solid #1e293b;
-  padding-bottom: 8px;
-}
-
-/* ================= Lead Cards ================= */
+/* ========== Lead Cards ========== */
 .leads-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* cards max 250px */
+  display: flex;
+  flex-wrap: wrap;
   gap: 16px;
 }
 
-
 .lead-card {
-  background: #020617;
-  border: 1px solid #1e293b;
-  border-radius: 8px;
-  padding: 12px;       /* smaller padding */
-  font-size: 14px;     /* smaller text */
-  display: flex;
-  flex-direction: column;
+  background: #1a1a1a;
+  color: #e0e0e0;
+  border-radius: 14px;
+  padding: 16px;
+  flex: 1 1 300px; /* responsive width */
+  max-width: 350px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+  transition: box-shadow 0.2s ease;
 }
 
-
 .lead-card:hover {
-  border-color: #2563eb;
-  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
 }
 
 .lead-card.lead-pond {
-  border-left: 3px solid #64b5f6;
-}
-
-
-.lead-card.removing {
-  opacity: 0;
-  transform: translateY(-20px);
+  border-left: 5px solid #64b5f6;
 }
 
 .lead-info p {
@@ -198,217 +139,55 @@ body, .dashboard, .main-panel {
 .status-Follow-up select { border-color: #ffb74d; }
 .status-Closed select { border-color: #10b981; }
 
-.lead-card p.status-New { color: #90caf9; }
-.lead-card p.status-Contacted { color: #64b5f6; }
-.lead-card p.status-Follow-up { color: #ffb74d; }
-.lead-card p.status-Closed { color: #81c784; }
+.interaction-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
 
-/* ================= Inputs & Forms ================= */
-input,
-select,
-textarea {
-  background: #020617;
-  color: #e5e7eb;
-  border: 1px solid #1e293b;
+.interaction-form input,
+.interaction-form select {
+  padding: 8px;
   border-radius: 6px;
-  padding: 8px 10px;
-  margin-right: 8px;
-  width: 100%;
-  font-size: 14px;
+  border: 1px solid #555;
+  background-color: #2a2a2a;
+  color: #e0e0e0;
 }
 
-input::placeholder,
-textarea::placeholder {
-  color: #64748b;
+.interaction-history {
+  margin-top: 12px;
+  border-top: 1px solid #333;
+  padding-top: 8px;
 }
 
-select option {
-  background: #020617;
-  color: #e5e7eb;
+.interaction-item {
+  border-top: 1px solid #333;
+  padding: 6px 0;
 }
 
-/* ================= Buttons ================= */
+/* Buttons */
 button {
   background-color: #3a3a3a;
-  color: #e5e7eb;
+  color: #e0e0e0;
   border: none;
   border-radius: 6px;
   padding: 8px 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
-
 button:hover {
   background-color: #505050;
 }
 
 .claim-button {
-  background-color: #2563eb;
-  color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 13px;
   margin-top: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  width: 100%;
+  background-color: #2563eb;
+  color: #fff;
 }
-
 .claim-button:hover {
   background-color: #1d4ed8;
 }
 
-/* ================= Interaction Forms ================= */
-.interaction-form {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.interaction-form input,
-.interaction-form select,
-.interaction-form button {
-  font-size: 13px;
-  padding: 5px 8px;
-}
-
-
-.claim-button {
-  padding: 5px 10px;
-  font-size: 13px;
-}
-
-/* ================= Add Lead Form ================= */
-.add-lead-container {
-  margin: 16px 0;
-}
-
-.toggle-form-btn {
-  margin-bottom: 12px;
-}
-
-/* ================= Profile Tab ================= */
-.profile-tab {
-  margin-bottom: 30px;
-}
-
-.profile-card {
-  background: #020617;
-  border: 1px solid #1e293b;
-  border-radius: 8px;
-  padding: 20px;
-  max-width: 400px;
-}
-
-.profile-card label {
-  display: flex;
-  flex-direction: column;
-  font-size: 14px;
-  margin-bottom: 12px;
-  color: #e5e7eb;
-}
-
-.profile-card input {
-  margin-top: 4px;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #555;
-  background: #1a1f2e;
-  color: #e5e7eb;
-}
-
-.profile-card button {
-  margin-top: 12px;
-  background-color: #2563eb;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.profile-card button:hover {
-  background-color: #1d4ed8;
-}
-
-.profile-message {
-  margin-top: 10px;
-  font-size: 13px;
-  color: #64b5f6;
-}
-.profile-tab {
-  background-color: #1a1a2e;
-  padding: 20px;
-  border-radius: 12px;
-  color: #e0e0e0;
-  max-width: 600px;
-  margin-bottom: 20px;
-}
-
-.profile-tab h2 {
-  margin-bottom: 20px;
-  color: #64b5f6;
-}
-
-.profile-field {
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: column;
-}
-
-.profile-field label {
-  font-weight: 500;
-  margin-bottom: 6px;
-  color: #90caf9;
-}
-
-.profile-field input {
-  background-color: #2a2a3d;
-  border: 1px solid #555;
-  border-radius: 6px;
-  padding: 8px;
-  color: #e0e0e0;
-}
-
-.profile-field span {
-  padding: 8px 0;
-}
-
-.profile-buttons button {
-  background-color: #3a3a5a;
-  color: #e0e0e0;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 14px;
-  margin-right: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.profile-buttons button:hover {
-  background-color: #505070;
-}
-
-.profile-buttons button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.profile-tab h3 {
-  color: #64b5f6;
-  margin-bottom: 12px;
-}
-
-hr {
-  border: none;
-  border-top: 1px solid #333;
-}
-
-.profile-tab input[type="password"] {
-  background-color: #2a2a3d;
-  border: 1px solid #555;
-  border-radius: 6px;
-  padding: 8px;
-  color: #e0e0e0;
-}
-
+/* Add Lead Form */
+.add-lead-container { margin: 16px 0; }
