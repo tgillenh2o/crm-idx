@@ -292,3 +292,79 @@ button:hover {
   font-size: 13px;
   color: #64b5f6;
 }
+.profile-tab {
+  background-color: #1a1a2e;
+  padding: 20px;
+  border-radius: 12px;
+  color: #e0e0e0;
+  max-width: 600px;
+  margin-bottom: 20px;
+}
+
+.profile-tab h2 {
+  margin-bottom: 20px;
+  color: #64b5f6;
+}
+
+.profile-field {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-field label {
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #90caf9;
+}
+
+.profile-field input {
+  background-color: #2a2a3d;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 8px;
+  color: #e0e0e0;
+}
+
+.profile-field span {
+  padding: 8px 0;
+}
+
+.profile-buttons button {
+  background-color: #3a3a5a;
+  color: #e0e0e0;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.profile-buttons button:hover {
+  background-color: #505070;
+}
+
+.profile-buttons button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.profile-tab h3 {
+  color: #64b5f6;
+  margin-bottom: 12px;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #333;
+}
+
+.profile-tab input[type="password"] {
+  background-color: #2a2a3d;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 8px;
+  color: #e0e0e0;
+}
+
