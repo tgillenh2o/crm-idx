@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./Dashboard.css";
 
 export default function Sidebar() {
-  const [activeSection, setActiveSection] = useState("profile");
-  const [collapsed, setCollapsed] = useState(false);
+  
 
   // Handle scroll to detect which section is active
   useEffect(() => {

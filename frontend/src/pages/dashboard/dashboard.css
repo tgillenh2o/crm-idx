@@ -92,12 +92,14 @@ body, .dashboard, .main-panel {
   min-height: 100vh;
 }
 
-.main-panel {
-  margin-left: 240px;
-  width: calc(100% - 240px);
-  padding: 24px;
+..main-panel {
+  margin-left: 240px; /* default sidebar width */
+  transition: margin-left 0.3s ease;
 }
 
+.main-panel.sidebar-collapsed {
+  margin-left: 60px; /* match collapsed sidebar width */
+}
 /* ================= Topbar ================= */
 .topbar {
   background-color: #1f1f1f;

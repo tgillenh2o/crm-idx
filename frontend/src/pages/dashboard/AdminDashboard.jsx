@@ -13,6 +13,7 @@ export default function AdminDashboard() {
   const [leads, setLeads] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [collapsed, setCollapsed] = useState(false); // sidebar state
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -78,6 +79,15 @@ export default function AdminDashboard() {
   const otherLeads = leads.filter(l => !leadPondLeads.includes(l));
 
   return (
+   <div className="dashboard">
+      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+      <div className={`main-panel ${collapsed ? "sidebar-collapsed" : ""}`}>
+        <Topbar />
+        {/* rest of dashboard content */}
+      </div>
+    </div>
+  );
+}
     <div className="dashboard">
       <Sidebar />
       <div className="main-panel">
