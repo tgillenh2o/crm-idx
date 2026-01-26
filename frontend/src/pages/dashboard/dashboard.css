@@ -46,12 +46,6 @@ body, .dashboard, .main-panel {
   color: #ffffff;
 }
 
-.sidebar-disabled {
-  color: #475569;
-  font-size: 13px;
-  padding: 10px 14px;
-  cursor: not-allowed;
-}
 .sidebar .badge {
   background: #2563eb;
   color: #ffffff;
@@ -61,7 +55,6 @@ body, .dashboard, .main-panel {
   margin-left: 6px;
 }
 
-
 /* ================= Main Panel ================= */
 .dashboard {
   display: flex;
@@ -69,7 +62,7 @@ body, .dashboard, .main-panel {
 }
 
 .main-panel {
-  margin-left: 240px; /* matches sidebar */
+  margin-left: 240px;
   width: calc(100% - 240px);
   padding: 24px;
 }
@@ -119,7 +112,15 @@ body, .dashboard, .main-panel {
 }
 
 /* ================= Lead Cards ================= */
+.leads-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  transition: all 0.4s ease;
+}
+
 .lead-card {
+  flex: 1 1 300px;
   background: #020617;
   border: 1px solid #1e293b;
   border-radius: 10px;
@@ -135,6 +136,11 @@ body, .dashboard, .main-panel {
 
 .lead-card.lead-pond {
   border-left: 4px solid #64b5f6;
+}
+
+.lead-card.removing {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 
 .lead-info p {
@@ -190,6 +196,21 @@ button:hover {
   background-color: #505050;
 }
 
+.claim-button {
+  background-color: #2563eb;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.claim-button:hover {
+  background-color: #1d4ed8;
+}
+
 /* ================= Interaction Forms ================= */
 .interaction-form {
   display: flex;
@@ -217,20 +238,3 @@ button:hover {
 .toggle-form-btn {
   margin-bottom: 12px;
 }
-/* ================= Claim Button ================= */
-
-.claim-button {
-  background-color: #2563eb;
-  color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  margin-top: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.claim-button:hover {
-  background-color: #1d4ed8;
-}
-
