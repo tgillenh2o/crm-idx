@@ -87,7 +87,7 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
       <option>Closed</option>
     </select>
 
-    {onAssign && (
+    {isLeadPond && onAssign && (
       <select
         value={lead.assignedTo || ""}
         onChange={(e) => onAssign(lead._id, e.target.value)}
@@ -96,6 +96,12 @@ export default function LeadCard({ lead, isAdmin = false, onDelete, onAssign, us
         <option value="POND">Lead Pond</option>
         {users.map(u => (
           <option key={u._id} value={u._id}>{u.name}</option>
+         <button
+    className="claim-button"
+    onClick={() => onAssign(lead._id, currentUserEmail)}
+  >
+    Claim Lead
+  </button>
         ))}
       </select>
     )}

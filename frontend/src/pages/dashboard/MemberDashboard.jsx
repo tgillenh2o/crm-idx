@@ -55,7 +55,11 @@ export default function MemberDashboard() {
 
   return (
     <div className="dashboard">
-      <Sidebar />
+      <Sidebar 
+  pondCount={leadPondLeads.length} 
+  myLeadsCount={otherLeads.length} 
+/>
+
       <div className="main-panel">
         <Topbar />
 
@@ -91,6 +95,7 @@ export default function MemberDashboard() {
                       isAdmin={false}
                       onAssign={handleAssign}
                       isLeadPond={true}
+                      currentUserEmail={user.email}
                     />
                   ))}
                 </div>

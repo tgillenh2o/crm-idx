@@ -6,6 +6,8 @@ import LeadCard from "./LeadCard";
 import AddLead from "./AddLead";
 import "./Dashboard.css";
 
+
+
 export default function AdminDashboard() {
   const { user } = useContext(AuthContext);
   const [leads, setLeads] = useState([]);
@@ -83,7 +85,11 @@ export default function AdminDashboard() {
 
   return (
     <div className="dashboard">
-      <Sidebar />
+      <Sidebar 
+  pondCount={leadPondLeads.length} 
+  myLeadsCount={otherLeads.length} 
+/>
+
       <div className="main-panel">
         <Topbar />
 
@@ -137,6 +143,7 @@ export default function AdminDashboard() {
                       users={users}
                       onAssign={handleAssign}
                       isLeadPond={true}
+                      currentUserEmail={user.email}
                     />
                   ))}
                 </div>
