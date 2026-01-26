@@ -3,7 +3,9 @@ import "./Dashboard.css";
 
 export default function Sidebar() {
   const [activeSection, setActiveSection] = useState("profile");
+  const [collapsed, setCollapsed] = useState(false);
 
+  // Handle scroll to detect which section is active
   useEffect(() => {
     const handleScroll = () => {
       const profile = document.getElementById("profile");
@@ -11,7 +13,7 @@ export default function Sidebar() {
       const myLeads = document.getElementById("my-leads");
       const scrollY = window.scrollY + 120; // offset for topbar
 
-      if (profile && scrollY < (leadPond?.offsetTop || Infinity)) {
+      if (profile && scrollY < (leadPond?.offsetTop || 0)) {
         setActiveSection("profile");
       } else if (leadPond && scrollY >= leadPond.offsetTop && scrollY < (myLeads?.offsetTop || Infinity)) {
         setActiveSection("lead-pond");
@@ -30,41 +32,42 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="sidebar">
-      <h2>CRM Dashboard</h2>
+    <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
+      <div className="sidebar-header">
+        {!collapsed && <h2>CRM Dashboard</h2>}
+        <button 
+          className="collapse-btn"
+          onClick={() => setCollapsed(prev => !prev)}
+        >
+          {collapsed ? "→" : "←"}
+        </button>
+      </div>
 
-      <a
-        href="#profile"
-        className={activeSection === "profile" ? "active" : ""}
-        onClick={(e) => {
-          e.preventDefault();
-          scrollToSection("profile");
-        }}
-      >
-        Profile
-      </a>
+      <nav className="sidebar-nav">
+        <a
+          href="#profile"
+          className={activeSection === "profile" ? "active" : ""}
+          onClick={(e) => { e.preventDefault(); scrollToSection("profile"); }}
+        >
+          {collapsed ? "P" : "Profile"}
+        </a>
 
-      <a
-        href="#lead-pond"
-        className={activeSection === "lead-pond" ? "active" : ""}
-        onClick={(e) => {
-          e.preventDefault();
-          scrollToSection("lead-pond");
-        }}
-      >
-        Lead Pond
-      </a>
+        <a
+          href="#lead-pond"
+          className={activeSection === "lead-pond" ? "active" : ""}
+          onClick={(e) => { e.preventDefault(); scrollToSection("lead-pond"); }}
+        >
+          {collapsed ? "LP" : "Lead Pond"}
+        </a>
 
-      <a
-        href="#my-leads"
-        className={activeSection === "my-leads" ? "active" : ""}
-        onClick={(e) => {
-          e.preventDefault();
-          scrollToSection("my-leads");
-        }}
-      >
-        My Leads
-      </a>
+        <a
+          href="#my-leads"
+          className={activeSection === "my-leads" ? "active" : ""}
+          onClick={(e) => { e.preventDefault(); scrollToSection("my-leads"); }}
+        >
+          {collapsed ? "ML" : "My Leads"}
+        </a>
+      </nav>
     </div>
   );
 }
