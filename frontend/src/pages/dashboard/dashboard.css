@@ -115,17 +115,17 @@ body, .dashboard, .main-panel {
 .leads-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  transition: all 0.4s ease;
+  gap: 12px; /* slightly tighter */
 }
 
 .lead-card {
-  flex: 1 1 300px;
+  flex: 1 1 250px; /* smaller base width */
   background: #020617;
   border: 1px solid #1e293b;
-  border-radius: 10px;
-  padding: 14px;
-  margin-bottom: 20px;
+  border-radius: 8px;
+  padding: 12px; /* reduced padding */
+  margin-bottom: 16px;
+  font-size: 14px; /* slightly smaller text */
   transition: all 0.2s ease;
 }
 
@@ -135,8 +135,9 @@ body, .dashboard, .main-panel {
 }
 
 .lead-card.lead-pond {
-  border-left: 4px solid #64b5f6;
+  border-left: 3px solid #64b5f6;
 }
+
 
 .lead-card.removing {
   opacity: 0;
@@ -213,21 +214,20 @@ button:hover {
 
 /* ================= Interaction Forms ================= */
 .interaction-form {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
-  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
 }
 
-.interaction-history {
-  margin-top: 15px;
-  padding-top: 10px;
-  border-top: 1px solid #1e293b;
+.interaction-form input,
+.interaction-form select,
+.interaction-form button {
+  padding: 6px 8px;
+  font-size: 13px;
 }
 
-.interaction-item {
-  border-top: 1px solid #333;
-  padding: 8px 0;
+.claim-button {
+  padding: 5px 10px;
+  font-size: 13px;
 }
 
 /* ================= Add Lead Form ================= */
