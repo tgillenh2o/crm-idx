@@ -241,3 +241,54 @@ button:hover {
 .toggle-form-btn {
   margin-bottom: 12px;
 }
+
+/* ================= Profile Tab ================= */
+.profile-tab {
+  margin-bottom: 30px;
+}
+
+.profile-card {
+  background: #020617;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 400px;
+}
+
+.profile-card label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: #e5e7eb;
+}
+
+.profile-card input {
+  margin-top: 4px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #555;
+  background: #1a1f2e;
+  color: #e5e7eb;
+}
+
+.profile-card button {
+  margin-top: 12px;
+  background-color: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.profile-card button:hover {
+  background-color: #1d4ed8;
+}
+
+.profile-message {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #64b5f6;
+}
