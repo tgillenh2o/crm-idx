@@ -8,10 +8,20 @@ const isAdmin = require("../middleware/isAdmin");
 /* ================== GET LEADS ================== */
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const leads =
-      req.user.role === "teamAdmin"
-        ? await Lead.find().sort({ createdAt: -1 })
-        : await Lead.find({ assignedTo: req.user.email }).sort({ createdAt: -1 });
+    let leads;
+
+    if (req.user.role === "teamAdmin") {
+      leads = await Lead.find().sort({ createdAt: -1 });
+    } else {
+      leads = await Lead.find({
+        $or: [
+          { assignedTo: req.user.email },
+          { assignedTo: "POND" },
+          { assignedTo: "UNASSIGNED" },
+          { assignedTo: { $exists: false } },
+        ],
+      }).sort({ createdAt: -1 });
+    }
 
     res.json(leads);
   } catch (err) {
@@ -19,6 +29,7 @@ router.get("/", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 /* ================== POST NEW LEAD ================== */
 router.post("/", verifyToken, async (req, res) => {
@@ -96,32 +107,35 @@ router.delete("/:id", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-/* ================== ADMIN REASSIGN LEAD ================== */
+/* ================== ADMIN REASSIGN / CLAIM LEAD ================== */
 router.patch("/:id/assign", verifyToken, async (req, res) => {
   try {
-    if (req.user.role !== "teamAdmin") {
-      return res.status(403).json({ message: "Forbidden" });
-    }
-
-    const { assignedTo } = req.body;
+    const { userId } = req.body;
 
     const lead = await Lead.findById(req.params.id);
-    if (!lead) {
-      return res.status(404).json({ message: "Lead not found" });
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+    // Admin can assign to anyone or pond
+    if (req.user.role === "teamAdmin") {
+      lead.assignedTo =
+        userId && userId.trim() !== "" ? userId : "UNASSIGNED";
+    } 
+    // Member can only claim pond leads
+    else {
+      if (lead.assignedTo !== "POND" && lead.assignedTo !== "UNASSIGNED") {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      lead.assignedTo = req.user.email;
     }
 
-    lead.assignedTo = assignedTo && assignedTo.trim() !== ""
-      ? assignedTo
-      : "UNASSIGNED";
-
     await lead.save();
-
     res.json(lead);
   } catch (err) {
     console.error("ASSIGN lead error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
+
 /*================== INTERACTIONS ================*/
 // routes/leads.js
 router.post("/:id/interactions", verifyToken, async (req, res) => {
