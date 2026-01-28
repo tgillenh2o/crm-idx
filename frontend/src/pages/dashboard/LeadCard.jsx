@@ -1,35 +1,27 @@
-import React, { useState, useEffect } from "react";
-import "./LeadCard.css"; // correct relative import
-
+import React, { useState } from "react";
+import "./LeadCard.css";
 
 export default function LeadCard({
   lead,
   isAdmin = false,
   onDelete,
-  onAssign,
+  onAssign, // dashboard state updater
   users = [],
   isLeadPond = false,
-  currentUserEmail
+  currentUserEmail, // for member claiming
 }) {
   const [status, setStatus] = useState(lead.status || "New");
   const [interactionType, setInteractionType] = useState("call");
   const [interactionNote, setInteractionNote] = useState("");
   const [interactions, setInteractions] = useState(lead.interactions || []);
   const [removing, setRemoving] = useState(false);
-  const [bgClass, setBgClass] = useState(`status-${status.toLowerCase().replace(" ", "-")}`);
 
   const assignedToName = lead.assignedTo || "Unassigned";
 
-  // Animate background when status changes
-  useEffect(() => {
-    const newClass = `status-${status.toLowerCase().replace(" ", "-")}`;
-    setBgClass(newClass);
-  }, [status]);
-
+  // ======== STATUS UPDATE ========
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
-
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`, {
         method: "PATCH",
@@ -46,17 +38,21 @@ export default function LeadCard({
     }
   };
 
+  // ======== LOG INTERACTION ========
   const handleInteraction = async () => {
     if (!interactionNote.trim()) return;
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ type: interactionType, note: interactionNote }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ type: interactionType, note: interactionNote }),
+        }
+      );
       const data = await res.json();
       setInteractions(data.interactions || []);
       setInteractionNote("");
@@ -65,15 +61,58 @@ export default function LeadCard({
     }
   };
 
+  // ======== MEMBER CLAIM LEAD ========
+  const handleClaim = async () => {
+    if (!currentUserEmail) return;
+    setRemoving(true);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/claim`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      const updatedLead = await res.json();
+      if (onAssign) onAssign(lead._id, updatedLead.assignedTo);
+    } catch (err) {
+      console.error("Failed to claim lead:", err);
+      setRemoving(false);
+    }
+  };
+
+  // ======== ADMIN REASSIGN LEAD ========
+  const handleReassign = async (e) => {
+    const newAssignedTo = e.target.value;
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/reassign`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ assignedTo: newAssignedTo }),
+        }
+      );
+      const updatedLead = await res.json();
+      if (onAssign) onAssign(lead._id, updatedLead.assignedTo);
+    } catch (err) {
+      console.error("Failed to reassign lead:", err);
+    }
+  };
+
   return (
-    <div className={`lead-card ${bgClass} ${isLeadPond ? "lead-pond" : ""} ${removing ? "removing" : ""}`}>
+    <div className={`lead-card status-${status.toLowerCase()} ${removing ? "removing" : ""}`}>
       <div className="lead-info">
         <p><strong>Name:</strong> {lead.name}</p>
         <p><strong>Email:</strong> {lead.email}</p>
         <p><strong>Phone:</strong> {lead.phone}</p>
         <p><strong>Assigned To:</strong> {assignedToName}</p>
-        <p>
-          <strong>Status:</strong>
+
+        <p className={`status-${status.toLowerCase()}`}>
+          <strong>Status:</strong>{" "}
           <select value={status} onChange={handleStatusChange}>
             <option>New</option>
             <option>Contacted</option>
@@ -82,54 +121,38 @@ export default function LeadCard({
           </select>
         </p>
 
-        {isAdmin && onAssign && users.length > 0 && (
+        {/* ADMIN REASSIGN */}
+        {isAdmin && users.length > 0 && (
           <p>
-            <strong>Reassign:</strong>
-            <select value={lead.assignedTo || ""} onChange={(e) => onAssign(lead._id, e.target.value)}>
+            <strong>Reassign:</strong>{" "}
+            <select value={lead.assignedTo || ""} onChange={handleReassign}>
               <option value="">Unassigned</option>
               <option value="POND">Lead Pond</option>
               {users.map((u) => (
-                <option key={u._id} value={u.email}>{u.name}</option>
+                <option key={u._id} value={u.email}>
+                  {u.name}
+                </option>
               ))}
             </select>
           </p>
         )}
       </div>
 
-     {isLeadPond && currentUserEmail && (
-  <button
-    className="claim-button"
-    onClick={async () => {
-      setRemoving(true); // optional animation
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/claim`, {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        const updatedLead = await res.json();
-
-        // Update parent state so the dashboard re-renders
-        if (onAssign) onAssign(lead._id, updatedLead.assignedTo); 
-      } catch (err) {
-        console.error("Failed to claim lead:", err);
-        setRemoving(false);
-      }
-    }}
-  >
-    Claim Lead
-  </button>
-)}
-
+      {/* MEMBER CLAIM */}
+      {isLeadPond && currentUserEmail && !isAdmin && (
+        <button className="claim-button" onClick={handleClaim}>
+          Claim Lead
+        </button>
       )}
 
+      {/* ADMIN DELETE */}
       {isAdmin && onDelete && (
         <button className="delete-button" onClick={() => onDelete(lead._id)}>
           Delete Lead
         </button>
       )}
 
+      {/* INTERACTIONS */}
       <div className="interaction-form">
         <select value={interactionType} onChange={(e) => setInteractionType(e.target.value)}>
           <option value="call">Call</option>
@@ -153,7 +176,9 @@ export default function LeadCard({
         ) : (
           interactions.map((i, idx) => (
             <div key={idx} className="interaction-item">
-              <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on {new Date(i.date).toLocaleString()}<br />
+              <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on{" "}
+              {new Date(i.date).toLocaleString()}
+              <br />
               {i.note}
             </div>
           ))
