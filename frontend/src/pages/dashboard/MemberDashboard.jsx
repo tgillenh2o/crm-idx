@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import LeadCard from "./LeadCard";
 import AddLead from "./AddLead";
+import Profile from "./Profile";
 import "./Dashboard.css";
 
 export default function MemberDashboard() {
@@ -14,14 +15,16 @@ export default function MemberDashboard() {
   const [filter24h, setFilter24h] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Polling every 5s
+  // Tab state
+  const [activeTab, setActiveTab] = useState("leads"); // 'leads' or 'profile'
+
+  // Polling every 5s for real-time updates
   useEffect(() => {
     fetchLeads();
     const interval = setInterval(fetchLeads, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch leads
   const fetchLeads = async () => {
     setLoading(true);
     try {
@@ -31,14 +34,13 @@ export default function MemberDashboard() {
       const data = await res.json();
       const newLeads = Array.isArray(data) ? data : [];
 
-      // Detect any leads claimed by others
+      // Detect leads claimed by others
       newLeads.forEach((l) => {
         const oldLead = leads.find(ol => ol._id === l._id);
         if (oldLead?.assignedTo === "POND" && l.assignedTo && l.assignedTo !== "POND" && l.assignedTo !== user.email) {
-          // Trigger toast + sound
           setToast(`Lead "${l.name}" claimed by ${l.assignedTo}`);
-          const audio = new Audio("/notification.mp3"); // add notification.mp3 to public/
-          audio.play().catch(() => {}); // avoid promise error if blocked
+          const audio = new Audio("/notification.mp3"); // Add file to public/
+          audio.play().catch(() => {});
         }
       });
 
@@ -54,7 +56,10 @@ export default function MemberDashboard() {
   const handleAssign = async (leadId, assignedTo) => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      },
       body: JSON.stringify({ userId: assignedTo })
     });
     const updated = await res.json();
@@ -73,7 +78,7 @@ export default function MemberDashboard() {
     return now - new Date(l.updatedAt).getTime() <= 24*60*60*1000;
   });
 
-  // Separate pond vs mine
+  // Separate pond vs my leads
   const leadPond = filteredLeads.filter(l => l.assignedTo === "POND" || !l.assignedTo || l.assignedTo === "UNASSIGNED");
   const myLeads = filteredLeads.filter(l => l.assignedTo === user.email);
 
@@ -83,49 +88,61 @@ export default function MemberDashboard() {
       <div className={`main-panel ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <Topbar />
 
-        <div>
-          <label>
-            <input type="checkbox" checked={filter24h} onChange={e => setFilter24h(e.target.checked)} />
-            Show leads updated in last 24h
-          </label>
+        {/* TAB NAV */}
+        <div className="tab-nav">
+          <button className={activeTab === "leads" ? "active" : ""} onClick={() => setActiveTab("leads")}>Leads</button>
+          <button className={activeTab === "profile" ? "active" : ""} onClick={() => setActiveTab("profile")}>Profile</button>
         </div>
 
-        <AddLead onLeadAdded={l => setLeads([l,...leads])} currentUser={user} isAdmin={false} />
-
-        {/* LEAD POND */}
-        {leadPond.length > 0 && (
-          <div>
-            <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
-            <div className="leads-grid">
-              {leadPond.map(l => (
-                <LeadCard
-                  key={l._id}
-                  lead={l}
-                  isLeadPond
-                  currentUserEmail={user.email}
-                  onAssign={handleAssign}
-                />
-              ))}
+        {activeTab === "leads" && (
+          <>
+            <div style={{ marginBottom: "12px" }}>
+              <label>
+                <input type="checkbox" checked={filter24h} onChange={e => setFilter24h(e.target.checked)} />
+                Show leads updated in last 24h
+              </label>
             </div>
-          </div>
+
+            <AddLead onLeadAdded={l => setLeads([l,...leads])} currentUser={user} isAdmin={false} />
+
+            {/* LEAD POND */}
+            {leadPond.length > 0 && (
+              <div>
+                <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
+                <div className="leads-grid">
+                  {leadPond.map(l => (
+                    <LeadCard
+                      key={l._id}
+                      lead={l}
+                      isLeadPond
+                      currentUserEmail={user.email}
+                      onAssign={handleAssign}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* MY LEADS */}
+            {myLeads.length > 0 && (
+              <div>
+                <h3>My Leads</h3>
+                <div className="leads-grid">
+                  {myLeads.map(l => (
+                    <LeadCard
+                      key={l._id}
+                      lead={l}
+                      currentUserEmail={user.email}
+                      onAssign={moveToPond}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
-        {/* MY LEADS */}
-        {myLeads.length > 0 && (
-          <div>
-            <h3>My Leads</h3>
-            <div className="leads-grid">
-              {myLeads.map(l => (
-                <LeadCard
-                  key={l._id}
-                  lead={l}
-                  currentUserEmail={user.email}
-                  onAssign={moveToPond}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+        {activeTab === "profile" && <Profile />}
 
         {/* TOAST */}
         {toast && (

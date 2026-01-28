@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import LeadCard from "./LeadCard";
 import AddLead from "./AddLead";
+import Profile from "./Profile"; // 👈 import profile tab
 import "./Dashboard.css";
 
 export default function AdminDashboard() {
@@ -13,6 +14,9 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [filter24h, setFilter24h] = useState(false);
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState("leads"); // 'leads' or 'profile'
 
   useEffect(() => {
     fetchLeads();
@@ -58,6 +62,7 @@ export default function AdminDashboard() {
     setLeads(prev => prev.map(l => l._id === id ? updated : l));
   };
 
+  // 24-hour filter
   const now = Date.now();
   const filteredLeads = leads.filter(l => {
     if (!filter24h) return true;
@@ -73,32 +78,44 @@ export default function AdminDashboard() {
       <div className={`main-panel ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <Topbar />
 
-        <div>
-          <label>
-            <input type="checkbox" checked={filter24h} onChange={e => setFilter24h(e.target.checked)} />
-            Show leads updated in last 24h
-          </label>
+        {/* TAB NAV */}
+        <div className="tab-nav">
+          <button className={activeTab === "leads" ? "active" : ""} onClick={() => setActiveTab("leads")}>Leads</button>
+          <button className={activeTab === "profile" ? "active" : ""} onClick={() => setActiveTab("profile")}>Profile</button>
         </div>
 
-        <AddLead onLeadAdded={l => setLeads([l,...leads])} currentUser={user} isAdmin={true} users={users} />
-
-        {leadPond.length > 0 && (
-          <div>
-            <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
-            <div className="leads-grid">
-              {leadPond.map(l => <LeadCard key={l._id} lead={l} isAdmin onAssign={handleAssign} users={users} isLeadPond />)}
+        {activeTab === "leads" && (
+          <>
+            <div style={{ marginBottom: "12px" }}>
+              <label>
+                <input type="checkbox" checked={filter24h} onChange={e => setFilter24h(e.target.checked)} />
+                Show leads updated in last 24h
+              </label>
             </div>
-          </div>
+
+            <AddLead onLeadAdded={l => setLeads([l,...leads])} currentUser={user} isAdmin={true} users={users} />
+
+            {leadPond.length > 0 && (
+              <div>
+                <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
+                <div className="leads-grid">
+                  {leadPond.map(l => <LeadCard key={l._id} lead={l} isAdmin onAssign={handleAssign} users={users} isLeadPond />)}
+                </div>
+              </div>
+            )}
+
+            {otherLeads.length > 0 && (
+              <div>
+                <h3>Your Leads</h3>
+                <div className="leads-grid">
+                  {otherLeads.map(l => <LeadCard key={l._id} lead={l} isAdmin onAssign={handleAssign} users={users} onDelete={handleDelete} />)}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
-        {otherLeads.length > 0 && (
-          <div>
-            <h3>Your Leads</h3>
-            <div className="leads-grid">
-              {otherLeads.map(l => <LeadCard key={l._id} lead={l} isAdmin onAssign={handleAssign} users={users} onDelete={handleDelete} />)}
-            </div>
-          </div>
-        )}
+        {activeTab === "profile" && <Profile />}
       </div>
     </div>
   );
