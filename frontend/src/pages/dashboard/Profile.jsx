@@ -1,96 +1,106 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
-import "./Dashboard.css";
 
 export default function Profile() {
-  const { user, refreshUser } = useContext(AuthContext);
-  const [formData, setFormData] = useState({
+  const { user, setUser } = useContext(AuthContext);
+
+  const [form, setForm] = useState({
     name: "",
     email: "",
-    phone: "",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
   });
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
 
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState(null);
+
+  // Load current user info
   useEffect(() => {
     if (user) {
-      setFormData({
-        name: user.name || "",
-        email: user.email || "",
-        phone: user.phone || "",
-      });
+      setForm(prev => ({ ...prev, name: user.name, email: user.email }));
     }
   }, [user]);
 
-  const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleChange = e => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSave = async () => {
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setMessage(null);
+
+    if (form.newPassword && form.newPassword !== form.confirmPassword) {
+      setMessage("New password and confirmation do not match");
+      return;
+    }
+
     setSaving(true);
-    setMessage("");
+
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${user._id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          currentPassword: form.currentPassword,
+          newPassword: form.newPassword
+        })
       });
 
-      if (!res.ok) throw new Error("Failed to save profile");
-
-      const updatedUser = await res.json();
-      setMessage("Profile updated successfully!");
-      refreshUser(updatedUser); // update context
+      const data = await res.json();
+      if (res.ok) {
+        setMessage("Profile updated successfully!");
+        // update context user
+        setUser(prev => ({ ...prev, name: data.name, email: data.email }));
+        setForm(prev => ({ ...prev, currentPassword: "", newPassword: "", confirmPassword: "" }));
+      } else {
+        setMessage(data.message || "Failed to update profile");
+      }
     } catch (err) {
       console.error(err);
-      setMessage("Error updating profile.");
+      setMessage("Server error");
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div id="profile" className="profile-section">
-      <h2>My Profile</h2>
-      <div className="profile-form">
+    <div className="profile-container">
+      <h2>Edit Profile</h2>
+      {message && <div className="message">{message}</div>}
+
+      <form onSubmit={handleSubmit} className="profile-form">
         <label>
-          Name:
-          <input
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Your Name"
-          />
-        </label>
-        <label>
-          Email:
-          <input
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Your Email"
-          />
-        </label>
-        <label>
-          Phone:
-          <input
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder="Your Phone"
-          />
+          Name
+          <input type="text" name="name" value={form.name} onChange={handleChange} required />
         </label>
 
-        <button onClick={handleSave} disabled={saving}>
-          {saving ? "Saving..." : "Save Changes"}
-        </button>
+        <label>
+          Email
+          <input type="email" name="email" value={form.email} onChange={handleChange} required />
+        </label>
 
-        {message && <p className="profile-message">{message}</p>}
-      </div>
+        <h4>Change Password</h4>
+        <label>
+          Current Password
+          <input type="password" name="currentPassword" value={form.currentPassword} onChange={handleChange} />
+        </label>
+        <label>
+          New Password
+          <input type="password" name="newPassword" value={form.newPassword} onChange={handleChange} />
+        </label>
+        <label>
+          Confirm New Password
+          <input type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange} />
+        </label>
+
+        <button type="submit" disabled={saving}>{saving ? "Saving..." : "Save Changes"}</button>
+      </form>
     </div>
   );
 }
