@@ -14,11 +14,8 @@ export default function MemberDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [filter24h, setFilter24h] = useState(false);
   const [toast, setToast] = useState(null);
+  const [activeTab, setActiveTab] = useState("leads"); // tabs: 'leads', 'profile'
 
-  // Tab state
-  const [activeTab, setActiveTab] = useState("leads"); // 'leads' or 'profile'
-
-  // Polling every 5s for real-time updates
   useEffect(() => {
     fetchLeads();
     const interval = setInterval(fetchLeads, 5000);
@@ -34,52 +31,36 @@ export default function MemberDashboard() {
       const data = await res.json();
       const newLeads = Array.isArray(data) ? data : [];
 
-      // Detect leads claimed by others
-      newLeads.forEach((l) => {
+      // Toast for claimed leads
+      newLeads.forEach(l => {
         const oldLead = leads.find(ol => ol._id === l._id);
         if (oldLead?.assignedTo === "POND" && l.assignedTo && l.assignedTo !== "POND" && l.assignedTo !== user.email) {
           setToast(`Lead "${l.name}" claimed by ${l.assignedTo}`);
-          const audio = new Audio("/notification.mp3"); // Add file to public/
+          const audio = new Audio("/notification.mp3");
           audio.play().catch(() => {});
         }
       });
 
       setLeads(newLeads);
-    } catch {
-      setLeads([]);
-    } finally {
-      setLoading(false);
-    }
+    } catch { setLeads([]); } finally { setLoading(false); }
   };
 
-  // Claim a lead from pond
   const handleAssign = async (leadId, assignedTo) => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
       body: JSON.stringify({ userId: assignedTo })
     });
     const updated = await res.json();
     setLeads(prev => prev.map(l => l._id === leadId ? updated : l));
   };
 
-  // Move lead back to pond
-  const moveToPond = async (leadId) => {
-    handleAssign(leadId, "POND");
-  };
+  const moveToPond = async (leadId) => handleAssign(leadId, "POND");
 
-  // 24-hour filter
   const now = Date.now();
-  const filteredLeads = leads.filter(l => {
-    if (!filter24h) return true;
-    return now - new Date(l.updatedAt).getTime() <= 24*60*60*1000;
-  });
+  const filteredLeads = leads.filter(l => !filter24h || (now - new Date(l.updatedAt).getTime() <= 24*60*60*1000));
 
-  // Separate pond vs my leads
-  const leadPond = filteredLeads.filter(l => l.assignedTo === "POND" || !l.assignedTo || l.assignedTo === "UNASSIGNED");
+  const leadPond = filteredLeads.filter(l => !l.assignedTo || l.assignedTo === "POND");
   const myLeads = filteredLeads.filter(l => l.assignedTo === user.email);
 
   return (
@@ -103,39 +84,22 @@ export default function MemberDashboard() {
               </label>
             </div>
 
-            <AddLead onLeadAdded={l => setLeads([l,...leads])} currentUser={user} isAdmin={false} />
+            <AddLead onLeadAdded={l => setLeads([l, ...leads])} currentUser={user} isAdmin={false} />
 
-            {/* LEAD POND */}
             {leadPond.length > 0 && (
               <div>
                 <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
                 <div className="leads-grid">
-                  {leadPond.map(l => (
-                    <LeadCard
-                      key={l._id}
-                      lead={l}
-                      isLeadPond
-                      currentUserEmail={user.email}
-                      onAssign={handleAssign}
-                    />
-                  ))}
+                  {leadPond.map(l => <LeadCard key={l._id} lead={l} isLeadPond currentUserEmail={user.email} onAssign={handleAssign} />)}
                 </div>
               </div>
             )}
 
-            {/* MY LEADS */}
             {myLeads.length > 0 && (
               <div>
                 <h3>My Leads</h3>
                 <div className="leads-grid">
-                  {myLeads.map(l => (
-                    <LeadCard
-                      key={l._id}
-                      lead={l}
-                      currentUserEmail={user.email}
-                      onAssign={moveToPond}
-                    />
-                  ))}
+                  {myLeads.map(l => <LeadCard key={l._id} lead={l} currentUserEmail={user.email} onAssign={moveToPond} />)}
                 </div>
               </div>
             )}
@@ -144,11 +108,9 @@ export default function MemberDashboard() {
 
         {activeTab === "profile" && <Profile />}
 
-        {/* TOAST */}
         {toast && (
           <div className="toast">
-            {toast}
-            <button onClick={() => setToast(null)}>✖</button>
+            {toast} <button onClick={() => setToast(null)}>✖</button>
           </div>
         )}
       </div>

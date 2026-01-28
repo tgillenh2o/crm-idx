@@ -15,7 +15,7 @@ export default function LeadCard({
   const [interactionNote, setInteractionNote] = useState("");
   const [interactions, setInteractions] = useState(lead.interactions || []);
   const [removing, setRemoving] = useState(false);
-  const [glow, setGlow] = useState(false);
+  const [glowColor, setGlowColor] = useState("");
   const prevLeadRef = useRef(lead);
 
   const assignedToName = lead.assignedTo || "Unassigned";
@@ -25,13 +25,20 @@ export default function LeadCard({
     const prevLead = prevLeadRef.current;
     if (!prevLead) return;
 
-    if (
-      prevLead.status !== lead.status ||
-      prevLead.assignedTo !== lead.assignedTo ||
-      (prevLead.interactions?.length || 0) !== (lead.interactions?.length || 0)
-    ) {
-      setGlow(true);
-      const timer = setTimeout(() => setGlow(false), 1000); // glow duration
+    let color = "";
+    if (prevLead.assignedTo !== lead.assignedTo) {
+      if (lead.assignedTo === currentUserEmail) color = "green";
+      else if (lead.assignedTo === "POND") color = "blue";
+      else color = "yellow";
+    } else if (prevLead.status !== lead.status) {
+      color = "green";
+    } else if ((prevLead.interactions?.length || 0) !== (lead.interactions?.length || 0)) {
+      color = "green";
+    }
+
+    if (color) {
+      setGlowColor(color);
+      const timer = setTimeout(() => setGlowColor(""), 1200);
       return () => clearTimeout(timer);
     }
 
@@ -52,9 +59,7 @@ export default function LeadCard({
       });
       const updated = await res.json();
       setStatus(updated.status);
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
   const handleInteraction = async () => {
@@ -69,15 +74,13 @@ export default function LeadCard({
         body: JSON.stringify({ type: interactionType, note: interactionNote })
       });
       const data = await res.json();
-      setInteractions(data.interactions || []);
+      setInteractions(prev => [...data.interactions].map((i, idx, arr) => ({ ...i, justAdded: idx === arr.length - 1 })));
       setInteractionNote("");
-    } catch (err) {
-      console.error("Failed to log interaction:", err);
-    }
+    } catch (err) { console.error(err); }
   };
 
   return (
-    <div className={`lead-card ${isLeadPond ? "lead-pond" : ""} ${removing ? "removing" : ""} ${glow ? "glow" : ""}`}>
+    <div className={`lead-card ${isLeadPond ? "lead-pond" : ""} ${removing ? "removing" : ""} ${glowColor ? "glow-" + glowColor : ""}`}>
       <div className="lead-info">
         <p><strong>Name:</strong> {lead.name}</p>
         <p><strong>Email:</strong> {lead.email}</p>
@@ -128,7 +131,7 @@ export default function LeadCard({
         <h4>Interaction History</h4>
         {interactions.length === 0 ? <p>No interactions yet</p> :
           interactions.map((i, idx) => (
-            <div key={idx} className="interaction-item">
+            <div key={idx} className={`interaction-item ${i.justAdded ? "new-interaction" : ""}`}>
               <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on {new Date(i.date).toLocaleString()}<br />
               {i.note}
             </div>

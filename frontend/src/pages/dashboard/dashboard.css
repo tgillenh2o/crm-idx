@@ -224,3 +224,20 @@ button:hover {
   100% { box-shadow: 0 0 0px #4f46e5; }
 }
 
+/* Glow animations */
+.glow-blue { animation: glowBlue 1.2s ease-in-out; }
+.glow-green { animation: glowGreen 1.2s ease-in-out; }
+.glow-yellow { animation: glowYellow 1.2s ease-in-out; }
+
+@keyframes glowBlue { 0% { box-shadow:0 0 0 #64b5f6; } 50% { box-shadow:0 0 12px #64b5f6; } 100% { box-shadow:0 0 0 #64b5f6; } }
+@keyframes glowGreen { 0% { box-shadow:0 0 0 #4caf50; } 50% { box-shadow:0 0 12px #4caf50; } 100% { box-shadow:0 0 0 #4caf50; } }
+@keyframes glowYellow { 0% { box-shadow:0 0 0 #ffeb3b; } 50% { box-shadow:0 0 12px #ffeb3b; } 100% { box-shadow:0 0 0 #ffeb3b; } }
+
+/* New interaction flash */
+.new-interaction { background-color: rgba(76,175,80,0.2); animation: flash 1s forwards; }
+@keyframes flash { 0% { background-color: rgba(76,175,80,0.5); } 100% { background-color: transparent; } }
+
+/* Slide in for newly added leads */
+.lead-card.added { transform: translateY(-10px); opacity: 0; animation: slideIn 0.5s forwards; }
+@keyframes slideIn { to { transform: translateY(0); opacity: 1; } }
+
