@@ -20,7 +20,6 @@ export default function LeadCard({
 
   const assignedToName = lead.assignedTo || "Unassigned";
 
-  // Detect changes for glow effect
   useEffect(() => {
     const prevLead = prevLeadRef.current;
     if (!prevLead) return;

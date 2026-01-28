@@ -30,14 +30,12 @@ export default function AdminDashboard() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = Array.isArray(await res.json()) ? await res.json() : [];
-      
-      // Detect claimed leads for toast
+
+      // Detect claimed leads for toast (silent)
       data.forEach(l => {
         const oldLead = leads.find(ol => ol._id === l._id);
         if (oldLead?.assignedTo === "POND" && l.assignedTo && l.assignedTo !== "POND" && l.assignedTo !== user.email) {
           setToast(`Lead "${l.name}" claimed by ${l.assignedTo}`);
-          const audio = new Audio("/notification.mp3");
-          audio.play().catch(() => {});
         }
       });
 

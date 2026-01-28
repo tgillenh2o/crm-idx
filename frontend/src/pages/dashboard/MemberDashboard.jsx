@@ -14,7 +14,7 @@ export default function MemberDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [filter24h, setFilter24h] = useState(false);
   const [toast, setToast] = useState(null);
-  const [activeTab, setActiveTab] = useState("leads"); // tabs: 'leads', 'profile'
+  const [activeTab, setActiveTab] = useState("leads");
 
   useEffect(() => {
     fetchLeads();
@@ -28,20 +28,8 @@ export default function MemberDashboard() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      const data = await res.json();
-      const newLeads = Array.isArray(data) ? data : [];
-
-      // Toast for claimed leads
-      newLeads.forEach(l => {
-        const oldLead = leads.find(ol => ol._id === l._id);
-        if (oldLead?.assignedTo === "POND" && l.assignedTo && l.assignedTo !== "POND" && l.assignedTo !== user.email) {
-          setToast(`Lead "${l.name}" claimed by ${l.assignedTo}`);
-          const audio = new Audio("/notification.mp3");
-          audio.play().catch(() => {});
-        }
-      });
-
-      setLeads(newLeads);
+      const data = Array.isArray(await res.json()) ? await res.json() : [];
+      setLeads(data);
     } catch { setLeads([]); } finally { setLoading(false); }
   };
 
@@ -69,7 +57,6 @@ export default function MemberDashboard() {
       <div className={`main-panel ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <Topbar />
 
-        {/* TAB NAV */}
         <div className="tab-nav">
           <button className={activeTab === "leads" ? "active" : ""} onClick={() => setActiveTab("leads")}>Leads</button>
           <button className={activeTab === "profile" ? "active" : ""} onClick={() => setActiveTab("profile")}>Profile</button>
