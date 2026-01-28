@@ -12,8 +12,14 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [filter24h, setFilter24h] = useState(false);
 
-  useEffect(() => { fetchLeads(); fetchUsers(); }, []);
+  useEffect(() => {
+    fetchLeads();
+    fetchUsers();
+    const interval = setInterval(fetchLeads, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -36,30 +42,30 @@ export default function AdminDashboard() {
     } catch { setUsers([]); }
   };
 
-  const handleDelete = async (leadId) => {
+  const handleDelete = async (id) => {
     if (!window.confirm("Are you sure?")) return;
-    await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-    });
-    setLeads(leads.filter(l => l._id !== leadId));
+    await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    setLeads(prev => prev.filter(l => l._id !== id));
   };
 
-  const handleAssign = async (leadId, assignedTo) => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`, {
+  const handleAssign = async (id, assignedTo) => {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${id}/assign`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
       body: JSON.stringify({ userId: assignedTo })
     });
-    const updatedLead = await res.json();
-    setLeads(prev => prev.map(l => l._id === leadId ? updatedLead : l));
+    const updated = await res.json();
+    setLeads(prev => prev.map(l => l._id === id ? updated : l));
   };
 
-  const leadPondLeads = leads.filter(l => l.assignedTo === "POND" || !l.assignedTo || l.assignedTo === "UNASSIGNED");
-  const otherLeads = leads.filter(l => !leadPondLeads.includes(l));
+  const now = Date.now();
+  const filteredLeads = leads.filter(l => {
+    if (!filter24h) return true;
+    return now - new Date(l.updatedAt).getTime() <= 24*60*60*1000;
+  });
+
+  const leadPond = filteredLeads.filter(l => l.assignedTo === "POND" || !l.assignedTo || l.assignedTo === "UNASSIGNED");
+  const otherLeads = filteredLeads.filter(l => !leadPond.includes(l));
 
   return (
     <div className="dashboard">
@@ -67,35 +73,32 @@ export default function AdminDashboard() {
       <div className={`main-panel ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <Topbar />
 
-        <div className="stats-cards">
-          <div className="stat-card"><p>Total Leads</p><h3>{leads.length}</h3></div>
-          <div className="stat-card"><p>Follow-ups</p><h3>{leads.filter(l=>l.status==="Follow-up").length}</h3></div>
-          <div className="stat-card"><p>Contacted</p><h3>{leads.filter(l=>l.status==="Contacted").length}</h3></div>
+        <div>
+          <label>
+            <input type="checkbox" checked={filter24h} onChange={e => setFilter24h(e.target.checked)} />
+            Show leads updated in last 24h
+          </label>
         </div>
 
         <AddLead onLeadAdded={l => setLeads([l,...leads])} currentUser={user} isAdmin={true} users={users} />
 
-        <div id="lead-pond">
-          {leadPondLeads.length > 0 && (
-            <>
-              <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
-              <div className="leads-grid">
-                {leadPondLeads.map(l => <LeadCard key={l._id} lead={l} isAdmin onAssign={handleAssign} users={users} isLeadPond />)}
-              </div>
-            </>
-          )}
-        </div>
+        {leadPond.length > 0 && (
+          <div>
+            <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
+            <div className="leads-grid">
+              {leadPond.map(l => <LeadCard key={l._id} lead={l} isAdmin onAssign={handleAssign} users={users} isLeadPond />)}
+            </div>
+          </div>
+        )}
 
-        <div id="my-leads">
-          {otherLeads.length > 0 && (
-            <>
-              <h3>Your Leads</h3>
-              <div className="leads-grid">
-                {otherLeads.map(l => <LeadCard key={l._id} lead={l} isAdmin onAssign={handleAssign} users={users} onDelete={handleDelete} />)}
-              </div>
-            </>
-          )}
-        </div>
+        {otherLeads.length > 0 && (
+          <div>
+            <h3>Your Leads</h3>
+            <div className="leads-grid">
+              {otherLeads.map(l => <LeadCard key={l._id} lead={l} isAdmin onAssign={handleAssign} users={users} onDelete={handleDelete} />)}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

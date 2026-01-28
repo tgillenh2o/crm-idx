@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./LeadCard.css";
 
 export default function LeadCard({
@@ -14,13 +14,11 @@ export default function LeadCard({
   const [interactions, setInteractions] = useState(lead.interactions || []);
   const [interactionType, setInteractionType] = useState("call");
   const [interactionNote, setInteractionNote] = useState("");
+  const [highlight, setHighlight] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const assignedTo = lead.assignedTo || "UNASSIGNED";
 
-  /* =========================
-     STATUS COLORS
-  ========================= */
   const statusColors = {
     New: "#60a5fa",
     Contacted: "#facc15",
@@ -33,13 +31,17 @@ export default function LeadCard({
     UNASSIGNED: "#94a3b8"
   };
 
-  /* =========================
-     STATUS UPDATE
-  ========================= */
+  // Highlight on update
+  useEffect(() => {
+    setHighlight(true);
+    const t = setTimeout(() => setHighlight(false), 1000);
+    return () => clearTimeout(t);
+  }, [status, assignedTo, interactions.length]);
+
+  // Update status
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
-
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`, {
         method: "PATCH",
@@ -54,13 +56,10 @@ export default function LeadCard({
     }
   };
 
-  /* =========================
-     ADD INTERACTION
-  ========================= */
+  // Add interaction
   const addInteraction = async () => {
     if (!interactionNote.trim()) return;
     setSaving(true);
-
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`,
@@ -70,13 +69,9 @@ export default function LeadCard({
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`
           },
-          body: JSON.stringify({
-            type: interactionType,
-            note: interactionNote
-          })
+          body: JSON.stringify({ type: interactionType, note: interactionNote })
         }
       );
-
       const data = await res.json();
       setInteractions(data.interactions || []);
       setInteractionNote("");
@@ -87,18 +82,19 @@ export default function LeadCard({
     }
   };
 
-  /* =========================
-     ASSIGNED LABEL
-  ========================= */
-  const assignedStyle = {
-    background:
-      assignedColors[assignedTo] ||
-      "#c084fc",
+  // Assign handlers
+  const handleClaim = () => {
+    onAssign && onAssign(lead._id, currentUserEmail);
   };
 
+  const handleMoveToPond = () => {
+    onAssign && onAssign(lead._id, "POND");
+  };
+
+  const isMine = assignedTo === currentUserEmail;
+
   return (
-    <div className="lead-card">
-      {/* HEADER */}
+    <div className={`lead-card ${highlight ? "highlight" : ""}`}>
       <div className="lead-card-header">
         <h4>{lead.name}</h4>
         <span
@@ -109,19 +105,20 @@ export default function LeadCard({
         </span>
       </div>
 
-      {/* BODY */}
       <div className="lead-card-body">
         <p>{lead.email}</p>
         <p>{lead.phone}</p>
-
-        <span className="assigned-pill" style={assignedStyle}>
+        <span
+          className="assigned-pill"
+          style={{
+            background: assignedColors[assignedTo] || "#c084fc"
+          }}
+        >
           {assignedTo === "POND" ? "Lead Pond" : assignedTo}
         </span>
       </div>
 
-      {/* ACTIONS */}
       <div className="lead-card-actions">
-        {/* STATUS */}
         <select value={status} onChange={handleStatusChange}>
           <option>New</option>
           <option>Contacted</option>
@@ -129,7 +126,6 @@ export default function LeadCard({
           <option>Closed</option>
         </select>
 
-        {/* ADMIN REASSIGN */}
         {isAdmin && onAssign && (
           <select
             value={assignedTo === "UNASSIGNED" ? "" : assignedTo}
@@ -145,17 +141,18 @@ export default function LeadCard({
           </select>
         )}
 
-        {/* MEMBER CLAIM */}
-        {isLeadPond && currentUserEmail && onAssign && !isAdmin && (
-          <button
-            className="primary"
-            onClick={() => onAssign(lead._id, currentUserEmail)}
-          >
+        {!isAdmin && isLeadPond && currentUserEmail && (
+          <button className="primary" onClick={handleClaim}>
             Claim
           </button>
         )}
 
-        {/* ADMIN DELETE */}
+        {!isAdmin && isMine && (
+          <button className="secondary" onClick={handleMoveToPond}>
+            Move to Pond
+          </button>
+        )}
+
         {isAdmin && onDelete && (
           <button className="danger" onClick={() => onDelete(lead._id)}>
             Delete
@@ -163,7 +160,7 @@ export default function LeadCard({
         )}
       </div>
 
-      {/* INTERACTIONS */}
+      {/* Interaction */}
       <div className="interaction-form">
         <select
           value={interactionType}
@@ -174,34 +171,24 @@ export default function LeadCard({
           <option value="meeting">Meeting</option>
           <option value="note">Note</option>
         </select>
-
         <input
           type="text"
           placeholder="Add interaction note..."
           value={interactionNote}
           onChange={(e) => setInteractionNote(e.target.value)}
         />
-
-        <button
-          className="secondary"
-          disabled={saving}
-          onClick={addInteraction}
-        >
+        <button className="secondary" disabled={saving} onClick={addInteraction}>
           Add
         </button>
       </div>
 
-      {/* HISTORY */}
       <div className="interaction-history">
         {interactions.length === 0 ? (
-          <p style={{ fontSize: "0.75rem", opacity: 0.6 }}>
-            No interactions yet
-          </p>
+          <p style={{ fontSize: "0.75rem", opacity: 0.6 }}>No interactions yet</p>
         ) : (
           interactions.map((i, idx) => (
             <div key={idx} className="interaction-item">
-              <strong>{i.type}</strong> —{" "}
-              {new Date(i.date).toLocaleString()}
+              <strong>{i.type}</strong> — {new Date(i.date).toLocaleString()}
               <br />
               {i.note}
             </div>
