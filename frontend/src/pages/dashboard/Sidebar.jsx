@@ -1,7 +1,10 @@
 import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "./Sidebar.css";
 
 export default function Sidebar({ collapsed, setCollapsed }) {
+  const navigate = useNavigate();
+
   return (
     <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
       <div className="sidebar-header">
@@ -12,9 +15,29 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       </div>
 
       <nav className="sidebar-menu">
-        <div className="sidebar-item">Profile</div>
-        <div className="sidebar-item">Lead Pond</div>
-        <div className="sidebar-item">My Leads</div>
+        {/* Profile */}
+        <div
+          className="sidebar-item"
+          onClick={() => navigate("/profile")}
+        >
+          Profile
+        </div>
+
+        {/* Lead Pond */}
+        <div
+          className="sidebar-item"
+          onClick={() => navigate("/lead-pond")}
+        >
+          Lead Pond
+        </div>
+
+        {/* My Leads */}
+        <div
+          className="sidebar-item"
+          onClick={() => navigate("/my-leads")}
+        >
+          My Leads
+        </div>
       </nav>
     </div>
   );
