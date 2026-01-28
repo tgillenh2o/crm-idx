@@ -15,48 +15,32 @@ export default function LeadCard({
   const [interactionNote, setInteractionNote] = useState("");
   const [interactions, setInteractions] = useState(lead.interactions || []);
   const [removing, setRemoving] = useState(false);
-  const [recentlyUpdated, setRecentlyUpdated] = useState(false);
-  const [recentlyAssigned, setRecentlyAssigned] = useState(false);
+  const [statusUpdated, setStatusUpdated] = useState(false);
+  const [assignedUpdated, setAssignedUpdated] = useState(false);
 
   const assignedToName = lead.assignedTo || "Unassigned";
 
-  // --- Status color mapping
   const statusColors = {
-    "New": "#e0f7fa",          // light cyan
-    "Contacted": "#fff3e0",    // light orange
-    "Follow-up": "#e8f5e9",    // light green
-    "Closed": "#f3e5f5"        // light purple
+    "New": "#e0f7fa",
+    "Contacted": "#fff3e0",
+    "Follow-up": "#e8f5e9",
+    "Closed": "#f3e5f5"
   };
 
-  // --- Glow effect when assignedTo changes
+  // Glow for assignedTo change
   useEffect(() => {
     if (!lead.assignedTo) return;
-    setRecentlyAssigned(true);
-    const timer = setTimeout(() => setRecentlyAssigned(false), 1500);
+    setAssignedUpdated(true);
+    const timer = setTimeout(() => setAssignedUpdated(false), 1500);
     return () => clearTimeout(timer);
   }, [lead.assignedTo]);
 
-  // --- Card style
-  const cardStyle = {
-    backgroundColor: statusColors[status] || "#ffffff",
-    color: "#333", // dark text for readability
-    transition: "background-color 0.3s ease, box-shadow 0.3s ease",
-    boxShadow: recentlyUpdated
-      ? "0 0 10px #64b5f6"      // status glow (blue)
-      : recentlyAssigned
-        ? "0 0 10px #ffb74d"    // assigned glow (orange)
-        : "none",
-    borderRadius: "8px",
-    padding: "12px",
-    marginBottom: "12px"
-  };
-
-  // --- Handle status change
+  // Status change handler
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
-    setRecentlyUpdated(true);
-    setTimeout(() => setRecentlyUpdated(false), 1500);
+    setStatusUpdated(true);
+    setTimeout(() => setStatusUpdated(false), 1500);
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`, {
@@ -74,7 +58,7 @@ export default function LeadCard({
     }
   };
 
-  // --- Log interaction
+  // Interaction log
   const handleInteraction = async () => {
     if (!interactionNote.trim()) return;
     try {
@@ -94,9 +78,17 @@ export default function LeadCard({
     }
   };
 
-  return (
-    <div className={`lead-card ${isLeadPond ? "lead-pond" : ""} ${removing ? "removing" : ""}`} style={cardStyle}>
+  // Dynamic card classes
+  const cardClasses = [
+    "lead-card",
+    isLeadPond ? "lead-pond" : "",
+    removing ? "removing" : "",
+    statusUpdated ? "status-updated" : "",
+    assignedUpdated ? "assigned-updated" : ""
+  ].join(" ");
 
+  return (
+    <div className={cardClasses} style={{ backgroundColor: statusColors[status] || "#fff" }}>
       <div className="lead-info">
         <p><strong>Name:</strong> {lead.name}</p>
         <p><strong>Email:</strong> {lead.email}</p>
@@ -161,7 +153,6 @@ export default function LeadCard({
           ))
         }
       </div>
-
     </div>
   );
 }
