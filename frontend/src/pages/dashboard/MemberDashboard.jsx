@@ -1,9 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import "./Dashboard.css"; 
+import LeadCard from "./LeadCard";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
-import LeadCard from "./LeadCard";
-import "./Dashboard.css";
+
 
 export default function MemberDashboard() {
   const { user } = useContext(AuthContext);

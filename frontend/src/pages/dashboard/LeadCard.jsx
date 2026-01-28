@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import "./LeadCard.css";
+import "./LeadCard.css"; // correct relative import
+
 
 export default function LeadCard({
   lead,

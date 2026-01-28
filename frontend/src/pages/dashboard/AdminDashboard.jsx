@@ -1,10 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
-import Sidebar from "./Sidebar";
-import Topbar from "./Topbar";
+import "./Dashboard.css"; // relative to dashboard folder
 import LeadCard from "./LeadCard";
 import AddLead from "./AddLead";
-import "./Dashboard.css";
+import Sidebar from "./Sidebar";
+import Topbar from "./Topbar";
+
 
 export default function AdminDashboard() {
   const { user } = useContext(AuthContext);

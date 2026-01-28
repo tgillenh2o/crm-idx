@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../../context/AuthContext";
-import "./Profile.css";
+import "./Profile.css"; // relative import
+
 
 export default function Profile() {
   const { user } = useContext(AuthContext);
