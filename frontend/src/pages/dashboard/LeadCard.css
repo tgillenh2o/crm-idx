@@ -1,127 +1,86 @@
+/* LEAD CARD BASE */
 .lead-card {
-  background: #121826;
-  border-radius: 12px;
-  padding: 16px;
-  color: #e5e7eb;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  border-radius: 8px;
+  padding: 12px;
+  color: #f5f5f5;
+  transition: background-color 0.3s ease, box-shadow 0.5s ease;
+  flex: 1 1 250px;
+  max-width: 300px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: transform 0.2s ease, box-shadow 0.3s ease;
-}
-
-.lead-card.highlight {
-  box-shadow: 0 0 12px 4px #4ade80;
-  transition: box-shadow 0.3s ease-in-out;
-}
-
-.lead-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.status-badge {
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.lead-card-body p {
-  margin: 0;
-  font-size: 0.85rem;
-}
-
-.assigned-pill {
-  display: inline-block;
-  margin-top: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #0f172a;
-  width: fit-content;
-}
-
-.lead-card-actions {
-  display: flex;
-  flex-wrap: wrap;
   gap: 8px;
+}
+
+/* LEAD POND HIGHLIGHT */
+.lead-card.lead-pond {
+  border: 2px dashed #64b5f6;
+}
+
+/* STATUS GLOW */
+.lead-card.status-updated {
+  box-shadow: 0 0 12px #64b5f6;
+}
+.lead-card.assigned-updated {
+  box-shadow: 0 0 12px #ffb74d;
+}
+
+/* INPUT / SELECT FIELDS */
+.lead-card input,
+.lead-card select {
+  color: #f5f5f5;
+  background-color: #2c2c2c;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 14px;
+}
+
+/* BUTTONS */
+.lead-card .claim-button,
+.lead-card .delete-button,
+.lead-card .interaction-form button {
   margin-top: 6px;
-}
-
-.lead-card-actions select {
-  background: #1e293b;
-  color: #e5e7eb;
-  border: 1px solid #334155;
-  border-radius: 6px;
-  padding: 6px;
-  font-size: 0.75rem;
-}
-
-.lead-card-actions button {
-  border: none;
-  border-radius: 6px;
   padding: 6px 10px;
-  font-size: 0.75rem;
+  border: none;
+  border-radius: 5px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: bold;
+  color: #fff;
+  transition: transform 0.1s ease;
+}
+.lead-card .claim-button { background-color: #64b5f6; }
+.lead-card .delete-button { background-color: #e57373; }
+.lead-card .interaction-form button:hover,
+.lead-card .claim-button:hover,
+.lead-card .delete-button:hover {
+  transform: scale(1.05);
 }
 
-button.primary { background: #4f46e5; color: #fff; }
-button.secondary { background: #334155; color: #e5e7eb; }
-button.danger { background: #dc2626; color: #fff; }
-button.primary:hover { background: #4338ca; }
-button.secondary:hover { background: #475569; }
-button.danger:hover { background: #b91c1c; }
-
-.interaction-form {
+/* INTERACTION FORM */
+.lead-card .interaction-form {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
 }
-
-.interaction-form input {
+.lead-card .interaction-form input {
   flex: 1;
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid #334155;
-  background: #1e293b;
-  color: #e5e7eb;
-  font-size: 0.75rem;
 }
 
-.interaction-history {
+/* INTERACTION HISTORY */
+.lead-card .interaction-history {
   margin-top: 8px;
-  font-size: 0.75rem;
-  color: #cbd5f5;
+  font-size: 13px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+.lead-card .interaction-item {
+  padding: 4px 0;
+  border-bottom: 1px solid #444;
 }
 
-.interaction-item {
-  margin-bottom: 4px;
-}
-.toast {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #4ade80;
-  color: #0f172a;
-  padding: 12px 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-  font-weight: 600;
-  z-index: 999;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.toast button {
-  background: none;
-  border: none;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-}
-
+/* STATUS COLORS (BACKGROUND) */
+.lead-card[style*="New"] { background-color: #263238; }
+.lead-card[style*="Contacted"] { background-color: #37474f; }
+.lead-card[style*="Follow-up"] { background-color: #455a64; }
+.lead-card[style*="Closed"] { background-color: #546e7a; }

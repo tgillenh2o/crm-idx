@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "./Dashboard.css";
+import "./LeadCard.css";
 
 export default function LeadCard({
   lead,
@@ -21,20 +21,18 @@ export default function LeadCard({
   const assignedToName = lead.assignedTo || "Unassigned";
 
   const statusColors = {
-    "New": "#e0f7fa",
-    "Contacted": "#fff3e0",
-    "Follow-up": "#e8f5e9",
-    "Closed": "#f3e5f5"
+    New: "#263238",
+    Contacted: "#37474f",
+    "Follow-up": "#455a64",
+    Closed: "#546e7a",
   };
 
-  // Trigger glow for status changes
   useEffect(() => {
     setStatusUpdated(true);
     const timer = setTimeout(() => setStatusUpdated(false), 1500);
     return () => clearTimeout(timer);
   }, [status]);
 
-  // Trigger glow for assignment changes
   useEffect(() => {
     if (!lead.assignedTo) return;
     setAssignedUpdated(true);
@@ -45,19 +43,20 @@ export default function LeadCard({
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
-
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: newStatus }),
       });
       const updated = await res.json();
       setStatus(updated.status);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleInteraction = async () => {
@@ -67,14 +66,16 @@ export default function LeadCard({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ type: interactionType, note: interactionNote })
+        body: JSON.stringify({ type: interactionType, note: interactionNote }),
       });
       const data = await res.json();
       setInteractions(data.interactions || []);
       setInteractionNote("");
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error("Failed to log interaction:", err);
+    }
   };
 
   const cardClasses = [
@@ -82,18 +83,19 @@ export default function LeadCard({
     isLeadPond ? "lead-pond" : "",
     removing ? "removing" : "",
     statusUpdated ? "status-updated" : "",
-    assignedUpdated ? "assigned-updated" : ""
+    assignedUpdated ? "assigned-updated" : "",
   ].join(" ");
 
   return (
-    <div className={cardClasses} style={{ backgroundColor: statusColors[status] || "#fff" }}>
+    <div className={cardClasses} style={{ backgroundColor: statusColors[status] || "#37474f" }}>
       <div className="lead-info">
         <p><strong>Name:</strong> {lead.name}</p>
         <p><strong>Email:</strong> {lead.email}</p>
         <p><strong>Phone:</strong> {lead.phone}</p>
         <p><strong>Assigned To:</strong> {assignedToName}</p>
 
-        <p><strong>Status:</strong>
+        <p>
+          <strong>Status:</strong>
           <select value={status} onChange={handleStatusChange}>
             <option>New</option>
             <option>Contacted</option>
@@ -103,11 +105,14 @@ export default function LeadCard({
         </p>
 
         {isAdmin && onAssign && users.length > 0 && (
-          <p><strong>Reassign:</strong>
-            <select value={lead.assignedTo || ""} onChange={e => onAssign(lead._id, e.target.value)}>
+          <p>
+            <strong>Reassign:</strong>
+            <select value={lead.assignedTo || ""} onChange={(e) => onAssign(lead._id, e.target.value)}>
               <option value="">Unassigned</option>
               <option value="POND">Lead Pond</option>
-              {users.map(u => <option key={u._id} value={u.email}>{u.name}</option>)}
+              {users.map((u) => (
+                <option key={u._id} value={u.email}>{u.name}</option>
+              ))}
             </select>
           </p>
         )}
@@ -125,7 +130,7 @@ export default function LeadCard({
       )}
 
       <div className="interaction-form">
-        <select value={interactionType} onChange={e => setInteractionType(e.target.value)}>
+        <select value={interactionType} onChange={(e) => setInteractionType(e.target.value)}>
           <option value="call">Call</option>
           <option value="email">Email</option>
           <option value="meeting">Meeting</option>
@@ -135,7 +140,7 @@ export default function LeadCard({
           type="text"
           placeholder="Add note..."
           value={interactionNote}
-          onChange={e => setInteractionNote(e.target.value)}
+          onChange={(e) => setInteractionNote(e.target.value)}
         />
         <button onClick={handleInteraction}>Add Interaction</button>
       </div>

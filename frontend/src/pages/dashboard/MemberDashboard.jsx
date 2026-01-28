@@ -10,33 +10,47 @@ export default function MemberDashboard() {
   const [leads, setLeads] = useState([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  useEffect(() => { fetchLeads(); }, []);
+  useEffect(() => {
+    fetchLeads();
+  }, []);
 
   const fetchLeads = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
       setLeads(Array.isArray(data) ? data : []);
-    } catch { setLeads([]); }
+    } catch (err) {
+      console.error("Error fetching leads:", err);
+      setLeads([]);
+    }
   };
 
   const handleAssign = async (leadId, assignedTo) => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`
-      },
-      body: JSON.stringify({ userId: assignedTo })
-    });
-    const updatedLead = await res.json();
-    setLeads(prev => prev.map(l => l._id === leadId ? updatedLead : l));
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ userId: assignedTo }),
+      });
+      const updatedLead = await res.json();
+      setLeads((prev) => prev.map((l) => (l._id === leadId ? updatedLead : l)));
+    } catch (err) {
+      console.error("Failed to assign lead:", err);
+    }
   };
 
-  const leadPondLeads = leads.filter(l => l.assignedTo === "POND" || !l.assignedTo || l.assignedTo === "UNASSIGNED");
-  const myLeads = leads.filter(l => l.assignedTo === user.email && l.assignedTo !== "POND");
+  // Only show lead pond (unassigned) for claiming
+  const leadPondLeads = leads.filter(
+    (l) => !l.assignedTo || l.assignedTo === "POND" || l.assignedTo === "UNASSIGNED"
+  );
+
+  // Member's assigned leads
+  const myLeads = leads.filter((l) => l.assignedTo === user.email);
 
   return (
     <div className="dashboard">
@@ -48,7 +62,15 @@ export default function MemberDashboard() {
           <>
             <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
             <div className="leads-grid">
-              {leadPondLeads.map(l => <LeadCard key={l._id} lead={l} onAssign={handleAssign} currentUserEmail={user.email} isLeadPond />)}
+              {leadPondLeads.map((lead) => (
+                <LeadCard
+                  key={lead._id}
+                  lead={lead}
+                  onAssign={handleAssign}
+                  isLeadPond
+                  currentUserEmail={user.email}
+                />
+              ))}
             </div>
           </>
         )}
@@ -57,7 +79,9 @@ export default function MemberDashboard() {
           <>
             <h3>My Leads</h3>
             <div className="leads-grid">
-              {myLeads.map(l => <LeadCard key={l._id} lead={l} onAssign={handleAssign} currentUserEmail={user.email} />)}
+              {myLeads.map((lead) => (
+                <LeadCard key={lead._id} lead={lead} />
+              ))}
             </div>
           </>
         )}

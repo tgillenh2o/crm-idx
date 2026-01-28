@@ -12,7 +12,6 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Fetch leads and users on mount
   useEffect(() => {
     fetchLeads();
     fetchUsers();
@@ -44,7 +43,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Delete lead
   const handleDelete = async (leadId) => {
     if (!window.confirm("Are you sure you want to delete this lead?")) return;
     try {
@@ -58,7 +56,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Assign/reassign lead
   const handleAssign = async (leadId, assignedTo) => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`, {
@@ -76,7 +73,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Separate lead pond and assigned leads
   const leadPondLeads = leads.filter(
     (l) => !l.assignedTo || l.assignedTo === "POND" || l.assignedTo === "UNASSIGNED"
   );
@@ -88,7 +84,6 @@ export default function AdminDashboard() {
       <div className={`main-panel ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <Topbar />
 
-        {/* Add Lead */}
         <AddLead
           onLeadAdded={(newLead) => setLeads([newLead, ...leads])}
           currentUser={user}
@@ -96,7 +91,6 @@ export default function AdminDashboard() {
           users={users}
         />
 
-        {/* Lead Pond */}
         {leadPondLeads.length > 0 && (
           <>
             <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
@@ -115,7 +109,6 @@ export default function AdminDashboard() {
           </>
         )}
 
-        {/* My Leads */}
         {myLeads.length > 0 && (
           <>
             <h3>My Leads</h3>
