@@ -28,16 +28,20 @@ export default function MemberDashboard() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      const data = Array.isArray(await res.json()) ? await res.json() : [];
-      setLeads(data);
-    } catch { setLeads([]); } finally { setLoading(false); }
+      const data = await res.json();
+      setLeads(Array.isArray(data) ? data : []);
+    } catch {
+      setLeads([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAssign = async (leadId, assignedTo) => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
-      body: JSON.stringify({ userId: assignedTo })
+      body: JSON.stringify({ userId: assignedTo }),
     });
     const updated = await res.json();
     setLeads(prev => prev.map(l => l._id === leadId ? updated : l));
@@ -46,10 +50,17 @@ export default function MemberDashboard() {
   const moveToPond = async (leadId) => handleAssign(leadId, "POND");
 
   const now = Date.now();
-  const filteredLeads = leads.filter(l => !filter24h || (now - new Date(l.updatedAt).getTime() <= 24*60*60*1000));
+  const filteredLeads = leads.filter(
+    l => !filter24h || (now - new Date(l.updatedAt).getTime() <= 24 * 60 * 60 * 1000)
+  );
 
-  const leadPond = filteredLeads.filter(l => !l.assignedTo || l.assignedTo === "POND");
-  const myLeads = filteredLeads.filter(l => l.assignedTo === user.email);
+  const leadPond = filteredLeads.filter(
+    l => !l.assignedTo || l.assignedTo === "POND" || l.assignedTo === "UNASSIGNED"
+  );
+
+  const myLeads = filteredLeads.filter(
+    l => l.assignedTo === user.email
+  );
 
   return (
     <div className="dashboard">
