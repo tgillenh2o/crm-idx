@@ -144,7 +144,7 @@ export default function LeadCard({
           Claim Lead
         </button>
       )}
-{/* MEMBER RETURN TO POND */}
+{/* MEMBER: Return lead to pond */}
 {!isAdmin && lead.assignedTo === currentUserEmail && (
   <button
     className="return-button"
@@ -161,16 +161,17 @@ export default function LeadCard({
           }
         );
         const updatedLead = await res.json();
-        if (onAssign) onAssign(lead._id, updatedLead.assignedTo);
+        if (onAssign) onAssign(lead._id, updatedLead.assignedTo); // update parent state
       } catch (err) {
         console.error("Failed to return lead:", err);
         setRemoving(false);
       }
     }}
   >
-    Return to Pond
+    Move to Pond
   </button>
 )}
+
 
 
       {/* ADMIN DELETE */}
