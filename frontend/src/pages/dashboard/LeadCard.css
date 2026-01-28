@@ -2,13 +2,14 @@
   border-radius: 12px;
   padding: 16px;
   margin: 8px;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  transition: background-color 0.5s ease, transform 0.3s ease;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   color: #fff;
   width: 300px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  overflow: hidden; /* ensures internal elements stay inside */
 }
 
 /* Status backgrounds */
@@ -34,6 +35,7 @@
   padding: 2px 6px;
 }
 
+/* Buttons */
 .claim-button, .delete-button {
   margin-top: 8px;
   padding: 6px 12px;
@@ -42,38 +44,44 @@
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-
 .claim-button { background-color: #64b5f6; color: #fff; }
 .claim-button:hover { background-color: #42a5f5; }
-
 .delete-button { background-color: #f44336; color: #fff; }
 .delete-button:hover { background-color: #e53935; }
 
+/* Interaction form fix */
 .interaction-form {
   display: flex;
-  margin-top: 12px;
+  flex-wrap: wrap; /* allows items to wrap inside the card */
   gap: 8px;
+  margin-top: 12px;
 }
 
-.interaction-form input, .interaction-form select {
-  padding: 4px 8px;
+.interaction-form input,
+.interaction-form select {
+  padding: 6px 8px;
   border-radius: 4px;
   border: none;
-  flex: 1;
+  flex: 1 1 120px; /* ensures inputs shrink and wrap if needed */
+  min-width: 100px;
+  background-color: rgba(255,255,255,0.1);
+  color: #fff;
 }
 
 .interaction-form button {
   background-color: #4caf50;
   color: #fff;
   border-radius: 6px;
-  padding: 4px 8px;
+  padding: 6px 12px;
   cursor: pointer;
+  flex: 0 0 auto; /* prevents button from stretching */
   transition: background-color 0.2s ease;
 }
 .interaction-form button:hover {
   background-color: #43a047;
 }
 
+/* Interaction history */
 .interaction-history {
   margin-top: 12px;
   max-height: 200px;
@@ -83,4 +91,5 @@
 .interaction-item {
   margin-bottom: 6px;
   font-size: 0.9rem;
+  word-break: break-word;
 }
