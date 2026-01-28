@@ -1,168 +1,124 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../context/AuthContext";
+import Sidebar from "./Sidebar";
+import Topbar from "./Topbar";
 import LeadCard from "./LeadCard";
+import AddLead from "./AddLead";
+import Profile from "./Profile";
 import "./Dashboard.css";
 
-export default function MemberDashboard({ user }) {
+export default function MemberDashboard() {
+  const { user } = useContext(AuthContext);
   const [leads, setLeads] = useState([]);
-  const [activeTab, setActiveTab] = useState("pond");
-  const token = localStorage.getItem("token");
+  const [loading, setLoading] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [activeTab, setActiveTab] = useState("lead-pond");
 
-  // =============================
-  // FETCH LEADS
-  // =============================
   useEffect(() => {
     fetchLeads();
   }, []);
 
   const fetchLeads = async () => {
+    setLoading(true);
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/leads`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setLeads(res.data || []);
-    } catch (err) {
-      console.error("Failed to fetch leads", err);
-    }
-  };
-
-  // =============================
-  // FILTER LOGIC (INTENTIONAL + SAFE)
-  // =============================
-  const pondLeads = leads.filter((lead) => {
-    return lead.assignedTo === "POND";
-  });
-
-  const myLeads = leads.filter((lead) => {
-    return lead.assignedTo === user.email;
-  });
-
-  // =============================
-  // ADD LEAD (MEMBERS CAN ADD)
-  // =============================
-  const handleAddLead = async (leadData) => {
-    try {
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/leads`,
-        {
-          ...leadData,
-          assignedTo: "POND",
-          status: "New",
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      fetchLeads();
-    } catch (err) {
-      console.error("Failed to add lead", err);
+      });
+      const data = await res.json();
+      setLeads(Array.isArray(data) ? data : []);
+    } catch {
+      setLeads([]);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handleClaim = async (leadId) => {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ userId: user.email }),
+      }
+    );
+
+    const updatedLead = await res.json();
+    setLeads((prev) =>
+      prev.map((l) => (l._id === leadId ? updatedLead : l))
+    );
+  };
+
+  // Lead Pond = POND or UNASSIGNED
+  const leadPondLeads = leads.filter(
+    (l) =>
+      !l.assignedTo ||
+      l.assignedTo === "POND" ||
+      l.assignedTo === "UNASSIGNED"
+  );
+
+  // My Leads = assigned to logged-in member
+  const myLeads = leads.filter(
+    (l) => l.assignedTo === user.email
+  );
 
   return (
     <div className="dashboard">
-      <div className="dashboard-header">
-        <h1>Member Dashboard</h1>
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        setCollapsed={setSidebarCollapsed}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
 
-        <div className="dashboard-tabs">
-          <button
-            className={activeTab === "pond" ? "active" : ""}
-            onClick={() => setActiveTab("pond")}
-          >
-            Lead Pond
-          </button>
+      <div className={`main-panel ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
+        <Topbar />
 
-          <button
-            className={activeTab === "myLeads" ? "active" : ""}
-            onClick={() => setActiveTab("myLeads")}
-          >
-            My Leads
-          </button>
+        {/* Profile */}
+        {activeTab === "profile" && <Profile />}
 
-          <button
-            className={activeTab === "add" ? "active" : ""}
-            onClick={() => setActiveTab("add")}
-          >
-            Add Lead
-          </button>
-        </div>
-      </div>
-
-      <div className="dashboard-content">
-        {activeTab === "pond" && (
+        {/* Lead Pond */}
+        {activeTab === "lead-pond" && (
           <>
-            {pondLeads.length === 0 ? (
-              <p className="empty-state">No leads in the pond.</p>
-            ) : (
-              pondLeads.map((lead) => (
+            <AddLead
+              onLeadAdded={(l) => setLeads([l, ...leads])}
+              currentUser={user}
+              isAdmin={false}
+            />
+
+            <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
+
+            <div className="leads-grid">
+              {leadPondLeads.map((l) => (
                 <LeadCard
-                  key={lead._id}
-                  lead={lead}
-                  refreshLeads={fetchLeads}
-                  userRole="member"
+                  key={l._id}
+                  lead={l}
+                  isLeadPond
+                  currentUserEmail={user.email}
+                  onAssign={handleClaim}
                 />
-              ))
-            )}
+              ))}
+            </div>
           </>
         )}
 
-        {activeTab === "myLeads" && (
+        {/* My Leads */}
+        {activeTab === "my-leads" && (
           <>
-            {myLeads.length === 0 ? (
-              <p className="empty-state">You have no assigned leads.</p>
-            ) : (
-              myLeads.map((lead) => (
-                <LeadCard
-                  key={lead._id}
-                  lead={lead}
-                  refreshLeads={fetchLeads}
-                  userRole="member"
-                />
-              ))
-            )}
+            <h3>My Leads</h3>
+            <div className="leads-grid">
+              {myLeads.map((l) => (
+                <LeadCard key={l._id} lead={l} />
+              ))}
+            </div>
           </>
-        )}
-
-        {activeTab === "add" && (
-          <div className="add-lead-form">
-            <AddLeadForm onSubmit={handleAddLead} />
-          </div>
         )}
       </div>
     </div>
-  );
-}
-
-/* =============================
-   SIMPLE ADD LEAD FORM
-============================= */
-function AddLeadForm({ onSubmit }) {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    notes: "",
-  });
-
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit(form);
-    setForm({ name: "", email: "", phone: "", notes: "" });
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <input name="name" placeholder="Name" value={form.name} onChange={handleChange} required />
-      <input name="email" placeholder="Email" value={form.email} onChange={handleChange} />
-      <input name="phone" placeholder="Phone" value={form.phone} onChange={handleChange} />
-      <textarea name="notes" placeholder="Notes" value={form.notes} onChange={handleChange} />
-      <button type="submit">Add Lead</button>
-    </form>
   );
 }
