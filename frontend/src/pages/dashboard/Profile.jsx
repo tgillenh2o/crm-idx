@@ -1,106 +1,78 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import "./Profile.css";
 
 export default function Profile() {
-  const { user, setUser } = useContext(AuthContext);
-
-  const [form, setForm] = useState({
+  const { user } = useContext(AuthContext);
+  const [profile, setProfile] = useState({
     name: "",
     email: "",
-    currentPassword: "",
+    phone: "",
+    password: "",
     newPassword: "",
-    confirmPassword: ""
   });
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
 
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState(null);
-
-  // Load current user info
   useEffect(() => {
     if (user) {
-      setForm(prev => ({ ...prev, name: user.name, email: user.email }));
+      setProfile({ ...profile, name: user.name, email: user.email });
+      setLoading(false);
     }
   }, [user]);
 
-  const handleChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setMessage(null);
-
-    if (form.newPassword && form.newPassword !== form.confirmPassword) {
-      setMessage("New password and confirmation do not match");
-      return;
-    }
-
-    setSaving(true);
-
+  const handleSave = async () => {
     try {
+      const body = {
+        name: profile.name,
+        phone: profile.phone,
+      };
+      if (profile.newPassword.trim()) body.password = profile.newPassword;
+
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          currentPassword: form.currentPassword,
-          newPassword: form.newPassword
-        })
+        body: JSON.stringify(body),
       });
-
-      const data = await res.json();
-      if (res.ok) {
-        setMessage("Profile updated successfully!");
-        // update context user
-        setUser(prev => ({ ...prev, name: data.name, email: data.email }));
-        setForm(prev => ({ ...prev, currentPassword: "", newPassword: "", confirmPassword: "" }));
-      } else {
-        setMessage(data.message || "Failed to update profile");
-      }
+      if (!res.ok) throw new Error("Failed to update profile");
+      const updated = await res.json();
+      setMessage("Profile updated successfully!");
+      setProfile({ ...profile, newPassword: "" });
     } catch (err) {
       console.error(err);
-      setMessage("Server error");
-    } finally {
-      setSaving(false);
+      setMessage("Error updating profile");
     }
   };
 
+  if (loading) return <p>Loading...</p>;
+
   return (
     <div className="profile-container">
-      <h2>Edit Profile</h2>
-      {message && <div className="message">{message}</div>}
+      <h2>My Profile</h2>
+      {message && <p className="profile-message">{message}</p>}
 
-      <form onSubmit={handleSubmit} className="profile-form">
-        <label>
-          Name
-          <input type="text" name="name" value={form.name} onChange={handleChange} required />
-        </label>
+      <div className="profile-form">
+        <label>Name</label>
+        <input type="text" name="name" value={profile.name} onChange={handleChange} />
 
-        <label>
-          Email
-          <input type="email" name="email" value={form.email} onChange={handleChange} required />
-        </label>
+        <label>Email</label>
+        <input type="email" name="email" value={profile.email} disabled />
 
-        <h4>Change Password</h4>
-        <label>
-          Current Password
-          <input type="password" name="currentPassword" value={form.currentPassword} onChange={handleChange} />
-        </label>
-        <label>
-          New Password
-          <input type="password" name="newPassword" value={form.newPassword} onChange={handleChange} />
-        </label>
-        <label>
-          Confirm New Password
-          <input type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange} />
-        </label>
+        <label>Phone</label>
+        <input type="text" name="phone" value={profile.phone || ""} onChange={handleChange} />
 
-        <button type="submit" disabled={saving}>{saving ? "Saving..." : "Save Changes"}</button>
-      </form>
+        <label>New Password</label>
+        <input type="password" name="newPassword" value={profile.newPassword} onChange={handleChange} placeholder="Leave blank to keep current password" />
+
+        <button onClick={handleSave}>Save Profile</button>
+      </div>
     </div>
   );
 }

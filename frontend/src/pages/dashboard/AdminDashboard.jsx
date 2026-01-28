@@ -1,9 +1,10 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import LeadCard from "./LeadCard";
 import AddLead from "./AddLead";
+import Profile from "./Profile";
 import "./Dashboard.css";
 
 export default function AdminDashboard() {
@@ -11,6 +12,11 @@ export default function AdminDashboard() {
   const [leads, setLeads] = useState([]);
   const [users, setUsers] = useState([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Refs for scroll
+  const profileRef = useRef(null);
+  const leadPondRef = useRef(null);
+  const myLeadsRef = useRef(null);
 
   useEffect(() => {
     fetchLeads();
@@ -80,10 +86,24 @@ export default function AdminDashboard() {
 
   return (
     <div className="dashboard">
-      <Sidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        setCollapsed={setSidebarCollapsed}
+        scrollRefs={{
+          profile: profileRef,
+          leadPond: leadPondRef,
+          myLeads: myLeadsRef,
+        }}
+      />
       <div className={`main-panel ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <Topbar />
 
+        {/* PROFILE SECTION */}
+        <div ref={profileRef} id="profile">
+          <Profile />
+        </div>
+
+        {/* ADD LEAD FORM */}
         <AddLead
           onLeadAdded={(newLead) => setLeads([newLead, ...leads])}
           currentUser={user}
@@ -91,41 +111,47 @@ export default function AdminDashboard() {
           users={users}
         />
 
-        {leadPondLeads.length > 0 && (
-          <>
-            <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
-            <div className="leads-grid">
-              {leadPondLeads.map((lead) => (
-                <LeadCard
-                  key={lead._id}
-                  lead={lead}
-                  isAdmin
-                  onAssign={handleAssign}
-                  users={users}
-                  isLeadPond
-                />
-              ))}
-            </div>
-          </>
-        )}
+        {/* LEAD POND */}
+        <div ref={leadPondRef} id="lead-pond">
+          {leadPondLeads.length > 0 && (
+            <>
+              <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
+              <div className="leads-grid">
+                {leadPondLeads.map((lead) => (
+                  <LeadCard
+                    key={lead._id}
+                    lead={lead}
+                    isAdmin
+                    onAssign={handleAssign}
+                    users={users}
+                    isLeadPond
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
 
-        {myLeads.length > 0 && (
-          <>
-            <h3>My Leads</h3>
-            <div className="leads-grid">
-              {myLeads.map((lead) => (
-                <LeadCard
-                  key={lead._id}
-                  lead={lead}
-                  isAdmin
-                  onAssign={handleAssign}
-                  users={users}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
-          </>
-        )}
+        {/* MY LEADS */}
+        <div ref={myLeadsRef} id="my-leads">
+          {myLeads.length > 0 && (
+            <>
+              <h3>My Leads</h3>
+              <div className="leads-grid">
+                {myLeads.map((lead) => (
+                  <LeadCard
+                    key={lead._id}
+                    lead={lead}
+                    isAdmin
+                    onAssign={handleAssign}
+                    users={users}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
