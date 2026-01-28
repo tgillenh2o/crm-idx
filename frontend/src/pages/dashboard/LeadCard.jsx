@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./LeadCard.css";
 
 export default function LeadCard({
@@ -8,19 +8,27 @@ export default function LeadCard({
   onAssign,
   users = [],
   isLeadPond = false,
-  currentUserEmail,
+  currentUserEmail
 }) {
   const [status, setStatus] = useState(lead.status || "New");
   const [interactionType, setInteractionType] = useState("call");
   const [interactionNote, setInteractionNote] = useState("");
   const [interactions, setInteractions] = useState(lead.interactions || []);
   const [removing, setRemoving] = useState(false);
+  const [bgClass, setBgClass] = useState(`status-${status.toLowerCase().replace(" ", "-")}`);
 
   const assignedToName = lead.assignedTo || "Unassigned";
+
+  // Animate background when status changes
+  useEffect(() => {
+    const newClass = `status-${status.toLowerCase().replace(" ", "-")}`;
+    setBgClass(newClass);
+  }, [status]);
 
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
+
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`, {
         method: "PATCH",
@@ -57,7 +65,7 @@ export default function LeadCard({
   };
 
   return (
-    <div className={`lead-card status-${status.toLowerCase()} ${removing ? "removing" : ""}`}>
+    <div className={`lead-card ${bgClass} ${isLeadPond ? "lead-pond" : ""} ${removing ? "removing" : ""}`}>
       <div className="lead-info">
         <p><strong>Name:</strong> {lead.name}</p>
         <p><strong>Email:</strong> {lead.email}</p>
@@ -100,7 +108,9 @@ export default function LeadCard({
       )}
 
       {isAdmin && onDelete && (
-        <button className="delete-button" onClick={() => onDelete(lead._id)}>Delete Lead</button>
+        <button className="delete-button" onClick={() => onDelete(lead._id)}>
+          Delete Lead
+        </button>
       )}
 
       <div className="interaction-form">

@@ -1,86 +1,86 @@
-/* LEAD CARD BASE */
 .lead-card {
-  border-radius: 8px;
-  padding: 12px;
-  color: #f5f5f5;
-  transition: background-color 0.3s ease, box-shadow 0.5s ease;
-  flex: 1 1 250px;
-  max-width: 300px;
-  box-sizing: border-box;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 8px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  color: #fff;
+  width: 300px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Status backgrounds */
+.status-new { background-color: #2196f3; }
+.status-contacted { background-color: #4caf50; }
+.status-follow-up { background-color: #ff9800; }
+.status-closed { background-color: #9e9e9e; }
+
+/* Remove animation */
+.removing {
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.lead-info p {
+  margin: 4px 0;
+}
+
+.lead-info select {
+  margin-left: 8px;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.claim-button, .delete-button {
+  margin-top: 8px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.claim-button { background-color: #64b5f6; color: #fff; }
+.claim-button:hover { background-color: #42a5f5; }
+
+.delete-button { background-color: #f44336; color: #fff; }
+.delete-button:hover { background-color: #e53935; }
+
+.interaction-form {
+  display: flex;
+  margin-top: 12px;
   gap: 8px;
 }
 
-/* LEAD POND HIGHLIGHT */
-.lead-card.lead-pond {
-  border: 2px dashed #64b5f6;
-}
-
-/* STATUS GLOW */
-.lead-card.status-updated {
-  box-shadow: 0 0 12px #64b5f6;
-}
-.lead-card.assigned-updated {
-  box-shadow: 0 0 12px #ffb74d;
-}
-
-/* INPUT / SELECT FIELDS */
-.lead-card input,
-.lead-card select {
-  color: #f5f5f5;
-  background-color: #2c2c2c;
-  border: 1px solid #555;
+.interaction-form input, .interaction-form select {
+  padding: 4px 8px;
   border-radius: 4px;
-  padding: 4px 6px;
-  font-size: 14px;
-}
-
-/* BUTTONS */
-.lead-card .claim-button,
-.lead-card .delete-button,
-.lead-card .interaction-form button {
-  margin-top: 6px;
-  padding: 6px 10px;
   border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  color: #fff;
-  transition: transform 0.1s ease;
-}
-.lead-card .claim-button { background-color: #64b5f6; }
-.lead-card .delete-button { background-color: #e57373; }
-.lead-card .interaction-form button:hover,
-.lead-card .claim-button:hover,
-.lead-card .delete-button:hover {
-  transform: scale(1.05);
-}
-
-/* INTERACTION FORM */
-.lead-card .interaction-form {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.lead-card .interaction-form input {
   flex: 1;
 }
 
-/* INTERACTION HISTORY */
-.lead-card .interaction-history {
-  margin-top: 8px;
-  font-size: 13px;
-  max-height: 150px;
-  overflow-y: auto;
+.interaction-form button {
+  background-color: #4caf50;
+  color: #fff;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
-.lead-card .interaction-item {
-  padding: 4px 0;
-  border-bottom: 1px solid #444;
+.interaction-form button:hover {
+  background-color: #43a047;
 }
 
-/* STATUS COLORS (BACKGROUND) */
-.lead-card[style*="New"] { background-color: #263238; }
-.lead-card[style*="Contacted"] { background-color: #37474f; }
-.lead-card[style*="Follow-up"] { background-color: #455a64; }
-.lead-card[style*="Closed"] { background-color: #546e7a; }
+.interaction-history {
+  margin-top: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.interaction-item {
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}

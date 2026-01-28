@@ -1,93 +1,40 @@
-/* DARK THEME VARIABLES */
-:root {
-  --bg-color: #1f1f1f;
-  --main-panel-bg: #2c2c2c;
-  --text-color: #f5f5f5;
-  --card-bg-new: #263238;
-  --card-bg-contacted: #37474f;
-  --card-bg-followup: #455a64;
-  --card-bg-closed: #546e7a;
-  --button-bg-claim: #64b5f6;
-  --button-bg-delete: #e57373;
-}
-
-/* DASHBOARD LAYOUT */
 .dashboard {
   display: flex;
-  min-height: 100vh;
-  background-color: var(--bg-color);
+  height: 100vh;
+  background-color: #121212;
+  color: #fff;
+  overflow: hidden;
 }
 
 .main-panel {
   flex: 1;
-  padding: 20px;
-  margin-left: 250px; /* sidebar width */
-  background-color: var(--main-panel-bg);
+  padding: 16px;
+  overflow-y: auto;
   transition: margin-left 0.3s ease;
-  color: var(--text-color);
 }
 
-.main-panel.sidebar-collapsed {
+.sidebar-collapsed .main-panel {
   margin-left: 80px;
 }
 
-/* GRID FOR LEAD CARDS */
+.stats-cards {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background-color: #1f1f1f;
+  flex: 1;
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+.stat-card:hover { transform: translateY(-4px); }
+
 .leads-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-}
-.leads-grid .lead-card {
-  flex: 1 1 250px;
-  max-width: 300px;
-  color: var(--text-color);
-}
-
-/* LEAD CARD BASE */
-.lead-card {
-  border-radius: 8px;
-  padding: 12px;
-  box-sizing: border-box;
-  transition: background-color 0.3s ease, box-shadow 0.5s ease;
-}
-
-/* Status colors using dark theme variants */
-.lead-card[style*="New"] { background-color: var(--card-bg-new); }
-.lead-card[style*="Contacted"] { background-color: var(--card-bg-contacted); }
-.lead-card[style*="Follow-up"] { background-color: var(--card-bg-followup); }
-.lead-card[style*="Closed"] { background-color: var(--card-bg-closed); }
-
-/* BUTTONS */
-.lead-card .claim-button,
-.lead-card .delete-button {
-  margin-top: 6px;
-  padding: 6px 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  color: #fff;
-}
-.lead-card .claim-button { background-color: var(--button-bg-claim); }
-.lead-card .delete-button { background-color: var(--button-bg-delete); }
-
-/* INTERACTIONS */
-.lead-card .interaction-item { margin-bottom: 6px; }
-
-/* GLOW ANIMATIONS */
-.lead-card.status-updated { box-shadow: 0 0 10px #64b5f6; }
-.lead-card.assigned-updated { box-shadow: 0 0 10px #ffb74d; }
-
-/* LEAD POND HIGHLIGHT */
-.lead-card.lead-pond { border: 2px dashed #64b5f6; }
-
-/* INPUT / SELECT */
-.lead-card input,
-.lead-card select {
-  color: var(--text-color);
-  background-color: var(--main-panel-bg);
-  border: 1px solid #555;
-  border-radius: 4px;
-  padding: 4px 6px;
-  font-size: 14px;
+  gap: 16px;
 }

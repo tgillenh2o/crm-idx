@@ -1,64 +1,42 @@
 .sidebar {
-  width: 250px;
-  background-color: #222;
-  color: #f5f5f5;
+  width: 240px;
+  background-color: #1e1e1e;
   display: flex;
   flex-direction: column;
   transition: width 0.3s ease;
-  flex-shrink: 0;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-  padding: 10px;
-  box-sizing: border-box;
+  overflow: hidden;
 }
 
-.sidebar.collapsed {
-  width: 80px;
-}
+.sidebar.collapsed { width: 80px; }
 
 .sidebar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  padding: 12px;
+  border-bottom: 1px solid #333;
 }
 
 .collapse-btn {
-  background-color: #444;
-  color: #f5f5f5;
+  background: none;
   border: none;
-  border-radius: 4px;
-  padding: 2px 6px;
+  color: #fff;
   cursor: pointer;
+  font-size: 1.2rem;
 }
 
 .sidebar-menu {
+  margin-top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
 .sidebar-item {
-  padding: 8px 12px;
-  border-radius: 5px;
+  padding: 12px 16px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.2s ease;
 }
 
 .sidebar-item:hover {
-  background-color: #555;
-}
-
-/* Highlight active section on scroll (optional, JS needed if you want real-time highlight) */
-.sidebar-item.active {
-  background-color: #64b5f6;
-  font-weight: bold;
-}
-
-/* Collapsed state: show icons only (if you add icons later) */
-.sidebar.collapsed .sidebar-item {
-  text-align: center;
-  padding: 8px 0;
+  background-color: #333;
 }
