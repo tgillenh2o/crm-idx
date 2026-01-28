@@ -96,16 +96,32 @@ export default function LeadCard({
         )}
       </div>
 
-      {isLeadPond && onAssign && currentUserEmail && (
-        <button
-          className="claim-button"
-          onClick={() => {
-            setRemoving(true);
-            setTimeout(() => onAssign(lead._id, currentUserEmail), 300);
-          }}
-        >
-          Claim Lead
-        </button>
+     {isLeadPond && currentUserEmail && (
+  <button
+    className="claim-button"
+    onClick={async () => {
+      setRemoving(true); // optional animation
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/claim`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const updatedLead = await res.json();
+
+        // Update parent state so the dashboard re-renders
+        if (onAssign) onAssign(lead._id, updatedLead.assignedTo); 
+      } catch (err) {
+        console.error("Failed to claim lead:", err);
+        setRemoving(false);
+      }
+    }}
+  >
+    Claim Lead
+  </button>
+)}
+
       )}
 
       {isAdmin && onDelete && (
