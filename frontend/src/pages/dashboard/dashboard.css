@@ -120,11 +120,15 @@ body, .dashboard, .main-panel {
   max-width: 350px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.3);
   transition: box-shadow 0.2s ease;
-}
+
 .lead-card input,
 .lead-card select {
-  color: #333;      /* dark text */
-  background-color: #fff; /* keep inputs white */
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 14px;
 }
 
 
@@ -146,9 +150,14 @@ body, .dashboard, .main-panel {
 .status-Closed select { border-color: #10b981; }
 
 .interaction-form {
-  display: flex;
-  gap: 10px;
   margin-top: 10px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.interaction-form input {
+  flex: 1;
 }
 
 .interaction-form input,
@@ -162,8 +171,8 @@ body, .dashboard, .main-panel {
 
 .interaction-history {
   margin-top: 12px;
-  border-top: 1px solid #333;
-  padding-top: 8px;
+  font-size: 13px;
+  color: #333;
 }
 
 .interaction-item {
@@ -185,14 +194,27 @@ button:hover {
   background-color: #505050;
 }
 
-.claim-button {
-  margin-top: 8px;
-  width: 100%;
-  background-color: #2563eb;
-  color: #fff;
+.claim-button, .delete-button {
+  margin-top: 6px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
 }
+
 .claim-button:hover {
   background-color: #1d4ed8;
+}
+
+.claim-button {
+  background-color: #64b5f6;
+  color: #fff;
+}
+
+.delete-button {
+  background-color: #f44336;
+  color: #fff;
 }
 
 /* Add Lead Form */
