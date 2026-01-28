@@ -60,10 +60,12 @@ export default function MemberDashboard() {
     setLeads((prev) => prev.map((l) => (l._id === leadId ? updatedLead : l)));
   };
 
-  // Leads in the pond = unassigned + POND
-  const leadPondLeads = leads.filter(
-    (l) => !l.assignedTo || l.assignedTo === "POND" || l.assignedTo === "UNASSIGNED"
-  );
+// Leads in the pond = unassigned or assigned to pond
+const leadPondLeads = leads.filter((l) => {
+  if (!l.assignedTo) return true;
+  const assigned = String(l.assignedTo).toUpperCase();
+  return assigned === "POND" || assigned === "UNASSIGNED";
+});
 
   // Leads assigned to this member
   const myLeads = leads.filter((l) => l.assignedTo === user.email);
