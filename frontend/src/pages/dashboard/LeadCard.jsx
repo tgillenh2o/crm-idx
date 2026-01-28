@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import "./Dashboard.css";
 
 export default function LeadCard({
@@ -8,45 +8,52 @@ export default function LeadCard({
   onAssign,
   users = [],
   isLeadPond = false,
-  currentUserEmail
+  currentUserEmail,
 }) {
   const [status, setStatus] = useState(lead.status || "New");
   const [interactionType, setInteractionType] = useState("call");
   const [interactionNote, setInteractionNote] = useState("");
   const [interactions, setInteractions] = useState(lead.interactions || []);
   const [removing, setRemoving] = useState(false);
-  const [glowColor, setGlowColor] = useState("");
-  const prevLeadRef = useRef(lead);
+  const [recentlyUpdated, setRecentlyUpdated] = useState(false);
+  const [recentlyAssigned, setRecentlyAssigned] = useState(false);
 
   const assignedToName = lead.assignedTo || "Unassigned";
 
+  // --- Status color mapping
+  const statusColors = {
+    "New": "#e0f7fa",          // light cyan
+    "Contacted": "#fff3e0",    // light orange
+    "Follow-up": "#e8f5e9",    // light green
+    "Closed": "#f3e5f5"        // light purple
+  };
+
+  // --- Glow effect when assignedTo changes
   useEffect(() => {
-    const prevLead = prevLeadRef.current;
-    if (!prevLead) return;
+    if (!lead.assignedTo) return;
+    setRecentlyAssigned(true);
+    const timer = setTimeout(() => setRecentlyAssigned(false), 1500);
+    return () => clearTimeout(timer);
+  }, [lead.assignedTo]);
 
-    let color = "";
-    if (prevLead.assignedTo !== lead.assignedTo) {
-      if (lead.assignedTo === currentUserEmail) color = "green";
-      else if (lead.assignedTo === "POND") color = "blue";
-      else color = "yellow";
-    } else if (prevLead.status !== lead.status) {
-      color = "green";
-    } else if ((prevLead.interactions?.length || 0) !== (lead.interactions?.length || 0)) {
-      color = "green";
-    }
+  // --- Card style
+  const cardStyle = {
+    backgroundColor: statusColors[status] || "#ffffff",
+    transition: "background-color 0.3s ease, box-shadow 0.3s ease",
+    boxShadow: recentlyUpdated
+      ? "0 0 10px #64b5f6"      // status glow (blue)
+      : recentlyAssigned
+        ? "0 0 10px #ffb74d"    // assigned glow (orange)
+        : "none"
+  };
 
-    if (color) {
-      setGlowColor(color);
-      const timer = setTimeout(() => setGlowColor(""), 1200);
-      return () => clearTimeout(timer);
-    }
-
-    prevLeadRef.current = lead;
-  }, [lead]);
-
-  const handleStatusChange = async e => {
+  // --- Handle status change
+  const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
+    setRecentlyUpdated(true);
+    setTimeout(() => setRecentlyUpdated(false), 1500);
+
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`, {
         method: "PATCH",
@@ -58,9 +65,12 @@ export default function LeadCard({
       });
       const updated = await res.json();
       setStatus(updated.status);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error("Failed to update status:", err);
+    }
   };
 
+  // --- Log interaction
   const handleInteraction = async () => {
     if (!interactionNote.trim()) return;
     try {
@@ -73,19 +83,23 @@ export default function LeadCard({
         body: JSON.stringify({ type: interactionType, note: interactionNote })
       });
       const data = await res.json();
-      setInteractions(prev => [...data.interactions].map((i, idx, arr) => ({ ...i, justAdded: idx === arr.length - 1 })));
+      setInteractions(data.interactions || []);
       setInteractionNote("");
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error("Failed to log interaction:", err);
+    }
   };
 
   return (
-    <div className={`lead-card ${isLeadPond ? "lead-pond" : ""} ${removing ? "removing" : ""} ${glowColor ? "glow-" + glowColor : ""}`}>
+    <div className={`lead-card ${isLeadPond ? "lead-pond" : ""} ${removing ? "removing" : ""}`} style={cardStyle}>
+
       <div className="lead-info">
         <p><strong>Name:</strong> {lead.name}</p>
         <p><strong>Email:</strong> {lead.email}</p>
         <p><strong>Phone:</strong> {lead.phone}</p>
         <p><strong>Assigned To:</strong> {assignedToName}</p>
-        <p className={`status-${status}`}><strong>Status:</strong>
+
+        <p><strong>Status:</strong>
           <select value={status} onChange={handleStatusChange}>
             <option>New</option>
             <option>Contacted</option>
@@ -93,6 +107,7 @@ export default function LeadCard({
             <option>Closed</option>
           </select>
         </p>
+
         {isAdmin && onAssign && users.length > 0 && (
           <p><strong>Reassign:</strong>
             <select value={lead.assignedTo || ""} onChange={e => onAssign(lead._id, e.target.value)}>
@@ -122,7 +137,12 @@ export default function LeadCard({
           <option value="meeting">Meeting</option>
           <option value="note">Note</option>
         </select>
-        <input type="text" placeholder="Add note..." value={interactionNote} onChange={e => setInteractionNote(e.target.value)} />
+        <input
+          type="text"
+          placeholder="Add note..."
+          value={interactionNote}
+          onChange={e => setInteractionNote(e.target.value)}
+        />
         <button onClick={handleInteraction}>Add Interaction</button>
       </div>
 
@@ -130,13 +150,14 @@ export default function LeadCard({
         <h4>Interaction History</h4>
         {interactions.length === 0 ? <p>No interactions yet</p> :
           interactions.map((i, idx) => (
-            <div key={idx} className={`interaction-item ${i.justAdded ? "new-interaction" : ""}`}>
-              <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on {new Date(i.date).toLocaleString()}<br />
+            <div key={idx} className="interaction-item">
+              <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on {new Date(i.date).toLocaleString()}<br/>
               {i.note}
             </div>
           ))
         }
       </div>
+
     </div>
   );
 }
