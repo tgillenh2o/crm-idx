@@ -1,21 +1,23 @@
-/* =============================
-   DASHBOARD GRID
-============================= */
+/* DASHBOARD LAYOUT */
+.dashboard { display: flex; min-height: 100vh; background-color: #f5f5f5; }
+
+.main-panel {
+  flex: 1;
+  padding: 20px;
+  margin-left: 250px; /* sidebar width */
+  transition: margin-left 0.3s ease;
+}
+.main-panel.sidebar-collapsed { margin-left: 80px; }
+
+/* GRID FOR LEAD CARDS */
 .leads-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;             /* spacing between cards */
+  gap: 12px;
 }
+.leads-grid .lead-card { flex: 1 1 250px; max-width: 300px; }
 
-/* Make each card fit nicely */
-.leads-grid .lead-card {
-  flex: 1 1 250px;        /* min-width 250px, grows if space allows */
-  max-width: 300px;       /* keeps card from getting too big */
-}
-
-/* =============================
-   LeadCard base styles
-============================= */
+/* LEAD CARD BASE */
 .lead-card {
   border-radius: 8px;
   padding: 12px;
@@ -24,15 +26,6 @@
   transition: background-color 0.3s ease, box-shadow 0.5s ease;
 }
 
-/* Glow animations */
-.lead-card.status-updated {
-  box-shadow: 0 0 10px #64b5f6;
-}
-.lead-card.assigned-updated {
-  box-shadow: 0 0 10px #ffb74d;
-}
-
-/* Inputs and selects scoped to lead-card only */
 .lead-card input,
 .lead-card select {
   color: #333;
@@ -43,7 +36,7 @@
   font-size: 14px;
 }
 
-/* Buttons */
+/* BUTTONS */
 .lead-card .claim-button,
 .lead-card .delete-button {
   margin-top: 6px;
@@ -56,25 +49,12 @@
 .lead-card .claim-button { background-color: #64b5f6; color: #fff; }
 .lead-card .delete-button { background-color: #f44336; color: #fff; }
 
-/* Interaction items */
+/* INTERACTIONS */
 .lead-card .interaction-item { margin-bottom: 6px; }
 
-/* =============================
-   Sidebar + Main panel layout
-============================= */
-.dashboard {
-  display: flex;
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
+/* GLOW ANIMATIONS */
+.lead-card.status-updated { box-shadow: 0 0 10px #64b5f6; }
+.lead-card.assigned-updated { box-shadow: 0 0 10px #ffb74d; }
 
-.main-panel {
-  flex: 1;
-  padding: 20px;
-  margin-left: 250px; /* sidebar width */
-  transition: margin-left 0.3s ease;
-}
-
-.main-panel.sidebar-collapsed {
-  margin-left: 80px;
-}
+/* LEAD POND HIGHLIGHT */
+.lead-card.lead-pond { border: 2px dashed #64b5f6; }

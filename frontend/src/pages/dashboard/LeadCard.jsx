@@ -27,7 +27,14 @@ export default function LeadCard({
     "Closed": "#f3e5f5"
   };
 
-  // Glow for assignedTo change
+  // Trigger glow for status changes
+  useEffect(() => {
+    setStatusUpdated(true);
+    const timer = setTimeout(() => setStatusUpdated(false), 1500);
+    return () => clearTimeout(timer);
+  }, [status]);
+
+  // Trigger glow for assignment changes
   useEffect(() => {
     if (!lead.assignedTo) return;
     setAssignedUpdated(true);
@@ -35,12 +42,9 @@ export default function LeadCard({
     return () => clearTimeout(timer);
   }, [lead.assignedTo]);
 
-  // Status change handler
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
-    setStatusUpdated(true);
-    setTimeout(() => setStatusUpdated(false), 1500);
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`, {
@@ -53,12 +57,9 @@ export default function LeadCard({
       });
       const updated = await res.json();
       setStatus(updated.status);
-    } catch (err) {
-      console.error("Failed to update status:", err);
-    }
+    } catch (err) { console.error(err); }
   };
 
-  // Interaction log
   const handleInteraction = async () => {
     if (!interactionNote.trim()) return;
     try {
@@ -73,12 +74,9 @@ export default function LeadCard({
       const data = await res.json();
       setInteractions(data.interactions || []);
       setInteractionNote("");
-    } catch (err) {
-      console.error("Failed to log interaction:", err);
-    }
+    } catch (err) { console.error(err); }
   };
 
-  // Dynamic card classes
   const cardClasses = [
     "lead-card",
     isLeadPond ? "lead-pond" : "",
