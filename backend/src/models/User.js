@@ -2,9 +2,10 @@ const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true }, // 👈 NEW
+    name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    phone: { type: String }, // 👈 SAFE ADD
     role: {
       type: String,
       enum: ["teamAdmin", "teamMember"],
