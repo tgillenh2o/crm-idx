@@ -2,10 +2,10 @@ import React from "react";
 import "./Sidebar.css";
 
 export default function Sidebar({ collapsed, setCollapsed }) {
-  const sections = [
-    { id: "profile", label: "Profile", icon: "👤" },
-    { id: "lead-pond", label: "Lead Pond", icon: "🌊" },
-    { id: "my-leads", label: "My Leads", icon: "📝" },
+  const menuItems = [
+    { name: "Profile", id: "profile" },
+    { name: "Lead Pond", id: "lead-pond" },
+    { name: "My Leads", id: "my-leads" },
   ];
 
   const handleScroll = (id) => {
