@@ -1,71 +1,101 @@
-import React, { useContext, useState } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import React, { useState } from "react";
 import "./LeadCard.css";
 
 export default function LeadCard({
   lead,
   isAdmin = false,
-  isLeadPond = false,
-  users = [],
+  onDelete,
   onAssign,
-  onDelete
+  users = [],
+  isLeadPond = false,
+  currentUserEmail
 }) {
-  const { user } = useContext(AuthContext);
-  const [assigning, setAssigning] = useState(false);
+  const [status, setStatus] = useState(lead.status || "New");
+  const [interactions, setInteractions] = useState(lead.interactions || []);
+  const [interactionType, setInteractionType] = useState("call");
+  const [interactionNote, setInteractionNote] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const assignedTo = lead.assignedTo || "UNASSIGNED";
 
   /* =========================
-     STATUS COLOR LOGIC
+     STATUS COLORS
   ========================= */
   const statusColors = {
-    New: "#64b5f6",
-    "Follow-up": "#ffb74d",
-    Contacted: "#81c784",
-    Closed: "#9575cd"
+    New: "#60a5fa",
+    Contacted: "#facc15",
+    "Follow-up": "#fb923c",
+    Closed: "#4ade80"
   };
 
-  const statusColor = statusColors[lead.status] || "#90a4ae";
+  const assignedColors = {
+    POND: "#38bdf8",
+    UNASSIGNED: "#94a3b8"
+  };
 
   /* =========================
-     ASSIGNED-TO COLOR LOGIC
+     STATUS UPDATE
   ========================= */
-  const getAssignedColor = (value) => {
-    if (value === "POND" || value === "UNASSIGNED") return "#64b5f6";
-    if (isAdmin) return "#f4c430"; // gold-ish for admin context
+  const handleStatusChange = async (e) => {
+    const newStatus = e.target.value;
+    setStatus(newStatus);
 
-    // deterministic color for members
-    const colors = ["#4db6ac", "#ba68c8", "#81c784", "#7986cb"];
-    let hash = 0;
-    for (let i = 0; i < value.length; i++) {
-      hash = value.charCodeAt(i) + ((hash << 5) - hash);
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+    } catch (err) {
+      console.error("Status update failed:", err);
     }
-    return colors[Math.abs(hash) % colors.length];
   };
 
   /* =========================
-     ACTION HANDLERS
+     ADD INTERACTION
   ========================= */
-  const handleAssignChange = async (e) => {
-    const newValue = e.target.value;
-    setAssigning(true);
-    await onAssign(lead._id, newValue);
-    setAssigning(false);
-  };
+  const addInteraction = async () => {
+    if (!interactionNote.trim()) return;
+    setSaving(true);
 
-  const handleClaim = async () => {
-    await onAssign(lead._id, user.email);
-  };
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          },
+          body: JSON.stringify({
+            type: interactionType,
+            note: interactionNote
+          })
+        }
+      );
 
-  const handleMoveToPond = async () => {
-    await onAssign(lead._id, "POND");
+      const data = await res.json();
+      setInteractions(data.interactions || []);
+      setInteractionNote("");
+    } catch (err) {
+      console.error("Interaction failed:", err);
+    } finally {
+      setSaving(false);
+    }
   };
-
-  const isMine = assignedTo === user?.email;
 
   /* =========================
-     RENDER
+     ASSIGNED LABEL
   ========================= */
+  const assignedStyle = {
+    background:
+      assignedColors[assignedTo] ||
+      "#c084fc",
+  };
+
   return (
     <div className="lead-card">
       {/* HEADER */}
@@ -73,71 +103,109 @@ export default function LeadCard({
         <h4>{lead.name}</h4>
         <span
           className="status-badge"
-          style={{ backgroundColor: statusColor }}
+          style={{ background: statusColors[status] }}
         >
-          {lead.status}
+          {status}
         </span>
       </div>
 
       {/* BODY */}
       <div className="lead-card-body">
-        {lead.email && <p><strong>Email:</strong> {lead.email}</p>}
-        {lead.phone && <p><strong>Phone:</strong> {lead.phone}</p>}
+        <p>{lead.email}</p>
+        <p>{lead.phone}</p>
 
-        <div
-          className="assigned-pill"
-          style={{ backgroundColor: getAssignedColor(assignedTo) }}
-        >
-          {assignedTo === "POND" || assignedTo === "UNASSIGNED"
-            ? "Lead Pond"
-            : assignedTo}
-        </div>
+        <span className="assigned-pill" style={assignedStyle}>
+          {assignedTo === "POND" ? "Lead Pond" : assignedTo}
+        </span>
       </div>
 
       {/* ACTIONS */}
       <div className="lead-card-actions">
-        {/* ADMIN ACTIONS */}
-        {isAdmin && (
-          <>
-            <select
-              value={assignedTo}
-              onChange={handleAssignChange}
-              disabled={assigning}
-            >
-              <option value="POND">Lead Pond</option>
-              {users.map((u) => (
-                <option key={u._id} value={u.email}>
-                  {u.name || u.email}
-                </option>
-              ))}
-            </select>
+        {/* STATUS */}
+        <select value={status} onChange={handleStatusChange}>
+          <option>New</option>
+          <option>Contacted</option>
+          <option>Follow-up</option>
+          <option>Closed</option>
+        </select>
 
-            {onDelete && (
-              <button
-                className="danger"
-                onClick={() => onDelete(lead._id)}
-              >
-                Delete
-              </button>
-            )}
-          </>
+        {/* ADMIN REASSIGN */}
+        {isAdmin && onAssign && (
+          <select
+            value={assignedTo === "UNASSIGNED" ? "" : assignedTo}
+            onChange={(e) => onAssign(lead._id, e.target.value)}
+          >
+            <option value="">Unassigned</option>
+            <option value="POND">Lead Pond</option>
+            {users.map((u) => (
+              <option key={u._id} value={u.email}>
+                {u.name}
+              </option>
+            ))}
+          </select>
         )}
 
-        {/* MEMBER ACTIONS */}
-        {!isAdmin && (
-          <>
-            {isLeadPond && (
-              <button className="primary" onClick={handleClaim}>
-                Claim Lead
-              </button>
-            )}
+        {/* MEMBER CLAIM */}
+        {isLeadPond && currentUserEmail && onAssign && !isAdmin && (
+          <button
+            className="primary"
+            onClick={() => onAssign(lead._id, currentUserEmail)}
+          >
+            Claim
+          </button>
+        )}
 
-            {isMine && (
-              <button className="secondary" onClick={handleMoveToPond}>
-                Move to Pond
-              </button>
-            )}
-          </>
+        {/* ADMIN DELETE */}
+        {isAdmin && onDelete && (
+          <button className="danger" onClick={() => onDelete(lead._id)}>
+            Delete
+          </button>
+        )}
+      </div>
+
+      {/* INTERACTIONS */}
+      <div className="interaction-form">
+        <select
+          value={interactionType}
+          onChange={(e) => setInteractionType(e.target.value)}
+        >
+          <option value="call">Call</option>
+          <option value="email">Email</option>
+          <option value="meeting">Meeting</option>
+          <option value="note">Note</option>
+        </select>
+
+        <input
+          type="text"
+          placeholder="Add interaction note..."
+          value={interactionNote}
+          onChange={(e) => setInteractionNote(e.target.value)}
+        />
+
+        <button
+          className="secondary"
+          disabled={saving}
+          onClick={addInteraction}
+        >
+          Add
+        </button>
+      </div>
+
+      {/* HISTORY */}
+      <div className="interaction-history">
+        {interactions.length === 0 ? (
+          <p style={{ fontSize: "0.75rem", opacity: 0.6 }}>
+            No interactions yet
+          </p>
+        ) : (
+          interactions.map((i, idx) => (
+            <div key={idx} className="interaction-item">
+              <strong>{i.type}</strong> —{" "}
+              {new Date(i.date).toLocaleString()}
+              <br />
+              {i.note}
+            </div>
+          ))
         )}
       </div>
     </div>
