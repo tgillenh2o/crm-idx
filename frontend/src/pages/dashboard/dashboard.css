@@ -121,6 +121,12 @@ body, .dashboard, .main-panel {
   box-shadow: 0 6px 18px rgba(0,0,0,0.3);
   transition: box-shadow 0.2s ease;
 }
+.lead-card input,
+.lead-card select {
+  color: #333;      /* dark text */
+  background-color: #fff; /* keep inputs white */
+}
+
 
 .lead-card:hover {
   box-shadow: 0 8px 20px rgba(0,0,0,0.5);

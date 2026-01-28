@@ -37,15 +37,17 @@ export default function LeadCard({
   }, [lead.assignedTo]);
 
   // --- Card style
-  const cardStyle = {
-    backgroundColor: statusColors[status] || "#ffffff",
-    transition: "background-color 0.3s ease, box-shadow 0.3s ease",
-    boxShadow: recentlyUpdated
-      ? "0 0 10px #64b5f6"      // status glow (blue)
-      : recentlyAssigned
-        ? "0 0 10px #ffb74d"    // assigned glow (orange)
-        : "none"
-  };
+const cardStyle = {
+  backgroundColor: statusColors[status] || "#ffffff",
+  color: "#333", // dark text for readability
+  transition: "background-color 0.3s ease, box-shadow 0.3s ease",
+  boxShadow: recentlyUpdated
+    ? "0 0 10px #64b5f6"
+    : recentlyAssigned
+      ? "0 0 10px #ffb74d"
+      : "none"
+};
+
 
   // --- Handle status change
   const handleStatusChange = async (e) => {
