@@ -116,6 +116,27 @@ router.patch("/:id/assign", verifyToken, isAdmin, async (req, res) => {
   res.json(populated);
 });
 
+// PATCH /api/leads/:id/return
+router.patch("/:id/return", verifyToken, async (req, res) => {
+  try {
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+    // Only allow owner to return
+    if (req.user.role !== "teamAdmin" && lead.assignedTo !== req.user.email) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    lead.assignedTo = "POND";
+    await lead.save();
+
+    res.json(lead);
+  } catch (err) {
+    console.error("RETURN lead error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 
 /* ================== DELETE LEAD ================== */
 router.delete("/:id", verifyToken, async (req, res) => {

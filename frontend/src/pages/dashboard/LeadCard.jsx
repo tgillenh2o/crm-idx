@@ -144,6 +144,34 @@ export default function LeadCard({
           Claim Lead
         </button>
       )}
+{/* MEMBER RETURN TO POND */}
+{!isAdmin && lead.assignedTo === currentUserEmail && (
+  <button
+    className="return-button"
+    onClick={async () => {
+      setRemoving(true);
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/return`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const updatedLead = await res.json();
+        if (onAssign) onAssign(lead._id, updatedLead.assignedTo);
+      } catch (err) {
+        console.error("Failed to return lead:", err);
+        setRemoving(false);
+      }
+    }}
+  >
+    Return to Pond
+  </button>
+)}
+
 
       {/* ADMIN DELETE */}
       {isAdmin && onDelete && (
