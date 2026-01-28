@@ -16,7 +16,7 @@ router.get("/", verifyToken, async (req, res) => {
 });
 
 // Update current user
-router.patch("/me", auth, async (req, res) => {
+router.patch("/me", verifyToken, async (req, res) => {
   try {
     const { name, email, currentPassword, newPassword } = req.body;
 
