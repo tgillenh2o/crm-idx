@@ -1,10 +1,9 @@
-import React, { useContext, useEffect, useState, useRef } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import LeadCard from "./LeadCard";
 import AddLead from "./AddLead";
-import Profile from "./Profile";
 import "./Dashboard.css";
 
 export default function AdminDashboard() {
@@ -12,11 +11,6 @@ export default function AdminDashboard() {
   const [leads, setLeads] = useState([]);
   const [users, setUsers] = useState([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  // Refs for scroll
-  const profileRef = useRef(null);
-  const leadPondRef = useRef(null);
-  const myLeadsRef = useRef(null);
 
   useEffect(() => {
     fetchLeads();
@@ -30,8 +24,7 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       setLeads(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Error fetching leads:", err);
+    } catch {
       setLeads([]);
     }
   };
@@ -43,23 +36,18 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       setUsers(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Error fetching users:", err);
+    } catch {
       setUsers([]);
     }
   };
 
   const handleDelete = async (leadId) => {
-    if (!window.confirm("Are you sure you want to delete this lead?")) return;
-    try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      setLeads(leads.filter((l) => l._id !== leadId));
-    } catch (err) {
-      console.error("Failed to delete lead:", err);
-    }
+    if (!window.confirm("Are you sure?")) return;
+    await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    setLeads(leads.filter((l) => l._id !== leadId));
   };
 
   const handleAssign = async (leadId, assignedTo) => {
@@ -75,79 +63,46 @@ export default function AdminDashboard() {
       const updatedLead = await res.json();
       setLeads((prev) => prev.map((l) => (l._id === leadId ? updatedLead : l)));
     } catch (err) {
-      console.error("Failed to assign lead:", err);
+      console.error(err);
     }
   };
 
   const leadPondLeads = leads.filter(
     (l) => !l.assignedTo || l.assignedTo === "POND" || l.assignedTo === "UNASSIGNED"
   );
-  const myLeads = leads.filter((l) => !leadPondLeads.includes(l));
+  const otherLeads = leads.filter((l) => !leadPondLeads.includes(l));
 
   return (
     <div className="dashboard">
-      <Sidebar
-        collapsed={sidebarCollapsed}
-        setCollapsed={setSidebarCollapsed}
-        scrollRefs={{
-          profile: profileRef,
-          leadPond: leadPondRef,
-          myLeads: myLeadsRef,
-        }}
-      />
+      <Sidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
       <div className={`main-panel ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <Topbar />
 
-        {/* PROFILE SECTION */}
-        <div ref={profileRef} id="profile">
-          <Profile />
+        <div className="stats-cards">
+          <div className="stat-card"><p>Total Leads</p><h3>{leads.length}</h3></div>
+          <div className="stat-card"><p>Follow-ups</p><h3>{leads.filter(l => l.status==="Follow-up").length}</h3></div>
+          <div className="stat-card"><p>Contacted</p><h3>{leads.filter(l => l.status==="Contacted").length}</h3></div>
         </div>
 
-        {/* ADD LEAD FORM */}
-        <AddLead
-          onLeadAdded={(newLead) => setLeads([newLead, ...leads])}
-          currentUser={user}
-          isAdmin={true}
-          users={users}
-        />
+        <AddLead onLeadAdded={l => setLeads([l, ...leads])} currentUser={user} isAdmin={true} users={users} />
 
-        {/* LEAD POND */}
-        <div ref={leadPondRef} id="lead-pond">
+        <div id="lead-pond">
           {leadPondLeads.length > 0 && (
             <>
               <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
               <div className="leads-grid">
-                {leadPondLeads.map((lead) => (
-                  <LeadCard
-                    key={lead._id}
-                    lead={lead}
-                    isAdmin
-                    onAssign={handleAssign}
-                    users={users}
-                    isLeadPond
-                  />
-                ))}
+                {leadPondLeads.map(l => <LeadCard key={l._id} lead={l} isAdmin onAssign={handleAssign} users={users} isLeadPond />)}
               </div>
             </>
           )}
         </div>
 
-        {/* MY LEADS */}
-        <div ref={myLeadsRef} id="my-leads">
-          {myLeads.length > 0 && (
+        <div id="my-leads">
+          {otherLeads.length > 0 && (
             <>
-              <h3>My Leads</h3>
+              <h3>Your Leads</h3>
               <div className="leads-grid">
-                {myLeads.map((lead) => (
-                  <LeadCard
-                    key={lead._id}
-                    lead={lead}
-                    isAdmin
-                    onAssign={handleAssign}
-                    users={users}
-                    onDelete={handleDelete}
-                  />
-                ))}
+                {otherLeads.map(l => <LeadCard key={l._id} lead={l} isAdmin onAssign={handleAssign} users={users} onDelete={handleDelete} />)}
               </div>
             </>
           )}

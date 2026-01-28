@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./LeadCard.css";
 
 export default function LeadCard({
@@ -15,30 +15,8 @@ export default function LeadCard({
   const [interactionNote, setInteractionNote] = useState("");
   const [interactions, setInteractions] = useState(lead.interactions || []);
   const [removing, setRemoving] = useState(false);
-  const [statusUpdated, setStatusUpdated] = useState(false);
-  const [assignedUpdated, setAssignedUpdated] = useState(false);
 
   const assignedToName = lead.assignedTo || "Unassigned";
-
-  const statusColors = {
-    New: "#263238",
-    Contacted: "#37474f",
-    "Follow-up": "#455a64",
-    Closed: "#546e7a",
-  };
-
-  useEffect(() => {
-    setStatusUpdated(true);
-    const timer = setTimeout(() => setStatusUpdated(false), 1500);
-    return () => clearTimeout(timer);
-  }, [status]);
-
-  useEffect(() => {
-    if (!lead.assignedTo) return;
-    setAssignedUpdated(true);
-    const timer = setTimeout(() => setAssignedUpdated(false), 1500);
-    return () => clearTimeout(timer);
-  }, [lead.assignedTo]);
 
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
@@ -78,22 +56,13 @@ export default function LeadCard({
     }
   };
 
-  const cardClasses = [
-    "lead-card",
-    isLeadPond ? "lead-pond" : "",
-    removing ? "removing" : "",
-    statusUpdated ? "status-updated" : "",
-    assignedUpdated ? "assigned-updated" : "",
-  ].join(" ");
-
   return (
-    <div className={cardClasses} style={{ backgroundColor: statusColors[status] || "#37474f" }}>
+    <div className={`lead-card status-${status.toLowerCase()} ${removing ? "removing" : ""}`}>
       <div className="lead-info">
         <p><strong>Name:</strong> {lead.name}</p>
         <p><strong>Email:</strong> {lead.email}</p>
         <p><strong>Phone:</strong> {lead.phone}</p>
         <p><strong>Assigned To:</strong> {assignedToName}</p>
-
         <p>
           <strong>Status:</strong>
           <select value={status} onChange={handleStatusChange}>
@@ -119,10 +88,15 @@ export default function LeadCard({
       </div>
 
       {isLeadPond && onAssign && currentUserEmail && (
-        <button className="claim-button" onClick={() => {
-          setRemoving(true);
-          setTimeout(() => onAssign(lead._id, currentUserEmail), 300);
-        }}>Claim Lead</button>
+        <button
+          className="claim-button"
+          onClick={() => {
+            setRemoving(true);
+            setTimeout(() => onAssign(lead._id, currentUserEmail), 300);
+          }}
+        >
+          Claim Lead
+        </button>
       )}
 
       {isAdmin && onDelete && (
@@ -147,14 +121,16 @@ export default function LeadCard({
 
       <div className="interaction-history">
         <h4>Interaction History</h4>
-        {interactions.length === 0 ? <p>No interactions yet</p> :
+        {interactions.length === 0 ? (
+          <p>No interactions yet</p>
+        ) : (
           interactions.map((i, idx) => (
             <div key={idx} className="interaction-item">
-              <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on {new Date(i.date).toLocaleString()}<br/>
+              <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on {new Date(i.date).toLocaleString()}<br />
               {i.note}
             </div>
           ))
-        }
+        )}
       </div>
     </div>
   );
