@@ -76,6 +76,30 @@ router.post("/", verifyToken, async (req, res) => {
   }
 });
 
+/* ================== MEMBER CLAIM LEAD ================== */
+router.patch("/:id/claim", verifyToken, async (req, res) => {
+  try {
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+
+    // Only allow claiming pond leads
+    if (lead.assignedTo !== "POND") {
+      return res.status(400).json({ message: "Lead already assigned" });
+    }
+
+    lead.assignedTo = req.user.email;
+    await lead.save();
+
+    res.json(lead);
+  } catch (err) {
+    console.error("CLAIM lead error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 /* ================== PATCH LEAD ================== */
 router.patch("/:id/assign", verifyToken, isAdmin, async (req, res) => {
   const { userId } = req.body;
@@ -107,34 +131,26 @@ router.delete("/:id", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-/* ================== ADMIN REASSIGN / CLAIM LEAD ================== */
-router.patch("/:id/assign", verifyToken, async (req, res) => {
+/* ================== ADMIN REASSIGN LEAD ================== */
+router.patch("/:id/reassign", verifyToken, isAdmin, async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { assignedTo } = req.body;
 
     const lead = await Lead.findById(req.params.id);
-    if (!lead) return res.status(404).json({ message: "Lead not found" });
-
-    // Admin can assign to anyone or pond
-    if (req.user.role === "teamAdmin") {
-      lead.assignedTo =
-        userId && userId.trim() !== "" ? userId : "UNASSIGNED";
-    } 
-    // Member can only claim pond leads
-    else {
-      if (lead.assignedTo !== "POND" && lead.assignedTo !== "UNASSIGNED") {
-        return res.status(403).json({ message: "Forbidden" });
-      }
-      lead.assignedTo = req.user.email;
+    if (!lead) {
+      return res.status(404).json({ message: "Lead not found" });
     }
 
+    lead.assignedTo = assignedTo?.trim() || "POND";
     await lead.save();
+
     res.json(lead);
   } catch (err) {
-    console.error("ASSIGN lead error:", err);
+    console.error("REASSIGN lead error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 /*================== INTERACTIONS ================*/
 // routes/leads.js
