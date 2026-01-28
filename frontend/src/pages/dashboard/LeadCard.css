@@ -1,0 +1,126 @@
+/* =========================
+   CARD BASE
+========================= */
+.lead-card {
+  background: #121826;
+  border-radius: 12px;
+  padding: 16px;
+  color: #e5e7eb;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lead-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+/* =========================
+   HEADER
+========================= */
+.lead-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lead-card-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* =========================
+   STATUS BADGE
+========================= */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* =========================
+   BODY
+========================= */
+.lead-card-body p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #cbd5f5;
+}
+
+/* =========================
+   ASSIGNED PILL
+========================= */
+.assigned-pill {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #0f172a;
+  width: fit-content;
+}
+
+/* =========================
+   ACTIONS
+========================= */
+.lead-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.lead-card-actions select {
+  background: #1e293b;
+  color: #e5e7eb;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 6px;
+  font-size: 0.75rem;
+}
+
+.lead-card-actions button {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* =========================
+   BUTTON VARIANTS
+========================= */
+button.primary {
+  background: #4f46e5;
+  color: #fff;
+}
+
+button.secondary {
+  background: #334155;
+  color: #e5e7eb;
+}
+
+button.danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+button.primary:hover {
+  background: #4338ca;
+}
+
+button.secondary:hover {
+  background: #475569;
+}
+
+button.danger:hover {
+  background: #b91c1c;
+}

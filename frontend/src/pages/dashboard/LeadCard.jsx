@@ -1,221 +1,143 @@
-import React, { useState } from "react";
-import "./Dashboard.css";
+import React, { useContext, useState } from "react";
+import { AuthContext } from "../../context/AuthContext";
+import "./LeadCard.css";
 
 export default function LeadCard({
   lead,
   isAdmin = false,
-  onDelete,
-  onAssign,
-  users = [],
   isLeadPond = false,
-  currentUserEmail
+  users = [],
+  onAssign,
+  onDelete
 }) {
-  const [status, setStatus] = useState(lead.status || "New");
-  const [assignedTo, setAssignedTo] = useState(lead.assignedTo || "");
-  const [interactionType, setInteractionType] = useState("call");
-  const [interactionNote, setInteractionNote] = useState("");
-  const [interactions, setInteractions] = useState(lead.interactions || []);
-  const [removing, setRemoving] = useState(false);
+  const { user } = useContext(AuthContext);
+  const [assigning, setAssigning] = useState(false);
 
-  const assignedToName = assignedTo || "Unassigned";
+  const assignedTo = lead.assignedTo || "UNASSIGNED";
 
-  // 🔹 Status color mapping (robust, lowercase-safe)
+  /* =========================
+     STATUS COLOR LOGIC
+  ========================= */
   const statusColors = {
-    new: "#38bdf8",
-    contacted: "#facc15",
-    "follow-up": "#fb923c",
-    closed: "#4ade80"
+    New: "#64b5f6",
+    "Follow-up": "#ffb74d",
+    Contacted: "#81c784",
+    Closed: "#9575cd"
   };
 
-  // ================= STATUS UPDATE =================
-  const handleStatusChange = async e => {
-    const newStatus = e.target.value;
-    setStatus(newStatus);
+  const statusColor = statusColors[lead.status] || "#90a4ae";
 
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          },
-          body: JSON.stringify({ status: newStatus })
-        }
-      );
+  /* =========================
+     ASSIGNED-TO COLOR LOGIC
+  ========================= */
+  const getAssignedColor = (value) => {
+    if (value === "POND" || value === "UNASSIGNED") return "#64b5f6";
+    if (isAdmin) return "#f4c430"; // gold-ish for admin context
 
-      const updated = await res.json();
-      setStatus(updated.status || newStatus);
-    } catch (err) {
-      console.error("Status update failed:", err);
+    // deterministic color for members
+    const colors = ["#4db6ac", "#ba68c8", "#81c784", "#7986cb"];
+    let hash = 0;
+    for (let i = 0; i < value.length; i++) {
+      hash = value.charCodeAt(i) + ((hash << 5) - hash);
     }
+    return colors[Math.abs(hash) % colors.length];
   };
 
-  // ================= REASSIGN =================
-  const handleAssign = value => {
-    setAssignedTo(value);          // instant UI update
-    onAssign && onAssign(lead._id, value);
+  /* =========================
+     ACTION HANDLERS
+  ========================= */
+  const handleAssignChange = async (e) => {
+    const newValue = e.target.value;
+    setAssigning(true);
+    await onAssign(lead._id, newValue);
+    setAssigning(false);
   };
 
-  // ================= INTERACTIONS =================
-  const handleInteraction = async () => {
-    if (!interactionNote.trim()) return;
-
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          },
-          body: JSON.stringify({
-            type: interactionType,
-            note: interactionNote
-          })
-        }
-      );
-
-      const data = await res.json();
-      setInteractions(data.interactions || []);
-      setInteractionNote("");
-    } catch (err) {
-      console.error("Failed to log interaction:", err);
-    }
+  const handleClaim = async () => {
+    await onAssign(lead._id, user.email);
   };
 
+  const handleMoveToPond = async () => {
+    await onAssign(lead._id, "POND");
+  };
+
+  const isMine = assignedTo === user?.email;
+
+  /* =========================
+     RENDER
+  ========================= */
   return (
-    <div className={`lead-card ${isLeadPond ? "lead-pond" : ""} ${removing ? "removing" : ""}`}>
-      {/* ================= LEAD INFO ================= */}
-      <div className="lead-info">
-        <p><strong>Name:</strong> {lead.name}</p>
-        <p><strong>Email:</strong> {lead.email}</p>
-        <p><strong>Phone:</strong> {lead.phone || "—"}</p>
+    <div className="lead-card">
+      {/* HEADER */}
+      <div className="lead-card-header">
+        <h4>{lead.name}</h4>
+        <span
+          className="status-badge"
+          style={{ backgroundColor: statusColor }}
+        >
+          {lead.status}
+        </span>
+      </div>
 
-        {/* Assigned To */}
-        <p>
-          <strong>Assigned To:</strong>{" "}
-          <span
-            style={{
-              color:
-                assignedTo === currentUserEmail
-                  ? "#4ade80"
-                  : assignedTo === "POND"
-                  ? "#38bdf8"
-                  : "#94a3b8",
-              fontWeight: 600
-            }}
-          >
-            {assignedToName}
-          </span>
-        </p>
+      {/* BODY */}
+      <div className="lead-card-body">
+        {lead.email && <p><strong>Email:</strong> {lead.email}</p>}
+        {lead.phone && <p><strong>Phone:</strong> {lead.phone}</p>}
 
-        {/* Status */}
-        <p>
-          <strong>Status:</strong>{" "}
-          <span
-            className="status-badge"
-            style={{
-              background:
-                statusColors[status.toLowerCase()] || "#64748b"
-            }}
-          >
-            {status}
-          </span>
+        <div
+          className="assigned-pill"
+          style={{ backgroundColor: getAssignedColor(assignedTo) }}
+        >
+          {assignedTo === "POND" || assignedTo === "UNASSIGNED"
+            ? "Lead Pond"
+            : assignedTo}
+        </div>
+      </div>
 
-          <select value={status} onChange={handleStatusChange}>
-            <option>New</option>
-            <option>Contacted</option>
-            <option>Follow-up</option>
-            <option>Closed</option>
-          </select>
-        </p>
-
-        {/* Reassign */}
-        {isAdmin && onAssign && users.length > 0 && (
-          <p>
-            <strong>Reassign:</strong>{" "}
+      {/* ACTIONS */}
+      <div className="lead-card-actions">
+        {/* ADMIN ACTIONS */}
+        {isAdmin && (
+          <>
             <select
               value={assignedTo}
-              onChange={e => handleAssign(e.target.value)}
+              onChange={handleAssignChange}
+              disabled={assigning}
             >
-              <option value="">Unassigned</option>
               <option value="POND">Lead Pond</option>
-              {users.map(u => (
+              {users.map((u) => (
                 <option key={u._id} value={u.email}>
-                  {u.name}
+                  {u.name || u.email}
                 </option>
               ))}
             </select>
-          </p>
+
+            {onDelete && (
+              <button
+                className="danger"
+                onClick={() => onDelete(lead._id)}
+              >
+                Delete
+              </button>
+            )}
+          </>
         )}
-      </div>
 
-      {/* ================= LEAD POND CLAIM ================= */}
-      {isLeadPond && onAssign && currentUserEmail && (
-        <button
-          className="claim-button"
-          onClick={() => {
-            setRemoving(true);
-            setTimeout(() => handleAssign(currentUserEmail), 300);
-          }}
-        >
-          Claim Lead
-        </button>
-      )}
+        {/* MEMBER ACTIONS */}
+        {!isAdmin && (
+          <>
+            {isLeadPond && (
+              <button className="primary" onClick={handleClaim}>
+                Claim Lead
+              </button>
+            )}
 
-      {/* ================= DELETE ================= */}
-      {isAdmin && onDelete && (
-        <button
-          className="delete-button"
-          onClick={() => onDelete(lead._id)}
-        >
-          Delete Lead
-        </button>
-      )}
-
-      {/* ================= INTERACTION FORM ================= */}
-      <div className="interaction-form">
-        <select
-          value={interactionType}
-          onChange={e => setInteractionType(e.target.value)}
-        >
-          <option value="call">Call</option>
-          <option value="email">Email</option>
-          <option value="meeting">Meeting</option>
-          <option value="note">Note</option>
-        </select>
-
-        <input
-          type="text"
-          placeholder="Add note..."
-          value={interactionNote}
-          onChange={e => setInteractionNote(e.target.value)}
-        />
-
-        <button onClick={handleInteraction}>
-          Add Interaction
-        </button>
-      </div>
-
-      {/* ================= INTERACTION HISTORY ================= */}
-      <div className="interaction-history">
-        <h4>Interaction History</h4>
-
-        {interactions.length === 0 ? (
-          <p>No interactions yet</p>
-        ) : (
-          interactions.map((i, idx) => (
-            <div key={idx} className="interaction-item">
-              <strong>{i.type}</strong>{" "}
-              by {i.createdBy || "Unknown"} on{" "}
-              {new Date(i.date).toLocaleString()}
-              <br />
-              {i.note}
-            </div>
-          ))
+            {isMine && (
+              <button className="secondary" onClick={handleMoveToPond}>
+                Move to Pond
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>
