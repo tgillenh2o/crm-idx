@@ -1,13 +1,35 @@
+/* DARK THEME VARIABLES */
+:root {
+  --bg-color: #1f1f1f;
+  --main-panel-bg: #2c2c2c;
+  --text-color: #f5f5f5;
+  --card-bg-new: #263238;
+  --card-bg-contacted: #37474f;
+  --card-bg-followup: #455a64;
+  --card-bg-closed: #546e7a;
+  --button-bg-claim: #64b5f6;
+  --button-bg-delete: #e57373;
+}
+
 /* DASHBOARD LAYOUT */
-.dashboard { display: flex; min-height: 100vh; background-color: #f5f5f5; }
+.dashboard {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+}
 
 .main-panel {
   flex: 1;
   padding: 20px;
   margin-left: 250px; /* sidebar width */
+  background-color: var(--main-panel-bg);
   transition: margin-left 0.3s ease;
+  color: var(--text-color);
 }
-.main-panel.sidebar-collapsed { margin-left: 80px; }
+
+.main-panel.sidebar-collapsed {
+  margin-left: 80px;
+}
 
 /* GRID FOR LEAD CARDS */
 .leads-grid {
@@ -15,26 +37,25 @@
   flex-wrap: wrap;
   gap: 12px;
 }
-.leads-grid .lead-card { flex: 1 1 250px; max-width: 300px; }
+.leads-grid .lead-card {
+  flex: 1 1 250px;
+  max-width: 300px;
+  color: var(--text-color);
+}
 
 /* LEAD CARD BASE */
 .lead-card {
   border-radius: 8px;
   padding: 12px;
-  color: #333;
   box-sizing: border-box;
   transition: background-color 0.3s ease, box-shadow 0.5s ease;
 }
 
-.lead-card input,
-.lead-card select {
-  color: #333;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 4px 6px;
-  font-size: 14px;
-}
+/* Status colors using dark theme variants */
+.lead-card[style*="New"] { background-color: var(--card-bg-new); }
+.lead-card[style*="Contacted"] { background-color: var(--card-bg-contacted); }
+.lead-card[style*="Follow-up"] { background-color: var(--card-bg-followup); }
+.lead-card[style*="Closed"] { background-color: var(--card-bg-closed); }
 
 /* BUTTONS */
 .lead-card .claim-button,
@@ -45,9 +66,10 @@
   border-radius: 5px;
   cursor: pointer;
   font-weight: bold;
+  color: #fff;
 }
-.lead-card .claim-button { background-color: #64b5f6; color: #fff; }
-.lead-card .delete-button { background-color: #f44336; color: #fff; }
+.lead-card .claim-button { background-color: var(--button-bg-claim); }
+.lead-card .delete-button { background-color: var(--button-bg-delete); }
 
 /* INTERACTIONS */
 .lead-card .interaction-item { margin-bottom: 6px; }
@@ -58,3 +80,14 @@
 
 /* LEAD POND HIGHLIGHT */
 .lead-card.lead-pond { border: 2px dashed #64b5f6; }
+
+/* INPUT / SELECT */
+.lead-card input,
+.lead-card select {
+  color: var(--text-color);
+  background-color: var(--main-panel-bg);
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 14px;
+}
