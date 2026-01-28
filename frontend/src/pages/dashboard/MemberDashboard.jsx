@@ -74,7 +74,7 @@ export default function MemberDashboard() {
         setCollapsed={setSidebarCollapsed}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        isAdmin-{false}
+        isAdmin={false}
       />
 
       <div className={`main-panel ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
