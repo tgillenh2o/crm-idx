@@ -1,37 +1,31 @@
-/* ================== DASHBOARD LAYOUT ================== */
+/* ========================== Dashboard.css ========================== */
+
+/* ---------- Body & Dashboard Layout ---------- */
 .dashboard {
   display: flex;
-  height: 100vh;
-  font-family: "Inter", sans-serif;
+  min-height: 100vh;
   background-color: #12121f;
-  color: #ffffff;
+  color: #fff;
+  font-family: "Inter", sans-serif;
 }
 
-.main-panel {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-h2, h3 {
-  margin: 0 0 12px 0;
-  color: #ffffff;
-}
-
-/* ================== SIDEBAR ================== */
-/* Sidebar container */
+/* ---------- Sidebar ---------- */
 .sidebar {
   width: 220px;
-  background-color: #1e1e2f; /* dark theme */
-  color: #ffffff;
+  background-color: #1e1e2f;
+  color: #fff;
   display: flex;
   flex-direction: column;
   padding: 16px 0;
   box-shadow: 2px 0 12px rgba(0, 0, 0, 0.4);
-  user-select: none; /* prevents text selection on click */
+  user-select: none;
 }
 
-/* Sidebar buttons / tabs */
+.sidebar-scroll {
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
 .sidebar-button {
   background: none;
   border: none;
@@ -40,13 +34,14 @@ h2, h3 {
   padding: 12px 24px;
   margin: 4px 0;
   font-size: 16px;
-  cursor: pointer; /* ensures proper pointer cursor */
-  transition: background 0.2s, transform 0.2s;
+  cursor: pointer !important;
+  user-select: none !important;
   border-radius: 8px;
+  transition: background 0.2s, transform 0.2s;
 }
 
 .sidebar-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1) !important;
   transform: translateX(4px);
 }
 
@@ -55,232 +50,207 @@ h2, h3 {
   font-weight: bold;
 }
 
-/* Optional icons if you have them */
-.sidebar-button i {
-  margin-right: 8px;
-  pointer-events: none; /* ensures icon doesn’t block click */
-}
-
-/* Fix for nested text elements inside buttons */
 .sidebar-button span,
 .sidebar-button div {
-  cursor: pointer;
+  cursor: pointer !important;
+  user-select: none !important;
 }
 
-/* Scrollable sidebar if too long */
-.sidebar .sidebar-scroll {
+/* ---------- Main Panel ---------- */
+.main-panel {
+  flex: 1;
+  padding: 24px;
   overflow-y: auto;
-  flex-grow: 1;
 }
 
-
-/* ================== LEAD LIST ================== */
+/* ---------- Lead List ---------- */
 .lead-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.lead-row {
-  display: grid;
-  grid-template-columns: 2fr 2fr 1fr 1fr;
-  background-color: #1e1e2f;
-  padding: 12px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.lead-row:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-}
-
-/* ================== STATUS COLORS ================== */
-.status-new { background-color: #2b2b42; }
-.status-contacted { background-color: #2b4242; }
-.status-follow-up { background-color: #42422b; }
-.status-under_contract { background-color: #224422; }
-.status-closed { background-color: #442222; }
-
-/* ================== LEAD CARD MODAL ================== */
-.lead-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
+/* ---------- Lead Card ---------- */
 .lead-card {
   background-color: #1e1e2f;
-  color: #fff;
-  border-radius: 14px;
-  padding: 24px;
-  width: 450px;
-  max-height: 90%;
-  overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-}
-
-.lead-card h2 {
-  margin-bottom: 12px;
-}
-
-.lead-card label {
-  display: block;
-  margin-top: 12px;
-  margin-bottom: 4px;
-  font-weight: 500;
-}
-
-.lead-card input,
-.lead-card select {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #555;
-  background-color: #2a2a40;
-  color: #fff;
-  margin-bottom: 8px;
-}
-
-/* ================== BUTTONS ================== */
-button {
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  transition: background-color 0.3s, transform 0.2s;
   cursor: pointer;
+}
+
+.lead-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Status border colors */
+.lead-card.status-new { border-left: 4px solid #2196f3; }
+.lead-card.status-contacted { border-left: 4px solid #4caf50; }
+.lead-card.status-follow-up { border-left: 4px solid #ff9800; }
+.lead-card.status-under_contract { border-left: 4px solid #9c27b0; }
+.lead-card.status-closed { border-left: 4px solid #f44336; }
+
+/* ---------- Buttons inside Lead Card ---------- */
+.lead-card button {
+  background-color: #333;
+  color: #fff;
   border: none;
-  border-radius: 6px;
   padding: 8px 12px;
-  margin: 4px 4px 0 0;
+  margin-right: 6px;
+  margin-top: 6px;
+  border-radius: 6px;
+  cursor: pointer;
   transition: 0.2s;
 }
 
-.save-button {
-  background-color: #2196f3;
-  color: #fff;
-}
-.save-button:hover { background-color: #1976d2; }
-
-.close-button {
+.lead-card button:hover {
   background-color: #555;
-  color: #fff;
+  transform: scale(1.05);
 }
-.close-button:hover { background-color: #777; }
 
-.claim-button {
-  background-color: #4caf50;
-  color: #fff;
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-left: 6px;
+  background-color: #444;
 }
-.claim-button:hover { background-color: #45a049; }
 
-.return-button {
+/* POND badge */
+.badge.pond {
   background-color: #ff9800;
   color: #fff;
 }
-.return-button:hover { background-color: #fb8c00; }
 
-/* ================== INTERACTIONS ================== */
-.interaction-section {
-  margin-top: 20px;
+/* ---------- Modals ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
 
-.interaction-section h3 {
-  margin-bottom: 8px;
+.modal {
+  background-color: #1e1e2f;
+  color: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  min-width: 320px;
+  max-width: 600px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
 }
 
+/* ---------- Interaction Form ---------- */
 .interaction-form {
+  margin-top: 12px;
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .interaction-form input,
 .interaction-form select {
-  flex: 1;
-  padding: 6px 8px;
+  padding: 6px;
   border-radius: 6px;
-  border: 1px solid #555;
-  background-color: #2a2a40;
+  border: 1px solid #444;
+  background-color: #12121f;
   color: #fff;
 }
 
 .interaction-form button {
-  flex-shrink: 0;
-  background-color: #2196f3;
-  color: #fff;
-}
-.interaction-form button:hover { background-color: #1976d2; }
-
-.interaction-history {
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.interaction-item {
-  padding: 6px 10px;
-  background-color: rgba(255, 255, 255, 0.05);
+  padding: 6px 12px;
   border-radius: 6px;
-  margin-bottom: 6px;
+  border: none;
+  background-color: #333;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.interaction-form button:hover {
+  background-color: #555;
+  transform: scale(1.05);
+}
+
+/* ---------- Interaction History ---------- */
+.interaction-history {
+  margin-top: 12px;
   font-size: 14px;
 }
 
-/* ================== BADGES ================== */
-.badge.pond {
-  background-color: #ff9800;
-  padding: 2px 6px;
+.interaction-item {
+  margin-bottom: 6px;
+  padding: 6px 8px;
+  background-color: rgba(255,255,255,0.05);
   border-radius: 6px;
-  font-size: 12px;
 }
 
-/* ================== SCROLLBAR ================== */
-.lead-list::-webkit-scrollbar,
-.interaction-history::-webkit-scrollbar {
-  width: 8px;
-}
-
-.lead-list::-webkit-scrollbar-thumb,
-.interaction-history::-webkit-scrollbar-thumb {
-  background-color: #555;
-  border-radius: 4px;
-}
-
-/* ================== FLASH EFFECTS ================== */
-.flash-member {
-  animation: flashMember 0.8s ease;
-}
+/* ---------- Flash Animations ---------- */
 @keyframes flashMember {
   0% { box-shadow: 0 0 10px 4px rgba(255, 235, 59, 0.7); transform: scale(1.02); }
   50% { box-shadow: 0 0 20px 6px rgba(255, 235, 59, 0.9); transform: scale(1.05); }
   100% { box-shadow: 0 0 10px 0 rgba(255, 235, 59, 0); transform: scale(1); }
 }
+.flash-member { animation: flashMember 0.8s ease; }
 
-.flash-admin {
-  animation: flashAdmin 0.8s ease;
-}
 @keyframes flashAdmin {
   0% { box-shadow: 0 0 10px 4px rgba(33, 150, 243, 0.7); transform: scale(1.02); }
   50% { box-shadow: 0 0 20px 6px rgba(33, 150, 243, 0.9); transform: scale(1.05); }
   100% { box-shadow: 0 0 10px 0 rgba(33, 150, 243, 0); transform: scale(1); }
 }
+.flash-admin { animation: flashAdmin 0.8s ease; }
 
-/* Force buttons to always be clickable */
-.sidebar-button, 
-.sidebar-button * {
-  cursor: pointer !important;
-  user-select: none !important;
+/* ---------- Add Lead Form ---------- */
+.add-lead-form {
+  background-color: #1e1e2f;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  margin-bottom: 16px;
 }
 
-/* Optional: make sure hover works */
-.sidebar-button:hover {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  transform: translateX(4px) !important;
+.add-lead-form input,
+.add-lead-form select {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background-color: #12121f;
+  color: #fff;
+  margin-right: 6px;
 }
 
-/* Fix text inside button not clickable */
-.sidebar-button span, 
-.sidebar-button div {
-  cursor: pointer !important;
+.add-lead-form button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background-color: #333;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
+.add-lead-form button:hover {
+  background-color: #555;
+  transform: scale(1.05);
+}
+
+/* ---------- Profile Section ---------- */
+.profile-card {
+  background-color: #1e1e2f;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* ---------- Utility ---------- */
+button:focus {
+  outline: none;
+}

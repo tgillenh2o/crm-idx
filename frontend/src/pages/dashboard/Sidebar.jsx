@@ -1,12 +1,30 @@
+// Sidebar.jsx
 import React from "react";
 
 export default function Sidebar({ activeTab, setActiveTab, isAdmin }) {
+  const tabs = [
+    { key: "all-leads", label: "All Leads", adminOnly: true },
+    { key: "my-leads", label: "My Leads" },
+    { key: "lead-pond", label: "Lead Pond" },
+    { key: "profile", label: "Profile" },
+  ];
+
   return (
     <div className="sidebar">
-      <div className={`sidebar-item ${activeTab === "all-leads" ? "active" : ""}`} onClick={() => setActiveTab("all-leads")}>All Leads</div>
-      <div className={`sidebar-item ${activeTab === "my-leads" ? "active" : ""}`} onClick={() => setActiveTab("my-leads")}>My Leads</div>
-      <div className={`sidebar-item ${activeTab === "lead-pond" ? "active" : ""}`} onClick={() => setActiveTab("lead-pond")}>Lead Pond</div>
-      <div className={`sidebar-item ${activeTab === "profile" ? "active" : ""}`} onClick={() => setActiveTab("profile")}>Profile</div>
+      <div className="sidebar-scroll">
+        {tabs.map(
+          (tab) =>
+            (isAdmin || !tab.adminOnly) && (
+              <button
+                key={tab.key}
+                className={`sidebar-button ${activeTab === tab.key ? "active" : ""}`}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            )
+        )}
+      </div>
     </div>
   );
 }
