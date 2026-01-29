@@ -116,5 +116,46 @@ router.patch("/:id/reassign", verifyToken, isAdmin, async (req, res) => {
   }
 });
 
+// Claim Lead
+router.patch("/:id/claim", verifyToken, async (req, res) => {
+  try {
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+    if (lead.assignedTo !== "POND")
+      return res.status(400).json({ message: "Lead already assigned" });
+
+    lead.assignedTo = req.user.email;
+    await lead.save();
+
+    res.json(lead);
+  } catch (err) {
+    console.error("CLAIM lead error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Return to Pond
+router.patch("/:id/return", verifyToken, async (req, res) => {
+  try {
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+    // Only the assigned user or admin can return
+    if (req.user.role !== "teamAdmin" && lead.assignedTo !== req.user.email) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    lead.assignedTo = "POND";
+    await lead.save();
+
+    res.json(lead);
+  } catch (err) {
+    console.error("RETURN lead error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 
 module.exports = router;
