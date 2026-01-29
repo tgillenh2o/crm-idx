@@ -18,6 +18,7 @@ export default function MemberDashboard() {
     fetchLeads();
   }, []);
 
+  // Fetch leads for member
   const fetchLeads = async () => {
     setLoading(true);
     try {
@@ -26,29 +27,34 @@ export default function MemberDashboard() {
       });
       const data = await res.json();
       setLeads(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error(err);
+    } catch {
       setLeads([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Update lead in state after claim/return
-  const updateLead = (updatedLead) => {
-    setLeads((prev) => [
-      updatedLead,
-      ...prev.filter((l) => l._id !== updatedLead._id),
-    ]);
+  // Update a lead in state after claim/return
+  const handleLeadUpdate = (updatedLead) => {
+    setLeads((prev) => {
+      const exists = prev.find((l) => l._id === updatedLead._id);
+      if (exists) {
+        return prev.map((l) => (l._id === updatedLead._id ? updatedLead : l));
+      } else {
+        return [updatedLead, ...prev];
+      }
+    });
   };
 
-  // Lead Pond = unassigned/pond leads
+  // Lead Pond = unassigned / POND
   const leadPondLeads = leads.filter(
     (l) =>
-      !l.assignedTo || l.assignedTo.toUpperCase() === "POND" || l.assignedTo.toUpperCase() === "UNASSIGNED"
+      !l.assignedTo ||
+      l.assignedTo.toUpperCase() === "POND" ||
+      l.assignedTo.toUpperCase() === "UNASSIGNED"
   );
 
-  // My Leads = assigned to current member
+  // My Leads = assigned to member
   const myLeads = leads.filter((l) => l.assignedTo === user.email);
 
   return (
@@ -64,10 +70,8 @@ export default function MemberDashboard() {
       <div className={`main-panel ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <Topbar />
 
-        {/* Profile */}
         {activeTab === "profile" && <Profile />}
 
-        {/* Lead Pond */}
         {activeTab === "lead-pond" && (
           <>
             <AddLead onLeadAdded={(l) => setLeads([l, ...leads])} currentUser={user} isAdmin={false} />
@@ -79,14 +83,13 @@ export default function MemberDashboard() {
                   lead={l}
                   isLeadPond
                   currentUserEmail={user.email}
-                  onAssign={updateLead}
+                  onAssign={handleLeadUpdate}
                 />
               ))}
             </div>
           </>
         )}
 
-        {/* My Leads */}
         {activeTab === "my-leads" && (
           <>
             <h3>My Leads</h3>
@@ -96,7 +99,7 @@ export default function MemberDashboard() {
                   key={l._id}
                   lead={l}
                   currentUserEmail={user.email}
-                  onAssign={updateLead}
+                  onAssign={handleLeadUpdate}
                 />
               ))}
             </div>

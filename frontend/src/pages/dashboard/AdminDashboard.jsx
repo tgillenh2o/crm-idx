@@ -13,7 +13,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState("all-leads");
+  const [activeTab, setActiveTab] = useState("lead-pond");
 
   useEffect(() => {
     fetchLeads();
@@ -28,8 +28,7 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       setLeads(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error(err);
+    } catch {
       setLeads([]);
     } finally {
       setLoading(false);
@@ -42,26 +41,23 @@ export default function AdminDashboard() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
-      setUsers(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error(err);
+      setUsers(data);
+    } catch {
+      setUsers([]);
     }
   };
 
-  const updateLead = (updatedLead) => {
-    setLeads((prev) => [
-      updatedLead,
-      ...prev.filter((l) => l._id !== updatedLead._id),
-    ]);
+  const handleLeadUpdate = (updatedLead) => {
+    setLeads((prev) => prev.map((l) => (l._id === updatedLead._id ? updatedLead : l)));
   };
 
-  const deleteLead = async (id) => {
+  const handleDelete = async (leadId) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${id}`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      setLeads((prev) => prev.filter((l) => l._id !== id));
+      setLeads((prev) => prev.filter((l) => l._id !== leadId));
     } catch (err) {
       console.error(err);
     }
@@ -80,14 +76,12 @@ export default function AdminDashboard() {
       <div className={`main-panel ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <Topbar />
 
-        {/* Profile */}
         {activeTab === "profile" && <Profile />}
 
-        {/* All Leads */}
-        {activeTab === "all-leads" && (
+        {activeTab === "lead-pond" && (
           <>
-            <AddLead onLeadAdded={(l) => setLeads([l, ...leads])} currentUser={user} isAdmin />
-            <h3>All Leads</h3>
+            <AddLead onLeadAdded={(l) => setLeads([l, ...leads])} currentUser={user} isAdmin={true} />
+            <h3 style={{ color: "#64b5f6" }}>All Leads</h3>
             <div className="leads-grid">
               {leads.map((l) => (
                 <LeadCard
@@ -95,8 +89,8 @@ export default function AdminDashboard() {
                   lead={l}
                   isAdmin
                   users={users}
-                  onAssign={updateLead}
-                  onDelete={deleteLead}
+                  onAssign={handleLeadUpdate}
+                  onDelete={handleDelete}
                 />
               ))}
             </div>

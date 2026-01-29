@@ -1,140 +1,47 @@
 .lead-card {
-  background: #fff;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  margin: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s, background-color 0.3s;
 }
 
-.lead-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+/* Status backgrounds */
+.lead-card.status-new { background-color: #e3f2fd; }
+.lead-card.status-contacted { background-color: #e0f7fa; }
+.lead-card.status-follow-up { background-color: #fff3e0; }
+.lead-card.status-closed { background-color: #f5f5f5; }
+
+/* Hover */
+.lead-card:hover { transform: translateY(-2px); }
+
+/* Buttons */
+.claim-button { background-color: #4caf50; color:white; border:none; padding:8px 12px; margin:4px; border-radius:4px; cursor:pointer; transition: 0.2s; }
+.claim-button:hover { transform: scale(1.05); background-color:#45a049; }
+.return-button { background-color:#ff9800; color:white; border:none; padding:8px 12px; margin:4px; border-radius:4px; cursor:pointer; transition:0.2s; }
+.return-button:hover { transform: scale(1.05); background-color:#fb8c00; }
+.delete-button { background-color:#f44336; color:white; border:none; padding:8px 12px; margin:4px; border-radius:4px; cursor:pointer; transition:0.2s; }
+.delete-button:hover { transform: scale(1.05); background-color:#d32f2f; }
+
+/* Interaction */
+.interaction-form { margin-top:12px; }
+.interaction-form input, .interaction-form select { padding:6px; margin-right:4px; border-radius:4px; border:1px solid #ccc; }
+.interaction-history { margin-top:12px; font-size:14px; }
+.interaction-item { margin-bottom:6px; padding:4px; background-color: rgba(255,255,255,0.6); border-radius:4px; }
+
+/* Flash animations */
+/* Member: yellow flash */
+@keyframes flashMember {
+  0% { box-shadow: 0 0 10px 4px rgba(255, 235, 59, 0.7); transform: scale(1.02); }
+  50% { box-shadow: 0 0 20px 6px rgba(255, 235, 59, 0.9); transform: scale(1.05); }
+  100% { box-shadow: 0 0 10px 0 rgba(255, 235, 59, 0); transform: scale(1); }
 }
+.flash-member { animation: flashMember 0.8s ease; }
 
-.lead-info p {
-  margin: 6px 0;
-  font-size: 14px;
+/* Admin: blue flash */
+@keyframes flashAdmin {
+  0% { box-shadow: 0 0 10px 4px rgba(33, 150, 243, 0.7); transform: scale(1.02); }
+  50% { box-shadow: 0 0 20px 6px rgba(33, 150, 243, 0.9); transform: scale(1.05); }
+  100% { box-shadow: 0 0 10px 0 rgba(33, 150, 243, 0); transform: scale(1); }
 }
-
-.lead-info select {
-  padding: 4px 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  margin-left: 4px;
-}
-
-button {
-  cursor: pointer;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 14px;
-  margin-top: 8px;
-  transition: background 0.15s ease, transform 0.1s ease;
-}
-
-button:hover {
-  transform: translateY(-1px);
-}
-
-.claim-button {
-  background-color: #4caf50;
-  color: #fff;
-}
-
-.claim-button:hover {
-  background-color: #45a049;
-}
-
-.return-button {
-  background-color: #f57c00;
-  color: #fff;
-}
-
-.return-button:hover {
-  background-color: #ef6c00;
-}
-
-.delete-button {
-  background-color: #e53935;
-  color: #fff;
-}
-
-.delete-button:hover {
-  background-color: #d32f2f;
-}
-
-.interaction-form {
-  margin-top: 12px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.interaction-form input,
-.interaction-form select {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  flex: 1;
-}
-
-.interaction-form button {
-  flex: none;
-}
-
-.interaction-history {
-  margin-top: 12px;
-  font-size: 13px;
-  max-height: 180px;
-  overflow-y: auto;
-}
-
-.interaction-item {
-  border-bottom: 1px solid #eee;
-  padding: 4px 0;
-}
-
-.status-new {
-  color: #2196f3;
-}
-
-.status-contacted {
-  color: #00bcd4;
-}
-
-.status-follow-up {
-  color: #ff9800;
-}
-
-.status-closed {
-  color: #9e9e9e;
-}
-
-/* Status colors */
-.status-new { color: #2196f3; }
-.status-contacted { color: #00bcd4; }
-.status-follow-up { color: #ff9800; }
-.status-closed { color: #9e9e9e; }
-
-/* Buttons hover effects */
-.claim-button:hover { background-color: #45a049; transform: scale(1.03); }
-.return-button:hover { background-color: #ef6c00; transform: scale(1.03); }
-.delete-button:hover { background-color: #d32f2f; transform: scale(1.03); }
-
-/* Claim animation */
-.claim-button.claimed {
-  animation: claimedEffect 0.5s ease forwards;
-}
-
-@keyframes claimedEffect {
-  0% { transform: scale(1) rotate(0deg); background-color: #4caf50; }
-  50% { transform: scale(1.1) rotate(5deg) background-color: #66bb6a; }
-  100% { transform: scale(1) rotate(0deg); background-color: #4caf50; }
-}
-
+.flash-admin { animation: flashAdmin 0.8s ease; }
