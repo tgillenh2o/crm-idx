@@ -26,26 +26,29 @@ export default function MemberDashboard() {
       });
       const data = await res.json();
       setLeads(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (err) {
+      console.error(err);
       setLeads([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // ===== MEMBER CLAIM =====
-  const handleClaim = (updatedLead) => {
-    setLeads((prev) => [updatedLead, ...prev.filter((l) => l._id !== updatedLead._id)]);
+  // Update lead in state after claim/return
+  const updateLead = (updatedLead) => {
+    setLeads((prev) => [
+      updatedLead,
+      ...prev.filter((l) => l._id !== updatedLead._id),
+    ]);
   };
 
-  // ===== MEMBER RETURN =====
-  const handleReturn = (updatedLead) => {
-    setLeads((prev) => [updatedLead, ...prev.filter((l) => l._id !== updatedLead._id)]);
-  };
-
+  // Lead Pond = unassigned/pond leads
   const leadPondLeads = leads.filter(
-    (l) => !l.assignedTo || l.assignedTo === "POND" || l.assignedTo === "UNASSIGNED"
+    (l) =>
+      !l.assignedTo || l.assignedTo.toUpperCase() === "POND" || l.assignedTo.toUpperCase() === "UNASSIGNED"
   );
+
+  // My Leads = assigned to current member
   const myLeads = leads.filter((l) => l.assignedTo === user.email);
 
   return (
@@ -61,32 +64,24 @@ export default function MemberDashboard() {
       <div className={`main-panel ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <Topbar />
 
+        {/* Profile */}
         {activeTab === "profile" && <Profile />}
 
         {/* Lead Pond */}
         {activeTab === "lead-pond" && (
           <>
-            <AddLead
-              onLeadAdded={(l) => setLeads([l, ...leads])}
-              currentUser={user}
-              isAdmin={false}
-            />
-
+            <AddLead onLeadAdded={(l) => setLeads([l, ...leads])} currentUser={user} isAdmin={false} />
             <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
             <div className="leads-grid">
-              {leadPondLeads.length === 0 ? (
-                <p>No leads in the pond.</p>
-              ) : (
-                leadPondLeads.map((l) => (
-                  <LeadCard
-                    key={l._id}
-                    lead={l}
-                    isLeadPond
-                    currentUserEmail={user.email}
-                    onAssign={handleClaim} // claim from pond
-                  />
-                ))
-              )}
+              {leadPondLeads.map((l) => (
+                <LeadCard
+                  key={l._id}
+                  lead={l}
+                  isLeadPond
+                  currentUserEmail={user.email}
+                  onAssign={updateLead}
+                />
+              ))}
             </div>
           </>
         )}
@@ -96,18 +91,14 @@ export default function MemberDashboard() {
           <>
             <h3>My Leads</h3>
             <div className="leads-grid">
-              {myLeads.length === 0 ? (
-                <p>You have no leads assigned.</p>
-              ) : (
-                myLeads.map((l) => (
-                  <LeadCard
-                    key={l._id}
-                    lead={l}
-                    currentUserEmail={user.email}
-                    onAssign={handleReturn} // return to pond
-                  />
-                ))
-              )}
+              {myLeads.map((l) => (
+                <LeadCard
+                  key={l._id}
+                  lead={l}
+                  currentUserEmail={user.email}
+                  onAssign={updateLead}
+                />
+              ))}
             </div>
           </>
         )}

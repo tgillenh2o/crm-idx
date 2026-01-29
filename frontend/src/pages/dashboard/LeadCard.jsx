@@ -4,8 +4,8 @@ import "./LeadCard.css";
 export default function LeadCard({
   lead,
   isAdmin = false,
-  onAssign, // callback for claim/return/reassign
-  onDelete, // callback for admin delete
+  onDelete,
+  onAssign,
   users = [],
   isLeadPond = false,
   currentUserEmail,
@@ -15,10 +15,11 @@ export default function LeadCard({
   const [interactionNote, setInteractionNote] = useState("");
   const [interactions, setInteractions] = useState(lead.interactions || []);
   const [removing, setRemoving] = useState(false);
+  const [claimed, setClaimed] = useState(false);
 
   const assignedToName = lead.assignedTo || "Unassigned";
 
-  // ====== STATUS UPDATE ======
+  // ======== STATUS UPDATE ========
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
@@ -38,18 +39,21 @@ export default function LeadCard({
     }
   };
 
-  // ====== INTERACTIONS ======
+  // ======== LOG INTERACTION ========
   const handleInteraction = async () => {
     if (!interactionNote.trim()) return;
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ type: interactionType, note: interactionNote }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ type: interactionType, note: interactionNote }),
+        }
+      );
       const data = await res.json();
       setInteractions(data.interactions || []);
       setInteractionNote("");
@@ -58,49 +62,65 @@ export default function LeadCard({
     }
   };
 
-  // ====== MEMBER CLAIM ======
+  // ======== MEMBER CLAIM LEAD ========
   const handleClaim = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/claim`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/claim`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      if (!res.ok) {
+        const errData = await res.json();
+        console.error("Claim failed:", errData.message);
+        return;
+      }
       const updatedLead = await res.json();
+      setClaimed(true);
+      setTimeout(() => setClaimed(false), 600);
       if (onAssign) onAssign(updatedLead);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to claim lead:", err);
     }
   };
 
-  // ====== MEMBER RETURN ======
+  // ======== MEMBER RETURN LEAD ========
   const handleReturn = async () => {
+    setRemoving(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/return`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/return`,
+        { method: "PATCH", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
       const updatedLead = await res.json();
       if (onAssign) onAssign(updatedLead);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to return lead:", err);
+      setRemoving(false);
     }
   };
 
-  // ====== ADMIN REASSIGN ======
+  // ======== ADMIN REASSIGN ========
   const handleReassign = async (e) => {
+    const newAssignedTo = e.target.value;
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/reassign`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ assignedTo: e.target.value }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/reassign`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ assignedTo: newAssignedTo }),
+        }
+      );
       const updatedLead = await res.json();
       if (onAssign) onAssign(updatedLead);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to reassign lead:", err);
     }
   };
 
@@ -122,49 +142,34 @@ export default function LeadCard({
           </select>
         </p>
 
-        {/* MEMBER ACTIONS */}
-        {!isAdmin && currentUserEmail && (
-          <>
-            {lead.assignedTo === "POND" && (
-              <button className="claim-button" onClick={handleClaim}>
-                Claim Lead
-              </button>
-            )}
-            {lead.assignedTo === currentUserEmail && (
-              <button className="return-button" onClick={handleReturn}>
-                Move to Pond
-              </button>
-            )}
-          </>
-        )}
-
-        {/* ADMIN ACTIONS */}
-        {isAdmin && (
-          <>
-            {users.length > 0 && (
-              <p>
-                <strong>Reassign:</strong>{" "}
-                <select value={lead.assignedTo || ""} onChange={handleReassign}>
-                  <option value="">Unassigned</option>
-                  <option value="POND">Lead Pond</option>
-                  {users.map((u) => (
-                    <option key={u._id} value={u.email}>
-                      {u.name}
-                    </option>
-                  ))}
-                </select>
-              </p>
-            )}
-            {onDelete && (
-              <button className="delete-button" onClick={() => onDelete(lead._id)}>
-                Delete Lead
-              </button>
-            )}
-          </>
+        {isAdmin && users.length > 0 && (
+          <p>
+            <strong>Reassign:</strong>{" "}
+            <select value={lead.assignedTo || ""} onChange={handleReassign}>
+              <option value="">Unassigned</option>
+              <option value="POND">Lead Pond</option>
+              {users.map((u) => (
+                <option key={u._id} value={u.email}>{u.name}</option>
+              ))}
+            </select>
+          </p>
         )}
       </div>
 
-      {/* INTERACTIONS */}
+      {!isAdmin && lead.assignedTo.toUpperCase() === "POND" && (
+        <button className={`claim-button ${claimed ? "claimed" : ""}`} onClick={handleClaim}>
+          Claim Lead
+        </button>
+      )}
+
+      {!isAdmin && lead.assignedTo === currentUserEmail && (
+        <button className="return-button" onClick={handleReturn}>Move to Pond</button>
+      )}
+
+      {isAdmin && onDelete && (
+        <button className="delete-button" onClick={() => onDelete(lead._id)}>Delete Lead</button>
+      )}
+
       <div className="interaction-form">
         <select value={interactionType} onChange={(e) => setInteractionType(e.target.value)}>
           <option value="call">Call</option>
@@ -188,9 +193,7 @@ export default function LeadCard({
         ) : (
           interactions.map((i, idx) => (
             <div key={idx} className="interaction-item">
-              <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on{" "}
-              {new Date(i.date).toLocaleString()}
-              <br />
+              <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on {new Date(i.date).toLocaleString()}<br/>
               {i.note}
             </div>
           ))
