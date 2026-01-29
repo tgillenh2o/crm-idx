@@ -4,6 +4,8 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import LeadCard from "./LeadCard";
 import AddLead from "./AddLead";
+import Profile from "./Profile";
+
 import "./Dashboard.css";
 
 export default function AdminDashboard() {
