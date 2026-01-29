@@ -13,6 +13,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("lead-pond");
+  const [showAddLeadForm, setShowAddLeadForm] = useState(false);
 
   // fetch all leads on load
   useEffect(() => {
@@ -92,50 +93,49 @@ export default function AdminDashboard() {
         {/* Profile */}
         {activeTab === "profile" && <Profile />}
 
-        {/* Lead Pond */}
-        {activeTab === "lead-pond" && (
-          <>
-            <AddLead
-              onLeadAdded={(l) => setLeads([l, ...leads])}
-              currentUser={user}
-              isAdmin={true}
-            />
+       {/* Lead Pond */}
+{activeTab === "lead-pond" && (
+  <>
+    {/* Add Lead Button */}
+    {!showAddLeadForm && (
+      <button
+        className="add-lead-button"
+        onClick={() => setShowAddLeadForm(true)}
+      >
+        + Add Lead
+      </button>
+    )}
 
-            <h3>Lead Pond</h3>
+    {/* Add Lead Form */}
+    {showAddLeadForm && (
+      <AddLead
+        onLeadAdded={(l) => {
+          setLeads([l, ...leads]);
+          setShowAddLeadForm(false); // hide form after adding
+        }}
+        currentUser={user}
+        isAdmin={true}
+        onCancel={() => setShowAddLeadForm(false)} // optional cancel button
+      />
+    )}
 
-            <div className="leads-grid">
-              {leadPondLeads.map((l) => (
-                <LeadCard
-                  key={l._id}
-                  lead={l}
-                  isAdmin={true}
-                  currentUserEmail={user.email}
-                  onAssign={handleAssign}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
-          </>
-        )}
+    <h3>Lead Pond</h3>
 
-        {/* My Leads */}
-        {activeTab === "my-leads" && (
-          <>
-            <h3>My Leads</h3>
-            <div className="leads-grid">
-              {myLeads.map((l) => (
-                <LeadCard
-                  key={l._id}
-                  lead={l}
-                  isAdmin={true}
-                  currentUserEmail={user.email}
-                  onAssign={handleAssign}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
-          </>
-        )}
+    <div className="leads-grid">
+      {leadPondLeads.map((l) => (
+        <LeadCard
+          key={l._id}
+          lead={l}
+          isAdmin={true}
+          currentUserEmail={user.email}
+          onAssign={handleAssign}
+          onDelete={handleDelete}
+        />
+      ))}
+    </div>
+  </>
+)}
+
 
         {/* All Leads */}
         {activeTab === "all-leads" && (
