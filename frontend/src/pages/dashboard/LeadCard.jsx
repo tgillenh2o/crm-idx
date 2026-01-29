@@ -106,7 +106,7 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail, is
     }
   };
 
-  const canClaim = lead.assignedTo === "POND" && (isAdmin || lead.assignedTo === "POND");
+  const canClaim = lead.assignedTo === "POND";
 
   return (
     <div className="lead-modal">
@@ -122,7 +122,7 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail, is
         </select>
 
         {/* Claim Lead */}
-        {canClaim && (
+        {canClaim && currentUserEmail !== "POND" && (
           <button onClick={claimLead} className="claim-button">
             Claim Lead
           </button>
