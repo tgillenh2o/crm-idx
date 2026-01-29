@@ -73,6 +73,41 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail, is
     }
   };
 
+  // Claim lead (for POND leads)
+  const claimLead = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/claim`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const updated = await res.json();
+      if (!res.ok) console.error("Claim lead error:", updated);
+      else onUpdate(updated);
+    } catch (err) {
+      console.error("Claim lead error:", err);
+    }
+  };
+
+  // Return lead to pond (owner only)
+  const returnToPond = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/return`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const updated = await res.json();
+      onUpdate(updated);
+    } catch (err) {
+      console.error("Return lead error:", err);
+    }
+  };
+
+  const canClaim = lead.assignedTo === "POND" && (isAdmin || lead.assignedTo === "POND");
+
   return (
     <div className="lead-modal">
       <div className="lead-card">
@@ -85,6 +120,20 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail, is
         <select value={status} onChange={e => saveStatus(e.target.value)}>
           {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
         </select>
+
+        {/* Claim Lead */}
+        {canClaim && (
+          <button onClick={claimLead} className="claim-button">
+            Claim Lead
+          </button>
+        )}
+
+        {/* Return to Pond */}
+        {lead.assignedTo === currentUserEmail && lead.assignedTo !== "POND" && (
+          <button onClick={returnToPond} className="return-button">
+            Return to Pond
+          </button>
+        )}
 
         {/* Interaction Form */}
         <form className="interaction-form" onSubmit={addInteraction}>
