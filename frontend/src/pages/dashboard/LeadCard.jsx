@@ -138,7 +138,7 @@ export default function LeadCard({
             )}
 
             {lead.assignedTo === currentUserEmail && (
-              <button className="return-button" onClick={handleReturn}>
+              <button className="return-button" onClick={() => onAssign(lead._id)}>
                 Move to Pond
               </button>
             )}

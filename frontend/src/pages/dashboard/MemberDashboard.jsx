@@ -55,21 +55,20 @@ export default function MemberDashboard() {
   };
 
   // ===== RETURN LEAD TO POND =====
-  const handleReturn = async (leadId) => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/leads/${leadId}/return`,
-        {
-          method: "PATCH",
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      const updatedLead = await res.json();
-      setLeads((prev) => [updatedLead, ...prev.filter((l) => l._id !== leadId)]);
-    } catch (err) {
-      console.error("Failed to return lead:", err);
-    }
-  };
+ const handleReturn = async (leadId) => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}/return`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    const updatedLead = await res.json();
+
+    // Move the updated lead to the top of the array
+    setLeads((prev) => [updatedLead, ...prev.filter((l) => l._id !== leadId)]);
+  } catch (err) {
+    console.error("Failed to return lead:", err);
+  }
+};
 
   // ===== FILTER LEADS =====
   const leadPondLeads = leads.filter(
