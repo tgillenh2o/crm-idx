@@ -1,6 +1,6 @@
 /* Sidebar container */
 .sidebar {
-  width: 220px;
+  width: 200px;
   background-color: #1e1e2f; /* dark theme */
   color: #ffffff;
   display: flex;

@@ -23,11 +23,13 @@ export default function MemberDashboard() {
       });
       const data = await res.json();
       setLeads(data || []);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error("Fetch leads error:", err);
+    }
   };
 
   const updateLead = updatedLead => {
-    setLeads(prev => prev.map(l => l._id === updatedLead._id ? updatedLead : l));
+    setLeads(prev => prev.map(l => (l._id === updatedLead._id ? updatedLead : l)));
     setSelectedLead(updatedLead);
   };
 
@@ -38,7 +40,6 @@ export default function MemberDashboard() {
           key={lead._id}
           className={`lead-row status-${lead.status?.toLowerCase().replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
-          style={{ cursor: "pointer" }}
         >
           <span className="lead-name">{lead.name}</span>
           <span>{lead.email}</span>

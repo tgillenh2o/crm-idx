@@ -15,6 +15,7 @@ export default function AdminDashboard() {
   const [selectedLead, setSelectedLead] = useState(null);
   const [showAddLead, setShowAddLead] = useState(false);
 
+  // Fetch leads and users on mount
   useEffect(() => {
     fetchLeads();
     fetchUsers();
@@ -27,7 +28,9 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       setLeads(data || []);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error("Fetch leads error:", err);
+    }
   };
 
   const fetchUsers = async () => {
@@ -37,11 +40,13 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       setUsers(data || []);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error("Fetch users error:", err);
+    }
   };
 
   const updateLead = updatedLead => {
-    setLeads(prev => prev.map(l => l._id === updatedLead._id ? updatedLead : l));
+    setLeads(prev => prev.map(l => (l._id === updatedLead._id ? updatedLead : l)));
     setSelectedLead(updatedLead);
   };
 
@@ -52,7 +57,6 @@ export default function AdminDashboard() {
           key={lead._id}
           className={`lead-row status-${lead.status?.toLowerCase().replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
-          style={{ cursor: "pointer" }}
         >
           <span className="lead-name">{lead.name}</span>
           <span>{lead.email}</span>

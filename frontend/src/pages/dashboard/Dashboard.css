@@ -67,7 +67,23 @@
 .lead-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+}
+
+.lead-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background-color: #2a2a3d;
+  color: #fff;
+  cursor: pointer; /* makes the row clickable */
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.lead-row:hover {
+  background-color: #3a3a55;
+  transform: translateY(-1px);
 }
 
 /* ---------- Lead Card ---------- */
