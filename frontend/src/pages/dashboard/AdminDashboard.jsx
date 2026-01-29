@@ -13,7 +13,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState("lead-pond");
+  const [activeTab, setActiveTab] = useState("all-leads");
 
   useEffect(() => {
     fetchLeads();
@@ -21,61 +21,55 @@ export default function AdminDashboard() {
   }, []);
 
   const fetchLeads = async () => {
-    setLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
       const data = await res.json();
       setLeads(Array.isArray(data) ? data : []);
-    } catch {
-      setLeads([]);
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error("Failed to fetch leads:", err);
     }
   };
 
   const fetchUsers = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
       const data = await res.json();
-      setUsers(Array.isArray(data) ? data : []);
-    } catch {
-      setUsers([]);
+      setUsers(data);
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
     }
   };
 
   const handleDelete = async (leadId) => {
-    if (!window.confirm("Are you sure?")) return;
-    await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
-      method: "DELETE",
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      setLeads((prev) => prev.filter((l) => l._id !== leadId));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Update lead in state after reassign or move to pond
+  const handleAssignUpdate = (leadId) => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
-    setLeads((prev) => prev.filter((l) => l._id !== leadId));
+    })
+      .then((res) => res.json())
+      .then((updatedLead) =>
+        setLeads((prev) => [updatedLead, ...prev.filter((l) => l._id !== leadId)])
+      );
   };
-
-  const handleAssign = async (leadId, assignedTo) => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify({ userId: assignedTo }),
-    });
-    const updatedLead = await res.json();
-    setLeads((prev) => prev.map((l) => (l._id === leadId ? updatedLead : l)));
-  };
-
-  // Pond leads = unassigned or assigned to POND
-  const leadPondLeads = leads.filter(
-    (l) => !l.assignedTo || l.assignedTo === "POND" || l.assignedTo === "UNASSIGNED"
-  );
-
-  // Leads assigned to anyone else
-  const otherLeads = leads.filter((l) => !leadPondLeads.includes(l));
 
   return (
     <div className="dashboard">
@@ -84,54 +78,40 @@ export default function AdminDashboard() {
         setCollapsed={setSidebarCollapsed}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        isAdmin
+        isAdmin={true}
       />
+
       <div className={`main-panel ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <Topbar />
 
-        {/* Profile Tab */}
+        {/* Profile */}
         {activeTab === "profile" && <Profile />}
 
-        {/* Lead Pond */}
-        {activeTab === "lead-pond" && leadPondLeads.length > 0 && (
+        {/* All Leads */}
+        {activeTab === "all-leads" && (
           <>
             <AddLead
               onLeadAdded={(l) => setLeads([l, ...leads])}
               currentUser={user}
-              isAdmin
-              users={users}
+              isAdmin={true}
             />
-            <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
-            <div className="leads-grid">
-              {leadPondLeads.map((l) => (
-                <LeadCard
-                  key={l._id}
-                  lead={l}
-                  isAdmin
-                  onAssign={handleAssign}
-                  users={users}
-                  isLeadPond
-                />
-              ))}
-            </div>
-          </>
-        )}
 
-        {/* My Leads */}
-        {activeTab === "my-leads" && otherLeads.length > 0 && (
-          <>
-            <h3>Your Leads</h3>
+            <h3>All Leads</h3>
             <div className="leads-grid">
-              {otherLeads.map((l) => (
-                <LeadCard
-                  key={l._id}
-                  lead={l}
-                  isAdmin
-                  onAssign={handleAssign}
-                  users={users}
-                  onDelete={() => handleDelete(l._id)}
-                />
-              ))}
+              {leads.length === 0 ? (
+                <p>No leads found.</p>
+              ) : (
+                leads.map((l) => (
+                  <LeadCard
+                    key={l._id}
+                    lead={l}
+                    isAdmin
+                    users={users}
+                    onAssign={handleAssignUpdate}
+                    onDelete={handleDelete}
+                  />
+                ))
+              )}
             </div>
           </>
         )}

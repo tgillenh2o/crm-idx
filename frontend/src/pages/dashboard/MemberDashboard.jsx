@@ -14,7 +14,6 @@ export default function MemberDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("lead-pond");
 
-  // Fetch leads on mount
   useEffect(() => {
     fetchLeads();
   }, []);
@@ -29,14 +28,15 @@ export default function MemberDashboard() {
       });
       const data = await res.json();
       setLeads(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (err) {
+      console.error("Failed to fetch leads:", err);
       setLeads([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // CLAIM lead from pond
+  // ===== CLAIM lead from pond =====
   const handleClaim = async (leadId) => {
     try {
       const res = await fetch(
@@ -51,15 +51,15 @@ export default function MemberDashboard() {
         }
       );
       const updatedLead = await res.json();
-      setLeads((prev) =>
-        prev.map((l) => (l._id === leadId ? updatedLead : l))
-      );
+
+      // Move updated lead to top of leads array
+      setLeads((prev) => [updatedLead, ...prev.filter((l) => l._id !== leadId)]);
     } catch (err) {
       console.error("Failed to claim lead:", err);
     }
   };
 
-  // RETURN lead to pond
+  // ===== RETURN lead to pond =====
   const handleReturn = async (leadId) => {
     try {
       const res = await fetch(
@@ -72,9 +72,9 @@ export default function MemberDashboard() {
         }
       );
       const updatedLead = await res.json();
-      setLeads((prev) =>
-        prev.map((l) => (l._id === leadId ? updatedLead : l))
-      );
+
+      // Move updated lead to top of leads array
+      setLeads((prev) => [updatedLead, ...prev.filter((l) => l._id !== leadId)]);
     } catch (err) {
       console.error("Failed to return lead:", err);
     }
@@ -128,7 +128,7 @@ export default function MemberDashboard() {
                     lead={l}
                     isLeadPond
                     currentUserEmail={user.email}
-                    onAssign={handleClaim}
+                    onAssign={handleClaim} // claim moves lead to my leads
                   />
                 ))
               )}
@@ -149,7 +149,7 @@ export default function MemberDashboard() {
                     key={l._id}
                     lead={l}
                     currentUserEmail={user.email}
-                    onAssign={handleReturn} // Allows returning to pond
+                    onAssign={handleReturn} // return moves lead back to pond
                   />
                 ))
               )}

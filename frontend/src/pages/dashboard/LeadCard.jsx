@@ -5,10 +5,10 @@ export default function LeadCard({
   lead,
   isAdmin = false,
   onDelete,
-  onAssign, // dashboard state updater
+  onAssign, // Parent callback for claiming/returning/reassigning
   users = [],
   isLeadPond = false,
-  currentUserEmail, // for member claiming
+  currentUserEmail,
 }) {
   const [status, setStatus] = useState(lead.status || "New");
   const [interactionType, setInteractionType] = useState("call");
@@ -38,7 +38,7 @@ export default function LeadCard({
     }
   };
 
-  // ======== LOG INTERACTION ========
+  // ======== INTERACTIONS ========
   const handleInteraction = async () => {
     if (!interactionNote.trim()) return;
     try {
@@ -66,17 +66,30 @@ export default function LeadCard({
     if (!currentUserEmail) return;
     setRemoving(true);
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/claim`,
-        {
-          method: "PATCH",
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/claim`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
       const updatedLead = await res.json();
-      if (onAssign) onAssign(lead._id, updatedLead.assignedTo);
+      if (onAssign) onAssign(updatedLead._id);
     } catch (err) {
-      console.error("Failed to claim lead:", err);
+      console.error(err);
+      setRemoving(false);
+    }
+  };
+
+  // ======== MEMBER RETURN LEAD ========
+  const handleReturn = async () => {
+    setRemoving(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/return`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      const updatedLead = await res.json();
+      if (onAssign) onAssign(updatedLead._id);
+    } catch (err) {
+      console.error(err);
       setRemoving(false);
     }
   };
@@ -85,19 +98,16 @@ export default function LeadCard({
   const handleReassign = async (e) => {
     const newAssignedTo = e.target.value;
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/reassign`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ assignedTo: newAssignedTo }),
-        }
-      );
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/reassign`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ assignedTo: newAssignedTo }),
+      });
       const updatedLead = await res.json();
-      if (onAssign) onAssign(lead._id, updatedLead.assignedTo);
+      if (onAssign) onAssign(updatedLead._id);
     } catch (err) {
       console.error("Failed to reassign lead:", err);
     }
@@ -121,68 +131,49 @@ export default function LeadCard({
           </select>
         </p>
 
-        {/* ADMIN REASSIGN */}
-        {isAdmin && users.length > 0 && (
-          <p>
-            <strong>Reassign:</strong>{" "}
-            <select value={lead.assignedTo || ""} onChange={handleReassign}>
-              <option value="">Unassigned</option>
-              <option value="POND">Lead Pond</option>
-              {users.map((u) => (
-                <option key={u._id} value={u.email}>
-                  {u.name}
-                </option>
-              ))}
-            </select>
-          </p>
+        {/* MEMBER ACTIONS */}
+        {!isAdmin && currentUserEmail && (
+          <>
+            {lead.assignedTo === "POND" && (
+              <button className="claim-button" onClick={handleClaim}>
+                Claim Lead
+              </button>
+            )}
+
+            {lead.assignedTo === currentUserEmail && (
+              <button className="return-button" onClick={handleReturn}>
+                Move to Pond
+              </button>
+            )}
+          </>
+        )}
+
+        {/* ADMIN ACTIONS */}
+        {isAdmin && (
+          <>
+            {users.length > 0 && (
+              <p>
+                <strong>Reassign:</strong>{" "}
+                <select value={lead.assignedTo || ""} onChange={handleReassign}>
+                  <option value="">Unassigned</option>
+                  <option value="POND">Lead Pond</option>
+                  {users.map((u) => (
+                    <option key={u._id} value={u.email}>
+                      {u.name}
+                    </option>
+                  ))}
+                </select>
+              </p>
+            )}
+
+            {onDelete && (
+              <button className="delete-button" onClick={() => onDelete(lead._id)}>
+                Delete Lead
+              </button>
+            )}
+          </>
         )}
       </div>
-
-      {/* MEMBER CLAIM */}
-      {isLeadPond && currentUserEmail && !isAdmin && (
-        <button className="claim-button" onClick={handleClaim}>
-          Claim Lead
-        </button>
-      )}
-
-
-{/* MEMBER: Return lead to pond */}
-{!isAdmin && lead.assignedTo === currentUserEmail && (
-console.log("Lead assignedTo:", lead.assignedTo, "Current user:", currentUserEmail, "IsAdmin:", isAdmin);
-  <button
-    className="return-button"
-    onClick={async () => {
-      setRemoving(true);
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/return`,
-          {
-            method: "PATCH",
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        const updatedLead = await res.json();
-        if (onAssign) onAssign(lead._id, updatedLead.assignedTo); // update parent state
-      } catch (err) {
-        console.error("Failed to return lead:", err);
-        setRemoving(false);
-      }
-    }}
-  >
-    Move to Pond
-  </button>
-)}
-
-
-
-      {/* ADMIN DELETE */}
-      {isAdmin && onDelete && (
-        <button className="delete-button" onClick={() => onDelete(lead._id)}>
-          Delete Lead
-        </button>
-      )}
 
       {/* INTERACTIONS */}
       <div className="interaction-form">
