@@ -15,54 +15,73 @@ export default function AdminDashboard() {
   const [selectedLead, setSelectedLead] = useState(null);
   const [showAddLead, setShowAddLead] = useState(false);
 
+  // Fetch leads and users
   useEffect(() => {
     fetchLeads();
     fetchUsers();
   }, []);
 
   const fetchLeads = async () => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
-    setLeads(await res.json());
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      const data = await res.json();
+      setLeads(data);
+    } catch (err) {
+      console.error("Failed to fetch leads:", err);
+    }
   };
 
   const fetchUsers = async () => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
-    setUsers(await res.json());
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      const data = await res.json();
+      setUsers(data);
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+    }
   };
 
+  // Update lead in local state
   const updateLead = updatedLead => {
-    setLeads(prev => prev.map(l => (l._id === updatedLead._id ? updatedLead : l)));
+    setLeads(prev =>
+      prev.map(l => (l._id === updatedLead._id ? updatedLead : l))
+    );
     setSelectedLead(updatedLead);
   };
 
+  // Filter leads
   const allLeads = leads;
   const myLeads = leads.filter(l => l.assignedTo === user.email);
   const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
 
+  // Render lead list
   const renderList = list => (
     <div className="lead-list">
-      {list.map(lead => (
-        <div
-          key={lead._id}
-          className={`lead-row status-${lead.status.replace(" ", "_").toLowerCase()}`}
-          onClick={() => setSelectedLead(lead)}
-        >
-          <span className="lead-name">{lead.name}</span>
-          <span>{lead.email}</span>
-          <span>{lead.assignedTo || "POND"}</span>
-          <span>{lead.status}</span>
-        </div>
-      ))}
+      {list.map(lead => {
+        const statusClass = `status-${lead.status.toLowerCase().replace(/\s/g, "_")}`;
+        return (
+          <div
+            key={lead._id}
+            className={`lead-row ${statusClass}`}
+            onClick={() => setSelectedLead(lead)}
+          >
+            <span className="lead-name">{lead.name}</span>
+            <span>{lead.email}</span>
+            <span>{lead.assignedTo || "POND"}</span>
+            <span>{lead.status}</span>
+          </div>
+        );
+      })}
     </div>
   );
 
   return (
     <div className="dashboard">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={user.role === "teamAdmin"} />
       <div className="main-panel">
         <Topbar />
 
@@ -76,7 +95,7 @@ export default function AdminDashboard() {
 
             {showAddLead && (
               <AddLead
-                isAdmin
+                isAdmin={user.role === "teamAdmin"}
                 onLeadAdded={lead => {
                   setLeads([lead, ...leads]);
                   setShowAddLead(false);

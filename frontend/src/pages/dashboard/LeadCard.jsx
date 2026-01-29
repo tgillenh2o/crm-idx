@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 import "./LeadCard.css";
 
-export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail, isAdmin, users = [] }) {
+export default function LeadCard({
+  lead,
+  onUpdate,
+  onClose,
+  currentUserEmail,
+  isAdmin,
+  users = [],
+}) {
   const [status, setStatus] = useState(lead.status);
   const [interactionType, setInteractionType] = useState("call");
   const [interactionNote, setInteractionNote] = useState("");
@@ -9,7 +16,7 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail, is
   const STATUS_OPTIONS = ["New", "Contacted", "Follow-up", "Under Contract", "Closed"];
   const INTERACTION_OPTIONS = ["call", "email", "meeting", "note"];
 
-  // Update lead status
+  // Save status update
   const saveStatus = async newStatus => {
     setStatus(newStatus);
     try {
@@ -22,8 +29,8 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail, is
         body: JSON.stringify({ status: newStatus }),
       });
       const updated = await res.json();
-      if (!res.ok) console.error("Status update failed:", updated);
-      else onUpdate(updated);
+      if (res.ok) onUpdate(updated);
+      else console.error("Status update failed:", updated);
     } catch (err) {
       console.error("Status update failed:", err);
     }
@@ -44,8 +51,8 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail, is
         body: JSON.stringify({ type: interactionType, note: interactionNote }),
       });
       const data = await res.json();
-      if (!res.ok) console.error("Interaction error:", data);
-      else onUpdate({ ...lead, interactions: data.interactions });
+      if (res.ok) onUpdate({ ...lead, interactions: data.interactions });
+      else console.error("Interaction error:", data);
 
       setInteractionNote("");
       setInteractionType("call");
@@ -54,26 +61,7 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail, is
     }
   };
 
-  // Admin reassignment
-  const reassignLead = async newAssignee => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/reassign`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ assignedTo: newAssignee }),
-      });
-      const updated = await res.json();
-      if (!res.ok) console.error("Reassign error:", updated);
-      else onUpdate(updated);
-    } catch (err) {
-      console.error("Reassign error:", err);
-    }
-  };
-
-  // Claim lead (for POND leads)
+  // Claim lead (for pond leads)
   const claimLead = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/claim`, {
@@ -83,14 +71,14 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail, is
         },
       });
       const updated = await res.json();
-      if (!res.ok) console.error("Claim lead error:", updated);
-      else onUpdate(updated);
+      if (res.ok) onUpdate(updated);
+      else console.error("Claim lead error:", updated);
     } catch (err) {
       console.error("Claim lead error:", err);
     }
   };
 
-  // Return lead to pond (owner only)
+  // Return lead to pond
   const returnToPond = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/return`, {
@@ -106,23 +94,45 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail, is
     }
   };
 
+  // Admin reassignment
+  const reassignLead = async newAssignee => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/reassign`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ assignedTo: newAssignee }),
+      });
+      const updated = await res.json();
+      if (res.ok) onUpdate(updated);
+      else console.error("Reassign error:", updated);
+    } catch (err) {
+      console.error("Reassign error:", err);
+    }
+  };
+
+  // Show claim button if lead is in pond
   const canClaim = lead.assignedTo === "POND";
+
+  // Normalize status for CSS class
+  const statusClass = `status-${status.toLowerCase().replace(/\s/g, "_")}`;
 
   return (
     <div className="lead-modal">
-      <div className="lead-card">
+      <div className={`lead-card ${statusClass}`}>
         <h2>{lead.name}</h2>
         <p><strong>Email:</strong> {lead.email}</p>
         <p><strong>Phone:</strong> {lead.phone}</p>
 
-        {/* Status */}
         <label>Status</label>
         <select value={status} onChange={e => saveStatus(e.target.value)}>
           {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
         </select>
 
         {/* Claim Lead */}
-        {canClaim && currentUserEmail !== "POND" && (
+        {canClaim && (
           <button onClick={claimLead} className="claim-button">
             Claim Lead
           </button>
@@ -137,7 +147,6 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail, is
 
         {/* Interaction Form */}
         <form className="interaction-form" onSubmit={addInteraction}>
-          <label>Add Interaction:</label>
           <select value={interactionType} onChange={e => setInteractionType(e.target.value)}>
             {INTERACTION_OPTIONS.map(t => <option key={t}>{t}</option>)}
           </select>
@@ -169,9 +178,7 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail, is
             >
               <option value="POND">POND</option>
               {users.map(u => (
-                <option key={u.email} value={u.email}>
-                  {u.name} ({u.email})
-                </option>
+                <option key={u.email} value={u.email}>{u.name} ({u.email})</option>
               ))}
             </select>
           </div>
