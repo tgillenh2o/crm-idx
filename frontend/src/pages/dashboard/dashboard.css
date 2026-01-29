@@ -19,31 +19,60 @@ h2, h3 {
 }
 
 /* ================== SIDEBAR ================== */
+/* Sidebar container */
 .sidebar {
   width: 220px;
-  background-color: #1e1e2f;
+  background-color: #1e1e2f; /* dark theme */
+  color: #ffffff;
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  padding: 16px 0;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.4);
+  user-select: none; /* prevents text selection on click */
 }
 
-.sidebar button {
+/* Sidebar buttons / tabs */
+.sidebar-button {
   background: none;
   border: none;
-  color: #bbb;
+  color: inherit;
   text-align: left;
-  padding: 12px 8px;
-  margin-bottom: 4px;
+  padding: 12px 24px;
+  margin: 4px 0;
+  font-size: 16px;
+  cursor: pointer; /* ensures proper pointer cursor */
+  transition: background 0.2s, transform 0.2s;
   border-radius: 8px;
-  cursor: pointer;
-  transition: 0.2s;
 }
 
-.sidebar button:hover,
-.sidebar button.active {
-  background-color: #33334d;
-  color: #fff;
+.sidebar-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
 }
+
+.sidebar-button.active {
+  background-color: rgba(33, 150, 243, 0.3);
+  font-weight: bold;
+}
+
+/* Optional icons if you have them */
+.sidebar-button i {
+  margin-right: 8px;
+  pointer-events: none; /* ensures icon doesn’t block click */
+}
+
+/* Fix for nested text elements inside buttons */
+.sidebar-button span,
+.sidebar-button div {
+  cursor: pointer;
+}
+
+/* Scrollable sidebar if too long */
+.sidebar .sidebar-scroll {
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
 
 /* ================== LEAD LIST ================== */
 .lead-list {

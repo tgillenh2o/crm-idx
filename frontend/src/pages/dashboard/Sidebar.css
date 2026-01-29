@@ -1,42 +1,53 @@
+/* Sidebar container */
 .sidebar {
-  width: 240px;
-  background-color: #1e1e1e;
+  width: 220px;
+  background-color: #1e1e2f; /* dark theme */
+  color: #ffffff;
   display: flex;
   flex-direction: column;
-  transition: width 0.3s ease;
-  overflow: hidden;
+  padding: 16px 0;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.4);
+  user-select: none; /* prevents text selection on click */
 }
 
-.sidebar.collapsed { width: 80px; }
-
-.sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  border-bottom: 1px solid #333;
-}
-
-.collapse-btn {
+/* Sidebar buttons / tabs */
+.sidebar-button {
   background: none;
   border: none;
-  color: #fff;
+  color: inherit;
+  text-align: left;
+  padding: 12px 24px;
+  margin: 4px 0;
+  font-size: 16px;
+  cursor: pointer; /* ensures proper pointer cursor */
+  transition: background 0.2s, transform 0.2s;
+  border-radius: 8px;
+}
+
+.sidebar-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.sidebar-button.active {
+  background-color: rgba(33, 150, 243, 0.3);
+  font-weight: bold;
+}
+
+/* Optional icons if you have them */
+.sidebar-button i {
+  margin-right: 8px;
+  pointer-events: none; /* ensures icon doesn’t block click */
+}
+
+/* Fix for nested text elements inside buttons */
+.sidebar-button span,
+.sidebar-button div {
   cursor: pointer;
-  font-size: 1.2rem;
 }
 
-.sidebar-menu {
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar-item {
-  padding: 12px 16px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.sidebar-item:hover {
-  background-color: #333;
+/* Scrollable sidebar if too long */
+.sidebar .sidebar-scroll {
+  overflow-y: auto;
+  flex-grow: 1;
 }
