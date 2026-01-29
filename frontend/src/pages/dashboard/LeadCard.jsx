@@ -4,7 +4,7 @@ import "./LeadCard.css";
 export default function LeadCard({
   lead,
   isAdmin = false,
-  onAssign, // callback for claiming/returning/reassign
+  onAssign, // callback for claim/return/reassign
   onDelete, // callback for admin delete
   users = [],
   isLeadPond = false,
@@ -18,7 +18,7 @@ export default function LeadCard({
 
   const assignedToName = lead.assignedTo || "Unassigned";
 
-  // ===== STATUS CHANGE =====
+  // ====== STATUS UPDATE ======
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
@@ -38,7 +38,7 @@ export default function LeadCard({
     }
   };
 
-  // ===== INTERACTIONS =====
+  // ====== INTERACTIONS ======
   const handleInteraction = async () => {
     if (!interactionNote.trim()) return;
     try {
@@ -58,42 +58,36 @@ export default function LeadCard({
     }
   };
 
-  // ===== MEMBER CLAIM =====
+  // ====== MEMBER CLAIM ======
   const handleClaim = async () => {
-    if (!currentUserEmail) return;
-    setRemoving(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/claim`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const updatedLead = await res.json();
-      if (onAssign) onAssign(updatedLead._id);
+      if (onAssign) onAssign(updatedLead);
     } catch (err) {
       console.error(err);
-      setRemoving(false);
     }
   };
 
-  // ===== MEMBER RETURN =====
+  // ====== MEMBER RETURN ======
   const handleReturn = async () => {
-    setRemoving(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/return`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const updatedLead = await res.json();
-      if (onAssign) onAssign(updatedLead._id);
+      if (onAssign) onAssign(updatedLead);
     } catch (err) {
       console.error(err);
-      setRemoving(false);
     }
   };
 
-  // ===== ADMIN REASSIGN =====
+  // ====== ADMIN REASSIGN ======
   const handleReassign = async (e) => {
-    const newAssignedTo = e.target.value;
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/reassign`, {
         method: "PATCH",
@@ -101,12 +95,12 @@ export default function LeadCard({
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ assignedTo: newAssignedTo }),
+        body: JSON.stringify({ assignedTo: e.target.value }),
       });
       const updatedLead = await res.json();
-      if (onAssign) onAssign(updatedLead._id);
+      if (onAssign) onAssign(updatedLead);
     } catch (err) {
-      console.error("Failed to reassign lead:", err);
+      console.error(err);
     }
   };
 
@@ -136,9 +130,8 @@ export default function LeadCard({
                 Claim Lead
               </button>
             )}
-
             {lead.assignedTo === currentUserEmail && (
-              <button className="return-button" onClick={() => onAssign(lead._id)}>
+              <button className="return-button" onClick={handleReturn}>
                 Move to Pond
               </button>
             )}
@@ -162,7 +155,6 @@ export default function LeadCard({
                 </select>
               </p>
             )}
-
             {onDelete && (
               <button className="delete-button" onClick={() => onDelete(lead._id)}>
                 Delete Lead
