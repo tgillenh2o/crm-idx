@@ -30,28 +30,26 @@ export default function MemberDashboard() {
     }
   };
 
-  // Update lead in dashboard and modal
   const updateLead = updatedLead => {
     setLeads(prev =>
-      prev.map(l => (l._id === updatedLead._id ? updatedLead : l))
+      prev.map(l => (l._id === updatedLead._id ? { ...updatedLead } : l))
     );
-    setSelectedLead(updatedLead);
+    setSelectedLead({ ...updatedLead });
   };
 
   const myLeads = leads.filter(l => l.assignedTo === user.email);
   const allLeads = leads;
   const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
 
-  // Render clickable lead rows
   const renderList = list => (
     <div className="lead-list">
       {list.map(lead => {
-        const statusClass = lead.status ? lead.status.toLowerCase().replace(" ", "-") : "new";
+        const statusClass = (lead.status || "New").toLowerCase().replace(" ", "-");
         return (
           <div
             key={lead._id}
             className={`lead-row status-${statusClass}`}
-            onClick={() => setSelectedLead(lead)}
+            onClick={() => setSelectedLead({ ...lead })}
           >
             <span className="lead-name">{lead.name}</span>
             <span>{lead.email}</span>
@@ -97,7 +95,6 @@ export default function MemberDashboard() {
             {showAddLead && (
               <AddLead
                 onLeadAdded={lead => {
-                  // Auto-assign to current member
                   const assignedLead = { ...lead, assignedTo: user.email, status: "New" };
                   setLeads([assignedLead, ...leads]);
                   setShowAddLead(false);
@@ -115,7 +112,7 @@ export default function MemberDashboard() {
         <LeadCard
           lead={selectedLead}
           isAdmin={false}
-          users={[]} // members don't reassign
+          users={[]}
           currentUserEmail={user.email}
           onUpdate={updateLead}
           onClose={() => setSelectedLead(null)}

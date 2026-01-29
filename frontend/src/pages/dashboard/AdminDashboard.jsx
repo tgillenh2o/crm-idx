@@ -15,7 +15,6 @@ export default function AdminDashboard() {
   const [selectedLead, setSelectedLead] = useState(null);
   const [showAddLead, setShowAddLead] = useState(false);
 
-  // Fetch leads and users on mount
   useEffect(() => {
     fetchLeads();
     fetchUsers();
@@ -45,28 +44,27 @@ export default function AdminDashboard() {
     }
   };
 
-  // Update lead in state (dashboard + modal)
+  // Immutable updateLead
   const updateLead = updatedLead => {
     setLeads(prev =>
-      prev.map(l => (l._id === updatedLead._id ? updatedLead : l))
+      prev.map(l => (l._id === updatedLead._id ? { ...updatedLead } : l))
     );
-    setSelectedLead(updatedLead);
+    setSelectedLead({ ...updatedLead });
   };
 
   const allLeads = leads;
   const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
   const myLeads = leads.filter(l => l.assignedTo === user.email);
 
-  // Render lead list rows
   const renderList = list => (
     <div className="lead-list">
       {list.map(lead => {
-        const statusClass = lead.status ? lead.status.toLowerCase().replace(" ", "-") : "new";
+        const statusClass = (lead.status || "New").toLowerCase().replace(" ", "-");
         return (
           <div
             key={lead._id}
             className={`lead-row status-${statusClass}`}
-            onClick={() => setSelectedLead(lead)}
+            onClick={() => setSelectedLead({ ...lead })} // open modal with new object
           >
             <span className="lead-name">{lead.name}</span>
             <span>{lead.email}</span>
@@ -99,7 +97,7 @@ export default function AdminDashboard() {
               <AddLead
                 isAdmin
                 onLeadAdded={lead => {
-                  setLeads([lead, ...leads]);
+                  setLeads([{ ...lead }, ...leads]); // prepend new lead immutably
                   setShowAddLead(false);
                 }}
               />
