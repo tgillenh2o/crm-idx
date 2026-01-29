@@ -21,23 +21,31 @@ export default function AdminDashboard() {
   }, []);
 
   const fetchLeads = async () => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
-    setLeads(await res.json());
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch leads");
+      setLeads(await res.json());
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const fetchUsers = async () => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
-    setUsers(await res.json());
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch users");
+      setUsers(await res.json());
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const updateLead = updatedLead => {
-    setLeads(prev =>
-      prev.map(l => (l._id === updatedLead._id ? updatedLead : l))
-    );
+    setLeads(prev => prev.map(l => (l._id === updatedLead._id ? updatedLead : l)));
     setSelectedLead(updatedLead);
   };
 
@@ -50,7 +58,7 @@ export default function AdminDashboard() {
       {list.map(lead => (
         <div
           key={lead._id}
-          className={`lead-row status-${lead.status.toLowerCase().replace(" ", "_")}`}
+          className={`lead-row status-${lead.status.toLowerCase().replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
         >
           <span className="lead-name">{lead.name}</span>
@@ -64,7 +72,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="dashboard">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={true} />
       <div className="main-panel">
         <Topbar />
 
@@ -72,6 +80,7 @@ export default function AdminDashboard() {
 
         {activeTab === "all-leads" && (
           <>
+            {/* All users can add leads */}
             <button
               className="add-lead-btn"
               onClick={() => setShowAddLead(prev => !prev)}
@@ -81,7 +90,7 @@ export default function AdminDashboard() {
 
             {showAddLead && (
               <AddLead
-                isAdmin
+                isAdmin={true}
                 onLeadAdded={lead => {
                   setLeads([lead, ...leads]);
                   setShowAddLead(false);
@@ -94,17 +103,17 @@ export default function AdminDashboard() {
           </>
         )}
 
-        {activeTab === "lead-pond" && (
-          <>
-            <h3>Lead Pond</h3>
-            {renderList(leadPond)}
-          </>
-        )}
-
         {activeTab === "my-leads" && (
           <>
             <h3>My Leads</h3>
             {renderList(myLeads)}
+          </>
+        )}
+
+        {activeTab === "lead-pond" && (
+          <>
+            <h3>Lead Pond</h3>
+            {renderList(leadPond)}
           </>
         )}
       </div>
@@ -112,7 +121,7 @@ export default function AdminDashboard() {
       {selectedLead && (
         <LeadCard
           lead={selectedLead}
-          isAdmin
+          isAdmin={true} // admin can reassign
           users={users}
           currentUserEmail={user.email}
           onUpdate={updateLead}
