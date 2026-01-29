@@ -61,7 +61,7 @@ export default function LeadCard({
         >
           <option>New</option>
           <option>Contacted</option>
-          <option>Qualified</option>
+          <option>Follow-up</option>
           <option>Under Contract</option>
           <option>Closed</option>
         </select>
