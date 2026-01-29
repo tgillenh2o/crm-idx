@@ -13,7 +13,7 @@ export default function Sidebar({ activeTab, setActiveTab, isAdmin, counts = {} 
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <h2>CRM</h2>
+        <h2>At Home Team</h2>
       </div>
       <ul className="sidebar-tabs">
         {tabs.map(tab => {
