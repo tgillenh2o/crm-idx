@@ -1,40 +1,152 @@
+/* ====== DASHBOARD LAYOUT ====== */
 .dashboard {
   display: flex;
   height: 100vh;
-  background-color: #121212;
-  color: #fff;
-  overflow: hidden;
+  font-family: "Inter", sans-serif;
+  background-color: #f4f6f8;
 }
 
 .main-panel {
   flex: 1;
-  padding: 16px;
+  padding: 24px;
   overflow-y: auto;
-  transition: margin-left 0.3s ease;
 }
 
 .sidebar-collapsed .main-panel {
-  margin-left: 80px;
+  margin-left: 80px; /* adjust if your sidebar collapses */
 }
 
-.stats-cards {
-  display: flex;
+h3 {
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+/* ====== LEADS GRID ====== */
+.leads-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
+}
+
+/* ====== LEAD CARD ====== */
+.lead-card {
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+  color: #000; /* text always readable */
+  cursor: default;
+}
+
+.lead-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* STATUS BACKGROUNDS */
+.lead-card.status-new { background-color: #e3f2fd; }
+.lead-card.status-contacted { background-color: #e0f7fa; }
+.lead-card.status-follow-up { background-color: #fff3e0; }
+.lead-card.status-closed { background-color: #f5f5f5; }
+
+/* BUTTONS */
+button {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 0.9rem;
+}
+
+.claim-button {
+  background-color: #64b5f6;
+  color: white;
+  margin-top: 8px;
+}
+.claim-button:hover { background-color: #42a5f5; }
+
+.return-button {
+  background-color: #ffa726;
+  color: white;
+  margin-top: 8px;
+}
+.return-button:hover { background-color: #fb8c00; }
+
+.delete-button {
+  background-color: #f44336;
+  color: white;
+  margin-top: 8px;
+}
+.delete-button:hover { background-color: #d32f2f; }
+
+/* ====== INTERACTION FORM ====== */
+.interaction-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.interaction-form input, .interaction-form select {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* ====== INTERACTIONS HISTORY ====== */
+.interaction-history {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.interaction-item {
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+
+/* ====== ADD LEAD BUTTON & FORM ====== */
+.add-lead-wrapper {
   margin-bottom: 16px;
 }
 
-.stat-card {
-  background-color: #1f1f1f;
-  flex: 1;
-  padding: 16px;
-  border-radius: 12px;
-  text-align: center;
-  transition: transform 0.2s ease;
+.add-lead-button {
+  background-color: #64b5f6;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
 }
-.stat-card:hover { transform: translateY(-4px); }
+.add-lead-button:hover {
+  background-color: #42a5f5;
+}
 
-.leads-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
+.add-lead-form-container {
+  background-color: #fff;
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-top: 8px;
+}
+
+.add-lead-form-container input,
+.add-lead-form-container select {
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.cancel-button {
+  background-color: #f44336;
+  color: white;
+  padding: 6px 12px;
+  margin-top: 6px;
+}
+.cancel-button:hover {
+  background-color: #d32f2f;
 }

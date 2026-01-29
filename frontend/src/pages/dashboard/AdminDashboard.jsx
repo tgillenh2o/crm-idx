@@ -3,7 +3,7 @@ import { AuthContext } from "../../context/AuthContext";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import LeadCard from "./LeadCard";
-import AddLead from "./AddLead";
+import AddLeadWrapper from "./AddLeadWrapper";
 import Profile from "./Profile";
 import "./Dashboard.css";
 
@@ -80,8 +80,13 @@ export default function AdminDashboard() {
 
         {activeTab === "lead-pond" && (
           <>
-            <AddLead onLeadAdded={(l) => setLeads([l, ...leads])} currentUser={user} isAdmin={true} />
-            <h3 style={{ color: "#64b5f6" }}>All Leads</h3>
+            <AddLeadWrapper
+              currentUser={user}
+              isAdmin={true}
+              onLeadAdded={(lead) => setLeads([lead, ...leads])}
+            />
+
+            <h3>All Leads</h3>
             <div className="leads-grid">
               {leads.map((l) => (
                 <LeadCard

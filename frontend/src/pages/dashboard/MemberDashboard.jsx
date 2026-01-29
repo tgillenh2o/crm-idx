@@ -3,7 +3,7 @@ import { AuthContext } from "../../context/AuthContext";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import LeadCard from "./LeadCard";
-import AddLead from "./AddLead";
+import AddLeadWrapper from "./AddLeadWrapper";
 import Profile from "./Profile";
 import "./Dashboard.css";
 
@@ -18,7 +18,6 @@ export default function MemberDashboard() {
     fetchLeads();
   }, []);
 
-  // Fetch leads for member
   const fetchLeads = async () => {
     setLoading(true);
     try {
@@ -34,7 +33,6 @@ export default function MemberDashboard() {
     }
   };
 
-  // Update a lead in state after claim/return
   const handleLeadUpdate = (updatedLead) => {
     setLeads((prev) => {
       const exists = prev.find((l) => l._id === updatedLead._id);
@@ -46,7 +44,6 @@ export default function MemberDashboard() {
     });
   };
 
-  // Lead Pond = unassigned / POND
   const leadPondLeads = leads.filter(
     (l) =>
       !l.assignedTo ||
@@ -54,7 +51,6 @@ export default function MemberDashboard() {
       l.assignedTo.toUpperCase() === "UNASSIGNED"
   );
 
-  // My Leads = assigned to member
   const myLeads = leads.filter((l) => l.assignedTo === user.email);
 
   return (
@@ -74,8 +70,13 @@ export default function MemberDashboard() {
 
         {activeTab === "lead-pond" && (
           <>
-            <AddLead onLeadAdded={(l) => setLeads([l, ...leads])} currentUser={user} isAdmin={false} />
-            <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
+            <AddLeadWrapper
+              currentUser={user}
+              isAdmin={false}
+              onLeadAdded={handleLeadUpdate}
+            />
+
+            <h3>Lead Pond</h3>
             <div className="leads-grid">
               {leadPondLeads.map((l) => (
                 <LeadCard
