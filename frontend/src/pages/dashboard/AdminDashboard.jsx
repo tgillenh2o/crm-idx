@@ -15,40 +15,59 @@ export default function AdminDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("all-leads");
 
+  // Fetch leads and users on mount
   useEffect(() => {
     fetchLeads();
     fetchUsers();
   }, []);
 
   const fetchLeads = async () => {
+    setLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
       setLeads(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Failed to fetch leads:", err);
+      setLeads([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchUsers = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
-      setUsers(data);
+      setUsers(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Failed to fetch users:", err);
+      setUsers([]);
     }
   };
 
+  // ===== REASSIGN OR MOVE LEAD =====
+  const handleAssign = async (leadId) => {
+    // Refetch the updated lead from backend
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      const updatedLead = await res.json();
+      setLeads((prev) => [updatedLead, ...prev.filter((l) => l._id !== leadId)]);
+    } catch (err) {
+      console.error("Failed to update lead:", err);
+    }
+  };
+
+  // ===== DELETE LEAD =====
   const handleDelete = async (leadId) => {
+    if (!window.confirm("Are you sure you want to delete this lead?")) return;
+
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
         method: "DELETE",
@@ -56,19 +75,8 @@ export default function AdminDashboard() {
       });
       setLeads((prev) => prev.filter((l) => l._id !== leadId));
     } catch (err) {
-      console.error(err);
+      console.error("Failed to delete lead:", err);
     }
-  };
-
-  // Update lead in state after reassign or move to pond
-  const handleAssignUpdate = (leadId) => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/leads/${leadId}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    })
-      .then((res) => res.json())
-      .then((updatedLead) =>
-        setLeads((prev) => [updatedLead, ...prev.filter((l) => l._id !== leadId)])
-      );
   };
 
   return (
@@ -97,6 +105,7 @@ export default function AdminDashboard() {
             />
 
             <h3>All Leads</h3>
+
             <div className="leads-grid">
               {leads.length === 0 ? (
                 <p>No leads found.</p>
@@ -105,9 +114,9 @@ export default function AdminDashboard() {
                   <LeadCard
                     key={l._id}
                     lead={l}
-                    isAdmin
+                    isAdmin={true}
                     users={users}
-                    onAssign={handleAssignUpdate}
+                    onAssign={handleAssign} // reassign / move to pond
                     onDelete={handleDelete}
                   />
                 ))

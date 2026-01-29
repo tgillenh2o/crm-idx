@@ -4,8 +4,8 @@ import "./LeadCard.css";
 export default function LeadCard({
   lead,
   isAdmin = false,
-  onDelete,
-  onAssign, // Parent callback for claiming/returning/reassigning
+  onAssign, // callback for claiming/returning/reassign
+  onDelete, // callback for admin delete
   users = [],
   isLeadPond = false,
   currentUserEmail,
@@ -18,7 +18,7 @@ export default function LeadCard({
 
   const assignedToName = lead.assignedTo || "Unassigned";
 
-  // ======== STATUS UPDATE ========
+  // ===== STATUS CHANGE =====
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
@@ -38,21 +38,18 @@ export default function LeadCard({
     }
   };
 
-  // ======== INTERACTIONS ========
+  // ===== INTERACTIONS =====
   const handleInteraction = async () => {
     if (!interactionNote.trim()) return;
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ type: interactionType, note: interactionNote }),
-        }
-      );
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ type: interactionType, note: interactionNote }),
+      });
       const data = await res.json();
       setInteractions(data.interactions || []);
       setInteractionNote("");
@@ -61,7 +58,7 @@ export default function LeadCard({
     }
   };
 
-  // ======== MEMBER CLAIM LEAD ========
+  // ===== MEMBER CLAIM =====
   const handleClaim = async () => {
     if (!currentUserEmail) return;
     setRemoving(true);
@@ -78,7 +75,7 @@ export default function LeadCard({
     }
   };
 
-  // ======== MEMBER RETURN LEAD ========
+  // ===== MEMBER RETURN =====
   const handleReturn = async () => {
     setRemoving(true);
     try {
@@ -94,7 +91,7 @@ export default function LeadCard({
     }
   };
 
-  // ======== ADMIN REASSIGN LEAD ========
+  // ===== ADMIN REASSIGN =====
   const handleReassign = async (e) => {
     const newAssignedTo = e.target.value;
     try {

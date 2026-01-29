@@ -14,6 +14,7 @@ export default function MemberDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("lead-pond");
 
+  // Fetch leads on mount
   useEffect(() => {
     fetchLeads();
   }, []);
@@ -22,9 +23,7 @@ export default function MemberDashboard() {
     setLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
       setLeads(Array.isArray(data) ? data : []);
@@ -36,51 +35,43 @@ export default function MemberDashboard() {
     }
   };
 
-  // ===== CLAIM lead from pond =====
+  // ===== CLAIM LEAD FROM POND =====
   const handleClaim = async (leadId) => {
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`,
+        `${import.meta.env.VITE_API_URL}/api/leads/${leadId}/claim`,
         {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ userId: user.email }),
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
       const updatedLead = await res.json();
 
-      // Move updated lead to top of leads array
+      // Move updated lead to top of array to trigger React re-render
       setLeads((prev) => [updatedLead, ...prev.filter((l) => l._id !== leadId)]);
     } catch (err) {
       console.error("Failed to claim lead:", err);
     }
   };
 
-  // ===== RETURN lead to pond =====
+  // ===== RETURN LEAD TO POND =====
   const handleReturn = async (leadId) => {
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/leads/${leadId}/return`,
         {
           method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
       const updatedLead = await res.json();
-
-      // Move updated lead to top of leads array
       setLeads((prev) => [updatedLead, ...prev.filter((l) => l._id !== leadId)]);
     } catch (err) {
       console.error("Failed to return lead:", err);
     }
   };
 
-  // Leads in pond (unassigned)
+  // ===== FILTER LEADS =====
   const leadPondLeads = leads.filter(
     (l) =>
       !l.assignedTo ||
@@ -88,7 +79,6 @@ export default function MemberDashboard() {
       l.assignedTo === "UNASSIGNED"
   );
 
-  // My Leads (assigned to current user)
   const myLeads = leads.filter((l) => l.assignedTo === user.email);
 
   return (
@@ -128,7 +118,7 @@ export default function MemberDashboard() {
                     lead={l}
                     isLeadPond
                     currentUserEmail={user.email}
-                    onAssign={handleClaim} // claim moves lead to my leads
+                    onAssign={handleClaim} // Claim from pond
                   />
                 ))
               )}
@@ -149,7 +139,7 @@ export default function MemberDashboard() {
                     key={l._id}
                     lead={l}
                     currentUserEmail={user.email}
-                    onAssign={handleReturn} // return moves lead back to pond
+                    onAssign={handleReturn} // Return to pond
                   />
                 ))
               )}
