@@ -1,13 +1,12 @@
-/* ====== DASHBOARD CONTAINER ====== */
+/* ================== DASHBOARD LAYOUT ================== */
 .dashboard {
   display: flex;
   height: 100vh;
   font-family: "Inter", sans-serif;
   background-color: #1e1e2f; /* dark dashboard background */
-  color: #f5f5f5; /* default text color */
+  color: #f5f5f5;
 }
 
-/* ====== MAIN PANEL ====== */
 .dashboard .main-panel {
   flex: 1;
   padding: 24px;
@@ -15,7 +14,7 @@
 }
 
 .dashboard.sidebar-collapsed .main-panel {
-  margin-left: 80px; /* adjust if sidebar collapses */
+  margin-left: 80px;
 }
 
 .dashboard h3 {
@@ -24,20 +23,20 @@
   color: #e0e0e0;
 }
 
-/* ====== LEADS GRID ====== */
+/* ================== LEADS GRID ================== */
 .dashboard .leads-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
 }
 
-/* ====== LEAD CARD ====== */
+/* ================== LEAD CARD ================== */
 .dashboard .lead-card {
   border-radius: 10px;
   padding: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.5);
   transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
-  color: #f5f5f5; /* text always readable */
+  color: #f5f5f5;
   position: relative;
   cursor: default;
 }
@@ -47,13 +46,13 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.7);
 }
 
-/* ====== STATUS BACKGROUNDS ====== */
+/* STATUS BACKGROUNDS */
 .dashboard .lead-card.status-new { background-color: #2a2a3f; }
 .dashboard .lead-card.status-contacted { background-color: #2a3f3f; }
 .dashboard .lead-card.status-follow-up { background-color: #3f2a2a; }
 .dashboard .lead-card.status-closed { background-color: #33333d; }
 
-/* ====== FLASH EFFECT ====== */
+/* FLASH EFFECT */
 .dashboard .lead-card.flash {
   animation: flash-bg 0.5s ease-in-out;
 }
@@ -64,7 +63,7 @@
   100% { box-shadow: 0 0 0 rgba(0,0,0,0); }
 }
 
-/* ====== BUTTONS ====== */
+/* ================== BUTTONS ================== */
 .dashboard button {
   border: none;
   border-radius: 6px;
@@ -75,7 +74,7 @@
   font-weight: 500;
 }
 
-/* Claim / Return / Delete buttons */
+/* Claim / Return / Delete */
 .dashboard .claim-button {
   background-color: #64b5f6;
   color: white;
@@ -97,16 +96,18 @@
 }
 .dashboard .delete-button:hover { background-color: #d32f2f; }
 
-/* ====== INTERACTION FORM ====== */
+/* ================== INTERACTION FORM (RESPONSIVE) ================== */
 .dashboard .interaction-form {
   display: flex;
+  flex-wrap: wrap;       /* allow wrapping on narrow cards */
   gap: 8px;
   margin-top: 12px;
 }
 
 .dashboard .interaction-form input,
 .dashboard .interaction-form select {
-  flex: 1;
+  flex: 1 1 150px;      /* grow/shrink, min 150px */
+  min-width: 0;         /* prevent overflow */
   padding: 6px 8px;
   border: 1px solid #555;
   border-radius: 4px;
@@ -114,7 +115,21 @@
   color: #f5f5f5;
 }
 
-/* ====== INTERACTIONS HISTORY ====== */
+.dashboard .interaction-form button {
+  flex: 0 0 auto;       /* button keeps natural width */
+  margin-top: 0;
+}
+
+/* Stack on very small cards */
+@media (max-width: 300px) {
+  .dashboard .interaction-form input,
+  .dashboard .interaction-form select,
+  .dashboard .interaction-form button {
+    flex: 1 1 100%;
+  }
+}
+
+/* ================== INTERACTIONS HISTORY ================== */
 .dashboard .interaction-history {
   margin-top: 12px;
   font-size: 0.85rem;
@@ -127,7 +142,7 @@
   border-bottom: 1px solid #444;
 }
 
-/* ====== ADD LEAD BUTTON & FORM ====== */
+/* ================== ADD LEAD BUTTON & FORM ================== */
 .dashboard .add-lead-button {
   background-color: #64b5f6;
   color: white;
