@@ -59,15 +59,11 @@
 }
 
 .lead-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 12px;
-  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.2s;
-  background-color: #2a2a3c; /* default dark row */
-  color: #fff;
+  padding: 12px;
+  border-bottom: 1px solid #333;
 }
+
 
 .lead-row:hover {
   background-color: #3b3b55;
@@ -102,12 +98,13 @@
 .lead-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 1000; /* ensures modal is on top */
+  background: rgba(0,0,0,0.7);
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 
 /* ==================== LEAD CARD ==================== */
 .lead-card {

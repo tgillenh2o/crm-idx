@@ -5,11 +5,11 @@ const InteractionSchema = new mongoose.Schema(
     type: {
       type: String,
       enum: ["call", "email", "meeting", "note"],
-      required: true,
+      required: true
     },
-    note: { type: String },
+    note: String,
     date: { type: Date, default: Date.now },
-    createdBy: { type: String, required: true },
+    createdBy: { type: String, required: true }
   },
   { _id: false }
 );
@@ -18,14 +18,20 @@ const LeadSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true },
-    phone: { type: String },
+    phone: String,
     assignedTo: { type: String, default: "POND" },
     status: {
       type: String,
-      enum: ["New", "Contacted", "Follow-up", "Under Contract", "Closed"],
-      default: "New",
+      enum: [
+        "New",
+        "Contacted",
+        "Follow-up",
+        "Under Contract",
+        "Closed"
+      ],
+      default: "New"
     },
-    interactions: [InteractionSchema],
+    interactions: [InteractionSchema]
   },
   { timestamps: true }
 );
