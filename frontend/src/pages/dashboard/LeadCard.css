@@ -9,14 +9,6 @@
   max-width: 400px;
   border-left: 4px solid transparent; /* will be colored per status */
 }
-.lead-card.dark {
-  background: #1e1e2f;
-  color: white;
-  border-radius: 12px;
-  padding: 20px;
-  min-width: 380px;
-}
-
 
 /* Status left border highlights */
 .lead-card.status-new { border-left-color: #4caf50; }          /* green */
