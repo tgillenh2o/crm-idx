@@ -23,3 +23,15 @@
 .return-button { background:#ff9800; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; }
 
 .lead-card select { margin-top:8px; padding:6px; border-radius:4px; background:#2a2a3b; color:white; border:none; }
+
+/* Status colors for lead rows and modal */
+.lead-row.status-new,
+.lead-card.status-new { background-color: #1e1e2f; border-left: 4px solid #2196f3; }
+.lead-row.status-contacted,
+.lead-card.status-contacted { background-color: #1e1e2f; border-left: 4px solid #00bcd4; }
+.lead-row.status-follow-up,
+.lead-card.status-follow_up { background-color: #1e1e2f; border-left: 4px solid #ff9800; }
+.lead-row.status-under_contract,
+.lead-card.status-under_contract { background-color: #1e1e2f; border-left: 4px solid #4caf50; }
+.lead-row.status-closed,
+.lead-card.status-closed { background-color: #1e1e2f; border-left: 4px solid #9e9e9e; }
