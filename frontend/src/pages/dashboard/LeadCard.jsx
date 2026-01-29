@@ -4,31 +4,24 @@ import "./LeadCard.css";
 export default function LeadCard({
   lead,
   isAdmin = false,
-  onDelete,
-  onAssign,
-  users = [],
-  isLeadPond = false,
   currentUserEmail,
+  users = [],
+  onClose,
+  onAssign,
+  onDelete,
 }) {
   const [status, setStatus] = useState(lead.status || "New");
   const [interactionType, setInteractionType] = useState("call");
   const [interactionNote, setInteractionNote] = useState("");
   const [interactions, setInteractions] = useState(lead.interactions || []);
-  const [removing, setRemoving] = useState(false);
-  const [flash, setFlash] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const assignedToName = lead.assignedTo || "Unassigned";
 
-  const flashCard = () => {
-    setFlash(true);
-    setTimeout(() => setFlash(false), 800);
-  };
-
-  // ===== Status Update =====
+  // ======== STATUS UPDATE ========
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
-    flashCard();
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`, {
         method: "PATCH",
@@ -45,7 +38,7 @@ export default function LeadCard({
     }
   };
 
-  // ===== Interactions =====
+  // ======== ADD INTERACTION ========
   const handleInteraction = async () => {
     if (!interactionNote.trim()) return;
     try {
@@ -64,48 +57,46 @@ export default function LeadCard({
       setInteractions(data.interactions || []);
       setInteractionNote("");
     } catch (err) {
-      console.error(err);
+      console.error("Failed to add interaction:", err);
     }
   };
 
-  // ===== Member Claim =====
+  // ======== CLAIM LEAD (member) ========
   const handleClaim = async () => {
-    setRemoving(true);
+    if (!currentUserEmail) return;
+    setLoading(true);
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/claim`,
         { method: "PATCH", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
-      if (!res.ok) throw new Error("Failed to claim lead");
-      const updatedLead = await res.json();
-      if (onAssign) onAssign(lead._id, updatedLead.assignedTo);
-      flashCard();
-      setRemoving(false);
+      const updated = await res.json();
+      onAssign?.(lead._id, updated.assignedTo);
     } catch (err) {
       console.error(err);
-      setRemoving(false);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ===== Return to Pond =====
+  // ======== RETURN TO POND ========
   const handleReturn = async () => {
-    setRemoving(true);
+    setLoading(true);
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/return`,
         { method: "PATCH", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
-      const updatedLead = await res.json();
-      if (onAssign) onAssign(lead._id, updatedLead.assignedTo);
-      flashCard();
-      setRemoving(false);
+      const updated = await res.json();
+      onAssign?.(lead._id, updated.assignedTo);
     } catch (err) {
       console.error(err);
-      setRemoving(false);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ===== Admin Reassign =====
+  // ======== ADMIN REASSIGN ========
   const handleReassign = async (e) => {
     const newAssignedTo = e.target.value;
     try {
@@ -120,22 +111,21 @@ export default function LeadCard({
           body: JSON.stringify({ assignedTo: newAssignedTo }),
         }
       );
-      const updatedLead = await res.json();
-      if (onAssign) onAssign(lead._id, updatedLead.assignedTo);
-      flashCard();
+      const updated = await res.json();
+      onAssign?.(lead._id, updated.assignedTo);
     } catch (err) {
       console.error(err);
     }
   };
 
   return (
-    <div
-      className={`lead-card status-${status.toLowerCase()} ${removing ? "removing" : ""} ${
-        flash ? "flash" : ""
-      }`}
-    >
-      <div className="lead-info">
-        <p><strong>Name:</strong> {lead.name}</p>
+    <div className="lead-modal-overlay">
+      <div className={`lead-modal status-${status.toLowerCase()}`}>
+        <button className="close-btn" onClick={onClose}>
+          ✕
+        </button>
+
+        <h2>{lead.name}</h2>
         <p><strong>Email:</strong> {lead.email}</p>
         <p><strong>Phone:</strong> {lead.phone}</p>
         <p><strong>Assigned To:</strong> {assignedToName}</p>
@@ -150,74 +140,76 @@ export default function LeadCard({
           </select>
         </p>
 
-        {isAdmin && (
+        {/* ADMIN REASSIGN */}
+        {isAdmin && users.length > 0 && (
           <p>
             <strong>Reassign:</strong>{" "}
             <select value={lead.assignedTo || ""} onChange={handleReassign}>
               <option value="">Unassigned</option>
               <option value="POND">Lead Pond</option>
               {users.map((u) => (
-                <option key={u._id} value={u.email}>
-                  {u.name}
-                </option>
+                <option key={u._id} value={u.email}>{u.name}</option>
               ))}
             </select>
           </p>
         )}
-      </div>
 
-      {/* Member Claim */}
-      {isLeadPond && currentUserEmail && !isAdmin && (
-        <button className="claim-button" onClick={handleClaim}>
-          Claim Lead
-        </button>
-      )}
-
-      {/* Return to Pond */}
-      {!isAdmin && lead.assignedTo === currentUserEmail && (
-        <button className="return-button" onClick={handleReturn}>
-          Move to Pond
-        </button>
-      )}
-
-      {/* Admin Delete */}
-      {isAdmin && onDelete && (
-        <button className="delete-button" onClick={() => onDelete(lead._id)}>
-          Delete Lead
-        </button>
-      )}
-
-      {/* Interactions */}
-      <div className="interaction-form">
-        <select value={interactionType} onChange={(e) => setInteractionType(e.target.value)}>
-          <option value="call">Call</option>
-          <option value="email">Email</option>
-          <option value="meeting">Meeting</option>
-          <option value="note">Note</option>
-        </select>
-        <input
-          type="text"
-          placeholder="Add note..."
-          value={interactionNote}
-          onChange={(e) => setInteractionNote(e.target.value)}
-        />
-        <button onClick={handleInteraction}>Add Interaction</button>
-      </div>
-
-      <div className="interaction-history">
-        <h4>Interaction History</h4>
-        {interactions.length === 0 ? (
-          <p>No interactions yet</p>
-        ) : (
-          interactions.map((i, idx) => (
-            <div key={idx} className="interaction-item">
-              <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on{" "}
-              {new Date(i.date).toLocaleString()}
-              <br />
-              {i.note}
-            </div>
-          ))
+        {/* MEMBER CLAIM / RETURN */}
+        {!isAdmin && lead.assignedTo === "POND" && (
+          <button onClick={handleClaim} disabled={loading}>
+            {loading ? "Claiming..." : "Claim Lead"}
+          </button>
         )}
+        {!isAdmin && lead.assignedTo === currentUserEmail && (
+          <button onClick={handleReturn} disabled={loading}>
+            {loading ? "Returning..." : "Return to Pond"}
+          </button>
+        )}
+
+        {/* ADMIN DELETE */}
+        {isAdmin && onDelete && (
+          <button className="delete-btn" onClick={() => onDelete(lead._id)}>
+            Delete Lead
+          </button>
+        )}
+
+        {/* INTERACTIONS */}
+        <div className="interaction-section">
+          <h4>Interactions</h4>
+          <div className="interaction-form">
+            <select
+              value={interactionType}
+              onChange={(e) => setInteractionType(e.target.value)}
+            >
+              <option value="call">Call</option>
+              <option value="email">Email</option>
+              <option value="meeting">Meeting</option>
+              <option value="note">Note</option>
+            </select>
+            <input
+              type="text"
+              placeholder="Add note..."
+              value={interactionNote}
+              onChange={(e) => setInteractionNote(e.target.value)}
+            />
+            <button onClick={handleInteraction}>Add Interaction</button>
+          </div>
+
+          <div className="interaction-history">
+            {interactions.length === 0 ? (
+              <p>No interactions yet.</p>
+            ) : (
+              interactions.map((i, idx) => (
+                <div key={idx} className="interaction-item">
+                  <strong>{i.type}</strong> by {i.createdBy || "Unknown"} on{" "}
+                  {new Date(i.date).toLocaleString()}
+                  <br />
+                  {i.note}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

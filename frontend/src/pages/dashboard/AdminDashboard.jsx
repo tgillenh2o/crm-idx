@@ -14,9 +14,10 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("lead-pond");
+  const [selectedLead, setSelectedLead] = useState(null);
   const [showAddLeadForm, setShowAddLeadForm] = useState(false);
 
-  // Fetch leads
+  // Fetch leads and users on load
   useEffect(() => {
     fetchLeads();
     fetchUsers();
@@ -31,7 +32,7 @@ export default function AdminDashboard() {
       const data = await res.json();
       setLeads(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to fetch leads:", err);
       setLeads([]);
     } finally {
       setLoading(false);
@@ -51,28 +52,44 @@ export default function AdminDashboard() {
     }
   };
 
-  // ======= Handle Lead Updates =======
+  // Update assignedTo in state
   const handleAssign = (leadId, assignedTo) => {
     setLeads((prev) =>
       prev.map((l) => (l._id === leadId ? { ...l, assignedTo } : l))
     );
   };
 
+  // Delete lead
   const handleDelete = (leadId) => {
     setLeads((prev) => prev.filter((l) => l._id !== leadId));
+    setSelectedLead(null);
   };
 
+  // Add new lead
   const handleAddLead = (newLead) => {
     setLeads((prev) => [newLead, ...prev]);
     setShowAddLeadForm(false);
   };
 
-  // Filter leads for tabs
+  // Filter leads by tab
   const leadPondLeads = leads.filter(
     (l) => !l.assignedTo || l.assignedTo === "POND" || l.assignedTo === "UNASSIGNED"
   );
-
   const myLeads = leads.filter((l) => l.assignedTo === user.email);
+  const allLeads = leads;
+
+  const getLeadsForTab = () => {
+    switch (activeTab) {
+      case "lead-pond":
+        return leadPondLeads;
+      case "my-leads":
+        return myLeads;
+      case "all-leads":
+        return allLeads;
+      default:
+        return [];
+    }
+  };
 
   return (
     <div className="dashboard">
@@ -87,11 +104,11 @@ export default function AdminDashboard() {
       <div className={`main-panel ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <Topbar />
 
-        {/* Profile */}
+        {/* Profile Tab */}
         {activeTab === "profile" && <Profile />}
 
-        {/* Lead Pond */}
-        {activeTab === "lead-pond" && (
+        {/* Lead List Tabs */}
+        {["lead-pond", "my-leads", "all-leads"].includes(activeTab) && (
           <>
             <button
               className="toggle-add-lead-button"
@@ -109,62 +126,46 @@ export default function AdminDashboard() {
               />
             )}
 
-            <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
-            <div className="leads-grid">
-              {leadPondLeads.map((l) => (
-                <LeadCard
-                  key={l._id}
-                  lead={l}
-                  isAdmin={true}
-                  currentUserEmail={user.email}
-                  onAssign={handleAssign}
-                  onDelete={handleDelete}
-                  users={users}
-                  isLeadPond={true}
-                />
-              ))}
-            </div>
+            <h3>
+              {activeTab === "lead-pond" && "Lead Pond"}
+              {activeTab === "my-leads" && "My Leads"}
+              {activeTab === "all-leads" && "All Leads"}
+            </h3>
+
+            {loading ? (
+              <p>Loading leads...</p>
+            ) : (
+              <div className="lead-list">
+                {getLeadsForTab().length === 0 && <p>No leads to display.</p>}
+                {getLeadsForTab().map((lead) => (
+                  <div
+                    key={lead._id}
+                    className="lead-row"
+                    onClick={() => setSelectedLead(lead)}
+                  >
+                    <span className="lead-name">{lead.name}</span>
+                    <span>{lead.email}</span>
+                    <span>{lead.phone}</span>
+                    <span>{lead.assignedTo || "Unassigned"}</span>
+                    <span>{lead.status}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
-{/* All Leads */}
-{activeTab === "all-leads" && (
-  <>
-    <h3>All Leads</h3>
-    <div className="leads-grid">
-      {leads.map((l) => (
-        <LeadCard
-          key={l._id}
-          lead={l}
-          isAdmin={true}
-          currentUserEmail={user.email}
-          onAssign={handleAssign}
-          onDelete={handleDelete}
-          users={users}
-        />
-      ))}
-    </div>
-  </>
-)}
 
-
-        {/* My Leads */}
-        {activeTab === "my-leads" && (
-          <>
-            <h3>My Leads</h3>
-            <div className="leads-grid">
-              {myLeads.map((l) => (
-                <LeadCard
-                  key={l._id}
-                  lead={l}
-                  isAdmin={true}
-                  currentUserEmail={user.email}
-                  onAssign={handleAssign}
-                  onDelete={handleDelete}
-                  users={users}
-                />
-              ))}
-            </div>
-          </>
+        {/* Lead Details Modal */}
+        {selectedLead && (
+          <LeadCard
+            lead={selectedLead}
+            isAdmin={true}
+            users={users}
+            currentUserEmail={user.email}
+            onClose={() => setSelectedLead(null)}
+            onAssign={handleAssign}
+            onDelete={handleDelete}
+          />
         )}
       </div>
     </div>
