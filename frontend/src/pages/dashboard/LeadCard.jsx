@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./LeadCard.css";
 
 export default function LeadCard({ lead, isAdmin, users, currentUserEmail, onUpdate, onClose }) {
+  // Defensive defaults
   const [editableLead, setEditableLead] = useState({
     name: "",
     email: "",
@@ -34,45 +35,46 @@ export default function LeadCard({ lead, isAdmin, users, currentUserEmail, onUpd
     setTimeout(() => setFlash(""), 800);
   };
 
-  const handleChange = e => setEditableLead({ ...editableLead, [e.target.name]: e.target.value });
+  const handleChange = e => {
+    setEditableLead({ ...editableLead, [e.target.name]: e.target.value });
+  };
 
+  // Save all edits
   const handleSave = () => {
-    onUpdate(editableLead);
+    const updated = { ...editableLead };
+    onUpdate(updated);
     setEditing(false);
     triggerFlash();
   };
 
+  // Claim lead from Pond (for members)
   const handleClaim = () => {
     const updated = { ...editableLead, assignedTo: currentUserEmail };
-    onUpdate(updated);
     setEditableLead(updated);
+    onUpdate(updated);
     triggerFlash();
   };
 
+  // Reassign lead (for admin)
   const handleReassign = newEmail => {
     const updated = { ...editableLead, assignedTo: newEmail };
-    onUpdate(updated);
     setEditableLead(updated);
+    onUpdate(updated);
     triggerFlash();
   };
 
+  // Add a new interaction
   const handleAddInteraction = () => {
     if (!newInteraction.trim()) return;
-
-    const interaction = {
-      note: newInteraction.trim(),
-      createdBy: currentUserEmail,
-      date: new Date().toISOString(),
-      type: "note"
-    };
-
     const updated = {
       ...editableLead,
-      interactions: [...editableLead.interactions, interaction]
+      interactions: [
+        ...editableLead.interactions,
+        { type: "note", text: newInteraction, date: new Date().toISOString(), createdBy: currentUserEmail }
+      ]
     };
-
-    onUpdate(updated);
     setEditableLead(updated);
+    onUpdate(updated);
     setNewInteraction("");
     triggerFlash();
   };
@@ -80,21 +82,16 @@ export default function LeadCard({ lead, isAdmin, users, currentUserEmail, onUpd
   const memberCanEdit = !isAdmin && editableLead.assignedTo === currentUserEmail;
   const statusClass = editableLead.status ? editableLead.status.toLowerCase().replace(" ", "-") : "new";
 
-  const renderNote = note => {
-    if (typeof note === "string") return note;
-    if (note.note) return note.note;
-    return JSON.stringify(note);
-  };
-
-  const renderAuthor = note => note.createdBy || note.author || "User";
-
   return (
     <div className="lead-modal">
       <div className={`lead-card ${flash} status-${statusClass}`}>
+        {/* Close button */}
         <button className="close-button" onClick={onClose}>×</button>
 
+        {/* Lead Name */}
         <h3>{editableLead.name}</h3>
 
+        {/* Editable Fields */}
         {(isAdmin || memberCanEdit) && editing ? (
           <div className="lead-edit-form">
             <label>Name: <input name="name" value={editableLead.name} onChange={handleChange} /></label>
@@ -102,7 +99,15 @@ export default function LeadCard({ lead, isAdmin, users, currentUserEmail, onUpd
             <label>Phone: <input name="phone" value={editableLead.phone} onChange={handleChange} /></label>
             <label>
               Status:
-              <select name="status" value={editableLead.status} onChange={handleChange}>
+              <select
+                name="status"
+                value={editableLead.status}
+                onChange={e => {
+                  handleChange(e);
+                  onUpdate({ ...editableLead, status: e.target.value }); // instant dashboard update
+                  triggerFlash();
+                }}
+              >
                 <option>New</option>
                 <option>Contacted</option>
                 <option>Follow-Up</option>
@@ -110,7 +115,6 @@ export default function LeadCard({ lead, isAdmin, users, currentUserEmail, onUpd
                 <option>Closed</option>
               </select>
             </label>
-
             <div className="form-buttons">
               <button className="claim-button" onClick={handleSave}>Save</button>
               <button className="return-button" onClick={() => setEditing(false)}>Cancel</button>
@@ -123,10 +127,12 @@ export default function LeadCard({ lead, isAdmin, users, currentUserEmail, onUpd
             <p><strong>Status:</strong> {editableLead.status}</p>
             <p><strong>Assigned To:</strong> {editableLead.assignedTo || "POND"}</p>
 
+            {/* Claim from Pond for members */}
             {!isAdmin && (!editableLead.assignedTo || editableLead.assignedTo === "POND") && (
               <button className="claim-button" onClick={handleClaim}>Claim from Pond</button>
             )}
 
+            {/* Admin actions */}
             {isAdmin && (
               <div className="admin-actions">
                 <label>
@@ -145,25 +151,27 @@ export default function LeadCard({ lead, isAdmin, users, currentUserEmail, onUpd
               </div>
             )}
 
+            {/* Member edit button if allowed */}
             {memberCanEdit && !editing && (
               <button className="close-button" onClick={() => setEditing(true)}>Edit Lead</button>
             )}
           </div>
         )}
 
+        {/* Interaction History */}
         <div className="interaction-history">
           <h4>Interactions</h4>
           {editableLead.interactions.length > 0 ? (
             editableLead.interactions.map((note, idx) => (
               <div key={idx} className="interaction-item">
-                <strong>{renderAuthor(note)}:</strong> {renderNote(note)}
+                <strong>{note.createdBy || note.author || "User"}:</strong> {note.text || note.note}
               </div>
             ))
           ) : (
             <p>No interactions yet.</p>
           )}
 
-          {/* Add new interaction */}
+          {/* Add interaction form */}
           <div className="interaction-form">
             <input
               type="text"
@@ -171,9 +179,7 @@ export default function LeadCard({ lead, isAdmin, users, currentUserEmail, onUpd
               value={newInteraction}
               onChange={e => setNewInteraction(e.target.value)}
             />
-            <button type="button" onClick={handleAddInteraction}>
-              Add
-            </button>
+            <button onClick={handleAddInteraction}>Add</button>
           </div>
         </div>
       </div>
