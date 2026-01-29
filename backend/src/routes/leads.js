@@ -199,5 +199,26 @@ router.post("/:id/interactions", verifyToken, async (req, res) => {
   }
 });
 
+// UPDATE LEAD STATUS
+router.patch("/:id/status", verifyToken, async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+
+    lead.status = status;
+    await lead.save();
+
+    res.json(lead);
+  } catch (err) {
+    console.error("UPDATE STATUS ERROR:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 
 module.exports = router;

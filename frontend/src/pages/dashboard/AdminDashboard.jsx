@@ -9,7 +9,6 @@ import "./Dashboard.css";
 
 export default function AdminDashboard() {
   const { user } = useContext(AuthContext);
-
   const [leads, setLeads] = useState([]);
   const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState("all-leads");
@@ -21,63 +20,33 @@ export default function AdminDashboard() {
     fetchUsers();
   }, []);
 
-  /* =======================
-     Data Fetching
-  ======================== */
   const fetchLeads = async () => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
-
-    const data = await res.json();
-    setLeads(Array.isArray(data) ? data : []);
+    setLeads(await res.json());
   };
 
   const fetchUsers = async () => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
-
-    const data = await res.json();
-    setUsers(Array.isArray(data) ? data : []);
+    setUsers(await res.json());
   };
 
-  const updateLeadAssignment = (leadId, assignedTo) => {
+  const updateLead = updatedLead => {
     setLeads(prev =>
-      prev.map(lead =>
-        lead._id === leadId ? { ...lead, assignedTo } : lead
-      )
+      prev.map(l => (l._id === updatedLead._id ? updatedLead : l))
     );
-    setSelectedLead(null);
+    setSelectedLead(updatedLead);
   };
 
-  /* =======================
-     Lead Filters
-  ======================== */
   const allLeads = leads;
-
   const myLeads = leads.filter(l => l.assignedTo === user.email);
+  const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
 
-  const leadPond = leads.filter(
-    l =>
-      !l.assignedTo ||
-      l.assignedTo === "POND" ||
-      l.assignedTo === "UNASSIGNED"
-  );
-
-  /* =======================
-     Shared Lead List UI
-  ======================== */
-  const renderLeadList = list => (
+  const renderList = list => (
     <div className="lead-list">
-      {list.length === 0 && (
-        <p className="empty-state">No leads found.</p>
-      )}
-
       {list.map(lead => (
         <div
           key={lead._id}
@@ -104,64 +73,54 @@ export default function AdminDashboard() {
       <div className="main-panel">
         <Topbar />
 
-        {/* ===== PROFILE ===== */}
-        {activeTab === "profile" && (
-          <Profile />
-        )}
+        {activeTab === "profile" && <Profile user={user} />}
 
-        {/* ===== ALL LEADS ===== */}
         {activeTab === "all-leads" && (
           <>
-            <div className="dashboard-header">
-              <h3>All Leads</h3>
-
-              <button
-                className="add-lead-btn"
-                onClick={() => setShowAddLead(prev => !prev)}
-              >
-                {showAddLead ? "Close Form" : "+ Add Lead"}
-              </button>
-            </div>
+            <button
+              className="add-lead-btn"
+              onClick={() => setShowAddLead(prev => !prev)}
+            >
+              {showAddLead ? "Close Lead Form" : "+ Add Lead"}
+            </button>
 
             {showAddLead && (
               <AddLead
                 isAdmin
                 onLeadAdded={lead => {
-                  setLeads(prev => [lead, ...prev]);
+                  setLeads([lead, ...leads]);
                   setShowAddLead(false);
                 }}
               />
             )}
 
-            {renderLeadList(allLeads)}
+            <h3>All Leads</h3>
+            {renderList(allLeads)}
           </>
         )}
 
-        {/* ===== LEAD POND ===== */}
         {activeTab === "lead-pond" && (
           <>
             <h3>Lead Pond</h3>
-            {renderLeadList(leadPond)}
+            {renderList(leadPond)}
           </>
         )}
 
-        {/* ===== MY LEADS ===== */}
         {activeTab === "my-leads" && (
           <>
             <h3>My Leads</h3>
-            {renderLeadList(myLeads)}
+            {renderList(myLeads)}
           </>
         )}
       </div>
 
-      {/* ===== LEAD DETAILS MODAL ===== */}
       {selectedLead && (
         <LeadCard
           lead={selectedLead}
           isAdmin
           users={users}
           currentUserEmail={user.email}
-          onAssign={updateLeadAssignment}
+          onUpdate={updateLead}
           onClose={() => setSelectedLead(null)}
         />
       )}
