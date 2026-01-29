@@ -144,10 +144,11 @@ export default function LeadCard({
           Claim Lead
         </button>
       )}
-console.log("Lead assignedTo:", lead.assignedTo, "Current user:", currentUserEmail, "IsAdmin:", isAdmin);
+
 
 {/* MEMBER: Return lead to pond */}
 {!isAdmin && lead.assignedTo === currentUserEmail && (
+console.log("Lead assignedTo:", lead.assignedTo, "Current user:", currentUserEmail, "IsAdmin:", isAdmin);
   <button
     className="return-button"
     onClick={async () => {
