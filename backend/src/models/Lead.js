@@ -2,10 +2,14 @@ const mongoose = require("mongoose");
 
 const InteractionSchema = new mongoose.Schema(
   {
-    type: { type: String, enum: ["call", "email", "meeting", "note"], required: true },
+    type: {
+      type: String,
+      enum: ["call", "email", "meeting", "note"],
+      required: true,
+    },
     note: { type: String },
     date: { type: Date, default: Date.now },
-    createdBy: { type: String, required: true } // user email or name
+    createdBy: { type: String, required: true },
   },
   { _id: false }
 );
@@ -18,7 +22,7 @@ const LeadSchema = new mongoose.Schema(
     assignedTo: { type: String, default: "POND" },
     status: {
       type: String,
-      enum: ["New", "Contacted", "Follow-up", "Closed"],
+      enum: ["New", "Contacted", "Follow-up", "Under Contract", "Closed"],
       default: "New",
     },
     interactions: [InteractionSchema],

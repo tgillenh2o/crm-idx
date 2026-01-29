@@ -1,179 +1,91 @@
 import React, { useState } from "react";
 import "./LeadCard.css";
 
-export default function LeadCard({
-  lead,
-  onUpdate,
-  onClose,
-  isAdmin,
-  users = [],
-  currentUserEmail,
-}) {
-  const [status, setStatus] = useState(lead.status || "New");
-  const [interactionType, setInteractionType] = useState("Call");
+export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail }) {
+  const [status, setStatus] = useState(lead.status);
+  const [interactionType, setInteractionType] = useState("call");
   const [interactionNote, setInteractionNote] = useState("");
 
-  // Map UI status text to backend-safe string
-  const STATUS_MAP = {
-    "New": "new",
-    "Contacted": "contacted",
-    "Follow-up": "follow-up",
-    "Under Contract": "under_contract",
-    "Closed": "closed",
-  };
+  const STATUS_OPTIONS = ["New", "Contacted", "Follow-up", "Under Contract", "Closed"];
+  const INTERACTION_OPTIONS = ["call", "email", "meeting", "note"];
 
-  const saveStatus = async newStatusText => {
-    const backendStatus = STATUS_MAP[newStatusText] || newStatusText;
-    setStatus(newStatusText); // Update UI immediately
-
+  const saveStatus = async newStatus => {
+    setStatus(newStatus);
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/status`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ status: backendStatus }),
-        }
-      );
-
-      if (!res.ok) {
-        console.error("Status update failed:", await res.text());
-        return;
-      }
-
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
       const updated = await res.json();
-      onUpdate(updated);
+      if (!res.ok) console.error("Status update failed:", updated);
+      else onUpdate(updated);
     } catch (err) {
-      console.error("Status update error:", err);
+      console.error("Status update failed:", err);
     }
   };
 
-  const returnToPond = async () => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/return`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (!res.ok) throw new Error(await res.text());
-
-      const updated = await res.json();
-      onUpdate(updated);
-    } catch (err) {
-      console.error("Return lead error:", err);
-    }
-  };
-
-  const handleAddInteraction = async () => {
-    if (!interactionNote.trim()) return;
+  const addInteraction = async e => {
+    e.preventDefault();
+    if (!interactionType) return alert("Please select type");
 
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({
-            type: interactionType,
-            note: interactionNote,
-          }),
-        }
-      );
-
-      if (!res.ok) throw new Error(await res.text());
-
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ type: interactionType, note: interactionNote }),
+      });
       const data = await res.json();
-
-      // Update lead locally
-      onUpdate({ ...lead, interactions: data.interactions });
-
+      if (!res.ok) console.error("Interaction error:", data);
+      else onUpdate({ ...lead, interactions: data.interactions });
       setInteractionNote("");
+      setInteractionType("call");
     } catch (err) {
-      console.error("Add interaction error:", err);
+      console.error("Interaction error:", err);
     }
   };
 
   return (
     <div className="lead-modal">
-      <div className={`lead-card status-${status.toLowerCase().replace(" ", "-")}`}>
+      <div className="lead-card">
         <h2>{lead.name}</h2>
-
         <p><strong>Email:</strong> {lead.email}</p>
         <p><strong>Phone:</strong> {lead.phone}</p>
 
-        {/* Status */}
         <label>Status</label>
-        <select
-          value={status}
-          onChange={e => saveStatus(e.target.value)}
-        >
-          {Object.keys(STATUS_MAP).map(s => (
-            <option key={s}>{s}</option>
-          ))}
+        <select value={status} onChange={e => saveStatus(e.target.value)}>
+          {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
         </select>
 
-        {/* Return to Pond */}
-        {lead.assignedTo === currentUserEmail && (
-          <button onClick={returnToPond} className="return-button">
-            Return to Lead Pond
-          </button>
-        )}
-
-        {/* Interaction History */}
-        <div className="interaction-history">
-          <h4>Interactions</h4>
-          {lead.interactions && lead.interactions.length > 0 ? (
-            lead.interactions
-              .slice()
-              .reverse() // newest first
-              .map((i, idx) => (
-                <div key={idx} className="interaction-item">
-                  <strong>{i.type}</strong>: {i.note}
-                  <div style={{ fontSize: "12px", opacity: 0.7 }}>
-                    {new Date(i.date).toLocaleString()} — {i.createdBy}
-                  </div>
-                </div>
-              ))
-          ) : (
-            <p style={{ opacity: 0.6 }}>No interactions yet</p>
-          )}
-        </div>
-
-        {/* Add Interaction */}
-        <div className="interaction-form">
-          <select
-            value={interactionType}
-            onChange={e => setInteractionType(e.target.value)}
-          >
-            <option>Call</option>
-            <option>Text</option>
-            <option>Email</option>
-            <option>Showing</option>
+        <form className="interaction-form" onSubmit={addInteraction}>
+          <label>New Interaction:</label>
+          <select value={interactionType} onChange={e => setInteractionType(e.target.value)}>
+            {INTERACTION_OPTIONS.map(t => <option key={t}>{t}</option>)}
           </select>
           <input
             type="text"
-            placeholder="Add note…"
+            placeholder="Note"
             value={interactionNote}
             onChange={e => setInteractionNote(e.target.value)}
           />
-          <button onClick={handleAddInteraction}>Add</button>
+          <button type="submit">Add</button>
+        </form>
+
+        <div className="interaction-history">
+          {lead.interactions?.map((i, idx) => (
+            <div key={idx} className="interaction-item">
+              <strong>{i.type}</strong> - {i.note} ({i.createdBy} @ {new Date(i.date).toLocaleString()})
+            </div>
+          ))}
         </div>
 
-        {/* Close button */}
-        <button onClick={onClose} className="close-button">
-          Close
-        </button>
+        <button onClick={onClose}>Close</button>
       </div>
     </div>
   );
