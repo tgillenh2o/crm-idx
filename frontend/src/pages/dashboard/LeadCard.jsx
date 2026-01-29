@@ -5,63 +5,13 @@ export default function LeadCard({
   lead,
   onUpdate,
   onClose,
-  isAdmin,
+  isAdmin = false,
+  users = [],
   currentUserEmail,
-  claimLead,
-  returnToPond,
-  addInteraction,
 }) {
-  const [editableLead, setEditableLead] = useState({ ...lead });
-  const [newInteraction, setNewInteraction] = useState({ type: "call", note: "" });
+  const [status, setStatus] = useState(lead.status);
 
-  const saveLead = async () => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(editableLead),
-        }
-      );
-      const updated = await res.json();
-      onUpdate(updated);
-    } catch (err) {
-      console.error("Failed to save lead:", err);
-    }
-  };
-
-  const saveInteraction = async () => {
-    if (!newInteraction.note.trim()) return;
-
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(newInteraction),
-        }
-      );
-
-      const data = await res.json();
-      addInteraction(data.interactions);
-      setNewInteraction({ type: "call", note: "" });
-    } catch (err) {
-      console.error("Failed to add interaction:", err);
-    }
-  };
-
-  const handleStatusChange = async (e) => {
-    const newStatus = e.target.value;
-    setEditableLead({ ...editableLead, status: newStatus });
-
+  const saveStatus = async newStatus => {
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/status`,
@@ -81,37 +31,45 @@ export default function LeadCard({
     }
   };
 
-  const isPondLead = lead.assignedTo === "POND";
-  const isMyLead = lead.assignedTo === currentUserEmail;
+  const claimLead = async () => {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/claim`,
+      {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      }
+    );
+    const updated = await res.json();
+    onUpdate(updated);
+  };
+
+  const returnToPond = async () => {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/return`,
+      {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      }
+    );
+    const updated = await res.json();
+    onUpdate(updated);
+  };
 
   return (
     <div className="lead-modal">
-      <div className={`lead-card status-${editableLead.status.toLowerCase().replace(" ", "_")}`}>
-        <h2>Edit Lead</h2>
-
-        <label>Name</label>
-        <input
-          type="text"
-          value={editableLead.name}
-          onChange={(e) => setEditableLead({ ...editableLead, name: e.target.value })}
-        />
-
-        <label>Email</label>
-        <input
-          type="email"
-          value={editableLead.email}
-          onChange={(e) => setEditableLead({ ...editableLead, email: e.target.value })}
-        />
-
-        <label>Phone</label>
-        <input
-          type="text"
-          value={editableLead.phone}
-          onChange={(e) => setEditableLead({ ...editableLead, phone: e.target.value })}
-        />
+      <div className="lead-card">
+        <h2>{lead.name}</h2>
+        <p><strong>Email:</strong> {lead.email}</p>
+        <p><strong>Phone:</strong> {lead.phone}</p>
 
         <label>Status</label>
-        <select value={editableLead.status} onChange={handleStatusChange}>
+        <select
+          value={status}
+          onChange={e => {
+            setStatus(e.target.value);
+            saveStatus(e.target.value);
+          }}
+        >
           <option>New</option>
           <option>Contacted</option>
           <option>Follow-up</option>
@@ -119,56 +77,44 @@ export default function LeadCard({
           <option>Closed</option>
         </select>
 
-        <div className="lead-buttons">
-          {isPondLead && (
-            <button className="claim-button" onClick={() => claimLead(lead._id)}>
-              Claim Lead
-            </button>
+        <div className="lead-actions">
+          {lead.assignedTo === "POND" && (
+            <button className="claim-button" onClick={claimLead}>Claim Lead</button>
           )}
 
-          {isMyLead && (
-            <button className="return-button" onClick={() => returnToPond(lead._id)}>
-              Return to Pond
-            </button>
+          {lead.assignedTo === currentUserEmail && (
+            <button className="return-button" onClick={returnToPond}>Return to Pond</button>
           )}
 
-          <button className="save-button" onClick={saveLead}>
-            Save
-          </button>
-          <button className="close-button" onClick={onClose}>
-            Close
-          </button>
-        </div>
-
-        <div className="interaction-section">
-          <h3>Interactions</h3>
-          <div className="interaction-form">
+          {isAdmin && (
             <select
-              value={newInteraction.type}
-              onChange={(e) => setNewInteraction({ ...newInteraction, type: e.target.value })}
+              value={lead.assignedTo}
+              onChange={async e => {
+                const assignedTo = e.target.value;
+                const res = await fetch(
+                  `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/reassign`,
+                  {
+                    method: "PATCH",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                    body: JSON.stringify({ assignedTo }),
+                  }
+                );
+                const updated = await res.json();
+                onUpdate(updated);
+              }}
             >
-              <option value="call">Call</option>
-              <option value="email">Email</option>
-              <option value="meeting">Meeting</option>
-              <option value="note">Note</option>
+              <option value="POND">POND</option>
+              {users.map(u => (
+                <option key={u._id} value={u.email}>{u.name}</option>
+              ))}
             </select>
-            <input
-              type="text"
-              placeholder="Add a note..."
-              value={newInteraction.note}
-              onChange={(e) => setNewInteraction({ ...newInteraction, note: e.target.value })}
-            />
-            <button onClick={saveInteraction}>Add</button>
-          </div>
-
-          <div className="interaction-history">
-            {editableLead.interactions?.map((i, idx) => (
-              <div key={idx} className="interaction-item">
-                <strong>{i.type}</strong> - {i.note} <em>({new Date(i.date).toLocaleString()})</em>
-              </div>
-            ))}
-          </div>
+          )}
         </div>
+
+        <button className="close-button" onClick={onClose}>Close</button>
       </div>
     </div>
   );
