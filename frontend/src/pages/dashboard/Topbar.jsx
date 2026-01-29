@@ -1,13 +1,9 @@
-import React, { useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import React from "react";
 
 export default function Topbar() {
-  const { user, logout } = useContext(AuthContext);
-
   return (
     <div className="topbar">
-      <span>Welcome, {user?.email}</span>
-      <button onClick={logout} style={{ cursor: "pointer" }}>Logout</button>
+      <h1>AT Home Team CRM</h1>
     </div>
   );
 }

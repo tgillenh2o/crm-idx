@@ -1,11 +1,19 @@
-import { useEffect, useState } from "react";
-import api from "../../api";
+import React, { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../context/AuthContext";
+import Sidebar from "./Sidebar";
+import Topbar from "./Topbar";
+import LeadCard from "./LeadCard";
+import AddLead from "./AddLead";
+import Profile from "./Profile";
 import "./Dashboard.css";
 
 export default function AdminDashboard() {
+  const { user } = useContext(AuthContext);
   const [leads, setLeads] = useState([]);
-  const [selectedLead, setSelectedLead] = useState(null);
   const [users, setUsers] = useState([]);
+  const [activeTab, setActiveTab] = useState("all-leads");
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [showAddLead, setShowAddLead] = useState(false);
 
   useEffect(() => {
     fetchLeads();
@@ -13,103 +21,93 @@ export default function AdminDashboard() {
   }, []);
 
   const fetchLeads = async () => {
-    try {
-      const res = await api.get("/leads");
-      setLeads(res.data);
-    } catch (err) {
-      console.error(err);
-    }
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    setLeads(await res.json());
   };
 
   const fetchUsers = async () => {
-    try {
-      const res = await api.get("/users");
-      setUsers(res.data);
-    } catch (err) {
-      console.error(err);
-    }
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    setUsers(await res.json());
   };
 
-  const claimLead = async (id) => {
-    try {
-      await api.patch(`/leads/${id}/claim`);
-      fetchLeads();
-    } catch (err) {
-      alert(err.response?.data?.message || "Claim failed");
-    }
+  const updateLead = (updatedLead) => {
+    setLeads((prev) => prev.map((l) => (l._id === updatedLead._id ? updatedLead : l)));
+    setSelectedLead(updatedLead);
   };
 
-  const returnToPond = async (id) => {
-    try {
-      await api.patch(`/leads/${id}/return`);
-      fetchLeads();
-    } catch (err) {
-      alert(err.response?.data?.message || "Return failed");
-    }
-  };
+  const allLeads = leads;
+  const myLeads = leads.filter((l) => l.assignedTo === user.email);
+  const leadPond = leads.filter((l) => !l.assignedTo || l.assignedTo === "POND");
 
-  const reassignLead = async (id, userId) => {
-    try {
-      await api.patch(`/leads/${id}/reassign`, { assignedTo: userId });
-      fetchLeads();
-    } catch (err) {
-      alert(err.response?.data?.message || "Reassign failed");
-    }
-  };
+  const renderList = (list) => (
+    <div className="lead-list">
+      {list.map((lead) => (
+        <div
+          key={lead._id}
+          className={`lead-row status-${lead.status.toLowerCase().replace(/\s/g, "_")}`}
+          onClick={() => setSelectedLead(lead)}
+        >
+          <span className="lead-name">{lead.name}</span>
+          <span>{lead.email}</span>
+          <span>{lead.assignedTo || "POND"}</span>
+          <span>{lead.status}</span>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="dashboard">
-      <h2>All Leads</h2>
-
-      <div className="lead-list">
-        {leads.map((lead) => (
-          <div
-            key={lead._id}
-            className={`lead-card status-${lead.status.toLowerCase().replace(" ", "_")}`}
-            onClick={() => setSelectedLead(lead)}
-          >
-            <h3>{lead.name}</h3>
-            <p>{lead.email}</p>
-            <p>{lead.phone}</p>
-            <p>Assigned To: {lead.assignedTo}</p>
-
-            <div className="actions" onClick={(e) => e.stopPropagation()}>
-              {lead.assignedTo === "POND" && (
-                <button onClick={() => claimLead(lead._id)}>Claim Lead</button>
-              )}
-              {lead.assignedTo !== "POND" && (
-                <button onClick={() => returnToPond(lead._id)}>Return to Pond</button>
-              )}
-
-              <select
-                value={lead.assignedTo}
-                onChange={(e) => reassignLead(lead._id, e.target.value)}
-              >
-                <option value="POND">POND</option>
-                {users.map((u) => (
-                  <option key={u._id} value={u.email}>
-                    {u.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        ))}
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin />
+      <div className="main-panel">
+        <Topbar />
+        {activeTab === "profile" && <Profile user={user} />}
+        {activeTab === "all-leads" && (
+          <>
+            <button className="add-lead-btn" onClick={() => setShowAddLead((prev) => !prev)}>
+              {showAddLead ? "Close Lead Form" : "+ Add Lead"}
+            </button>
+            {showAddLead && (
+              <AddLead
+                isAdmin
+                users={users}
+                onLeadAdded={(lead) => {
+                  setLeads([lead, ...leads]);
+                  setShowAddLead(false);
+                }}
+              />
+            )}
+            <h3>All Leads</h3>
+            {renderList(allLeads)}
+          </>
+        )}
+        {activeTab === "lead-pond" && (
+          <>
+            <h3>Lead Pond</h3>
+            {renderList(leadPond)}
+          </>
+        )}
+        {activeTab === "my-leads" && (
+          <>
+            <h3>My Leads</h3>
+            {renderList(myLeads)}
+          </>
+        )}
       </div>
 
       {selectedLead && (
-        <div className="modal-overlay" onClick={() => setSelectedLead(null)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>{selectedLead.name}</h3>
-            <p>Email: {selectedLead.email}</p>
-            <p>Phone: {selectedLead.phone}</p>
-            <p>Status: {selectedLead.status}</p>
-            <p>Assigned To: {selectedLead.assignedTo}</p>
-            <button className="close-btn" onClick={() => setSelectedLead(null)}>
-              Close
-            </button>
-          </div>
-        </div>
+        <LeadCard
+          lead={selectedLead}
+          isAdmin
+          users={users}
+          currentUserEmail={user.email}
+          onUpdate={updateLead}
+          onClose={() => setSelectedLead(null)}
+        />
       )}
     </div>
   );
