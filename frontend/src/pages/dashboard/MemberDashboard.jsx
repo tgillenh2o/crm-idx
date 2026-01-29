@@ -10,7 +10,6 @@ import "./Dashboard.css";
 export default function MemberDashboard() {
   const { user } = useContext(AuthContext);
   const [leads, setLeads] = useState([]);
-  const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState("all-leads");
   const [selectedLead, setSelectedLead] = useState(null);
   const [showAddLead, setShowAddLead] = useState(false);
@@ -47,6 +46,7 @@ export default function MemberDashboard() {
           key={lead._id}
           className={`lead-row status-${lead.status.toLowerCase().replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
+          style={{ cursor: "pointer" }}
         >
           <span className="lead-name">{lead.name}</span>
           <span>{lead.email}</span>
@@ -67,7 +67,7 @@ export default function MemberDashboard() {
 
         {activeTab === "all-leads" && (
           <>
-            {/* Members can also add leads */}
+            {/* Members can add leads */}
             <button
               className="add-lead-btn"
               onClick={() => setShowAddLead(prev => !prev)}
@@ -105,11 +105,12 @@ export default function MemberDashboard() {
         )}
       </div>
 
+      {/* LeadCard Modal */}
       {selectedLead && (
         <LeadCard
           lead={selectedLead}
           isAdmin={false} // members cannot reassign
-          users={[]}     // empty, members cannot reassign
+          users={[]}     // no users for members
           currentUserEmail={user.email}
           onUpdate={updateLead}
           onClose={() => setSelectedLead(null)}

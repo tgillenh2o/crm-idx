@@ -60,6 +60,7 @@ export default function AdminDashboard() {
           key={lead._id}
           className={`lead-row status-${lead.status.toLowerCase().replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
+          style={{ cursor: "pointer" }}
         >
           <span className="lead-name">{lead.name}</span>
           <span>{lead.email}</span>
@@ -80,7 +81,6 @@ export default function AdminDashboard() {
 
         {activeTab === "all-leads" && (
           <>
-            {/* All users can add leads */}
             <button
               className="add-lead-btn"
               onClick={() => setShowAddLead(prev => !prev)}
@@ -118,10 +118,11 @@ export default function AdminDashboard() {
         )}
       </div>
 
+      {/* LeadCard Modal */}
       {selectedLead && (
         <LeadCard
           lead={selectedLead}
-          isAdmin={true} // admin can reassign
+          isAdmin={true}
           users={users}
           currentUserEmail={user.email}
           onUpdate={updateLead}
