@@ -1,39 +1,113 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
+import "./AddLead.css";
 
-export default function AddLead({ isAdmin, users = [], onLeadAdded }) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [status, setStatus] = useState("New");
-  const [assignedTo, setAssignedTo] = useState("POND");
+export default function AddLead({ isAdmin, onLeadAdded }) {
+  const { user } = useContext(AuthContext);
 
-  const submit = async () => {
-    if (!name || !email) return alert("Name and Email required");
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
-      body: JSON.stringify({ name, email, phone, status, assignedTo }),
-    });
-    const data = await res.json();
-    onLeadAdded(data);
-    setName(""); setEmail(""); setPhone(""); setStatus("New"); setAssignedTo("POND");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    status: "New",
+    assignedTo: isAdmin ? "" : user.email, // member auto-assign
+  });
+
+  const handleChange = e => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const newLead = await res.json();
+      if (res.ok) {
+        onLeadAdded(newLead);
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          status: "New",
+          assignedTo: isAdmin ? "" : user.email, // reset for member
+        });
+      } else {
+        console.error("Failed to add lead:", newLead);
+      }
+    } catch (err) {
+      console.error("Add lead error:", err);
+    }
   };
 
   return (
-    <div className="add-lead-form">
-      <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-      <input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <input placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-      <select value={status} onChange={(e) => setStatus(e.target.value)}>
-        {["New", "Contacted", "Follow-up", "Under Contract", "Closed"].map((s) => <option key={s}>{s}</option>)}
-      </select>
-      {isAdmin && (
-        <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
-          <option value="POND">POND</option>
-          {users.map((u) => <option key={u.email} value={u.email}>{u.name}</option>)}
+    <form className="add-lead-form" onSubmit={handleSubmit}>
+      <label>
+        Name:
+        <input
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          required
+        />
+      </label>
+
+      <label>
+        Email:
+        <input
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+        />
+      </label>
+
+      <label>
+        Phone:
+        <input
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+        />
+      </label>
+
+      <label>
+        Status:
+        <select
+          name="status"
+          value={formData.status}
+          onChange={handleChange}
+        >
+          <option>New</option>
+          <option>Contacted</option>
+          <option>Follow-Up</option>
+          <option>Under Contract</option>
+          <option>Closed</option>
         </select>
+      </label>
+
+      {isAdmin && (
+        <label>
+          Assign To:
+          <input
+            name="assignedTo"
+            value={formData.assignedTo}
+            onChange={handleChange}
+            placeholder="Email or POND"
+          />
+        </label>
       )}
-      <button onClick={submit}>Add Lead</button>
-    </div>
+
+      <button type="submit" className="add-lead-btn">
+        Add Lead
+      </button>
+    </form>
   );
 }
