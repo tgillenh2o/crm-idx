@@ -25,11 +25,9 @@ export default function AdminDashboard() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      if (!res.ok) throw new Error("Failed to fetch leads");
-      setLeads(await res.json());
-    } catch (err) {
-      console.error(err);
-    }
+      const data = await res.json();
+      setLeads(data || []);
+    } catch (err) { console.error(err); }
   };
 
   const fetchUsers = async () => {
@@ -37,28 +35,22 @@ export default function AdminDashboard() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      if (!res.ok) throw new Error("Failed to fetch users");
-      setUsers(await res.json());
-    } catch (err) {
-      console.error(err);
-    }
+      const data = await res.json();
+      setUsers(data || []);
+    } catch (err) { console.error(err); }
   };
 
   const updateLead = updatedLead => {
-    setLeads(prev => prev.map(l => (l._id === updatedLead._id ? updatedLead : l)));
+    setLeads(prev => prev.map(l => l._id === updatedLead._id ? updatedLead : l));
     setSelectedLead(updatedLead);
   };
-
-  const allLeads = leads;
-  const myLeads = leads.filter(l => l.assignedTo === user.email);
-  const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
 
   const renderList = list => (
     <div className="lead-list">
       {list.map(lead => (
         <div
           key={lead._id}
-          className={`lead-row status-${lead.status.toLowerCase().replace(" ", "-")}`}
+          className={`lead-row status-${lead.status?.toLowerCase().replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
           style={{ cursor: "pointer" }}
         >
@@ -71,9 +63,13 @@ export default function AdminDashboard() {
     </div>
   );
 
+  const allLeads = leads;
+  const myLeads = leads.filter(l => l.assignedTo === user.email);
+  const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
+
   return (
     <div className="dashboard">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={true} />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin />
       <div className="main-panel">
         <Topbar />
 
@@ -81,23 +77,15 @@ export default function AdminDashboard() {
 
         {activeTab === "all-leads" && (
           <>
-            <button
-              className="add-lead-btn"
-              onClick={() => setShowAddLead(prev => !prev)}
-            >
+            <button className="add-lead-btn" onClick={() => setShowAddLead(prev => !prev)}>
               {showAddLead ? "Close Lead Form" : "+ Add Lead"}
             </button>
-
             {showAddLead && (
               <AddLead
-                isAdmin={true}
-                onLeadAdded={lead => {
-                  setLeads([lead, ...leads]);
-                  setShowAddLead(false);
-                }}
+                isAdmin
+                onLeadAdded={lead => { setLeads([lead, ...leads]); setShowAddLead(false); }}
               />
             )}
-
             <h3>All Leads</h3>
             {renderList(allLeads)}
           </>
@@ -118,11 +106,10 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {/* LeadCard Modal */}
       {selectedLead && (
         <LeadCard
           lead={selectedLead}
-          isAdmin={true}
+          isAdmin
           users={users}
           currentUserEmail={user.email}
           onUpdate={updateLead}
