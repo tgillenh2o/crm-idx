@@ -11,18 +11,34 @@ export default function MemberDashboard() {
   }, []);
 
   const fetchLeads = async () => {
-    const res = await api.get("/leads");
-    setLeads(res.data);
+    try {
+      const res = await api.get("/leads");
+      // Only show member's leads + pond
+      const filtered = res.data.filter(
+        (l) => l.assignedTo === "POND" || l.assignedTo === res.data.currentUserEmail
+      );
+      setLeads(filtered);
+    } catch (err) {
+      console.error("Fetch leads failed:", err);
+    }
   };
 
   const claimLead = async (id) => {
-    await api.patch(`/leads/${id}/claim`);
-    fetchLeads();
+    try {
+      await api.patch(`/leads/${id}/claim`);
+      fetchLeads();
+    } catch (err) {
+      alert(err.response?.data?.message || "Claim failed");
+    }
   };
 
   const returnToPond = async (id) => {
-    await api.patch(`/leads/${id}/return`);
-    fetchLeads();
+    try {
+      await api.patch(`/leads/${id}/return`);
+      fetchLeads();
+    } catch (err) {
+      alert(err.response?.data?.message || "Return failed");
+    }
   };
 
   return (
@@ -33,11 +49,12 @@ export default function MemberDashboard() {
         {leads.map((lead) => (
           <div
             key={lead._id}
-            className="lead-card"
+            className={`lead-card status-${lead.status.toLowerCase().replace(" ", "_")}`}
             onClick={() => setSelectedLead(lead)}
           >
             <h3>{lead.name}</h3>
             <p>{lead.email}</p>
+            <p>{lead.phone}</p>
 
             {lead.assignedTo === "POND" && (
               <span className="badge pond">POND</span>
@@ -45,15 +62,11 @@ export default function MemberDashboard() {
 
             <div className="actions" onClick={(e) => e.stopPropagation()}>
               {lead.assignedTo === "POND" && (
-                <button onClick={() => claimLead(lead._id)}>
-                  Claim Lead
-                </button>
+                <button onClick={() => claimLead(lead._id)}>Claim Lead</button>
               )}
 
-              {lead.assignedTo !== "POND" && (
-                <button onClick={() => returnToPond(lead._id)}>
-                  Return to Pond
-                </button>
+              {lead.assignedTo !== "POND" && lead.assignedTo !== "teamAdmin" && (
+                <button onClick={() => returnToPond(lead._id)}>Return to Pond</button>
               )}
             </div>
           </div>
@@ -64,8 +77,22 @@ export default function MemberDashboard() {
         <div className="modal-overlay" onClick={() => setSelectedLead(null)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>{selectedLead.name}</h3>
+            <p>Email: {selectedLead.email}</p>
+            <p>Phone: {selectedLead.phone}</p>
             <p>Status: {selectedLead.status}</p>
-            <button onClick={() => setSelectedLead(null)}>Close</button>
+
+            <div className="actions" onClick={(e) => e.stopPropagation()}>
+              {selectedLead.assignedTo === "POND" && (
+                <button onClick={() => claimLead(selectedLead._id)}>Claim Lead</button>
+              )}
+              {selectedLead.assignedTo !== "POND" && (
+                <button onClick={() => returnToPond(selectedLead._id)}>Return to Pond</button>
+              )}
+            </div>
+
+            <button className="close-btn" onClick={() => setSelectedLead(null)}>
+              Close
+            </button>
           </div>
         </div>
       )}
