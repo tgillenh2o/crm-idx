@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./LeadCard.css";
 
-export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail }) {
+export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail, isAdmin, users = [] }) {
   const [status, setStatus] = useState(lead.status);
   const [interactionType, setInteractionType] = useState("call");
   const [interactionNote, setInteractionNote] = useState("");
@@ -9,6 +9,7 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail }) 
   const STATUS_OPTIONS = ["New", "Contacted", "Follow-up", "Under Contract", "Closed"];
   const INTERACTION_OPTIONS = ["call", "email", "meeting", "note"];
 
+  // Update lead status
   const saveStatus = async newStatus => {
     setStatus(newStatus);
     try {
@@ -28,9 +29,10 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail }) 
     }
   };
 
+  // Add interaction
   const addInteraction = async e => {
     e.preventDefault();
-    if (!interactionType) return alert("Please select type");
+    if (!interactionType) return alert("Please select a type");
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`, {
@@ -44,10 +46,30 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail }) 
       const data = await res.json();
       if (!res.ok) console.error("Interaction error:", data);
       else onUpdate({ ...lead, interactions: data.interactions });
+
       setInteractionNote("");
       setInteractionType("call");
     } catch (err) {
       console.error("Interaction error:", err);
+    }
+  };
+
+  // Admin reassignment
+  const reassignLead = async newAssignee => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/reassign`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ assignedTo: newAssignee }),
+      });
+      const updated = await res.json();
+      if (!res.ok) console.error("Reassign error:", updated);
+      else onUpdate(updated);
+    } catch (err) {
+      console.error("Reassign error:", err);
     }
   };
 
@@ -58,13 +80,15 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail }) 
         <p><strong>Email:</strong> {lead.email}</p>
         <p><strong>Phone:</strong> {lead.phone}</p>
 
+        {/* Status */}
         <label>Status</label>
         <select value={status} onChange={e => saveStatus(e.target.value)}>
           {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
         </select>
 
+        {/* Interaction Form */}
         <form className="interaction-form" onSubmit={addInteraction}>
-          <label>New Interaction:</label>
+          <label>Add Interaction:</label>
           <select value={interactionType} onChange={e => setInteractionType(e.target.value)}>
             {INTERACTION_OPTIONS.map(t => <option key={t}>{t}</option>)}
           </select>
@@ -77,6 +101,7 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail }) 
           <button type="submit">Add</button>
         </form>
 
+        {/* Interaction History */}
         <div className="interaction-history">
           {lead.interactions?.map((i, idx) => (
             <div key={idx} className="interaction-item">
@@ -84,6 +109,24 @@ export default function LeadCard({ lead, onUpdate, onClose, currentUserEmail }) 
             </div>
           ))}
         </div>
+
+        {/* Admin Reassign */}
+        {isAdmin && (
+          <div style={{ marginTop: "12px" }}>
+            <label>Reassign Lead:</label>
+            <select
+              value={lead.assignedTo || "POND"}
+              onChange={e => reassignLead(e.target.value)}
+            >
+              <option value="POND">POND</option>
+              {users.map(u => (
+                <option key={u.email} value={u.email}>
+                  {u.name} ({u.email})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <button onClick={onClose}>Close</button>
       </div>

@@ -98,4 +98,23 @@ router.post("/:id/interactions", verifyToken, async (req, res) => {
   }
 });
 
+// ADMIN REASSIGN LEAD
+router.patch("/:id/reassign", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const { assignedTo } = req.body; // expects a user email
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+    // Assign to provided user email or default to POND
+    lead.assignedTo = assignedTo?.trim() || "POND";
+
+    await lead.save();
+    res.json(lead);
+  } catch (err) {
+    console.error("REASSIGN lead error:", err.message, err.errors);
+    res.status(500).json({ message: "Server error", errors: err.errors });
+  }
+});
+
+
 module.exports = router;

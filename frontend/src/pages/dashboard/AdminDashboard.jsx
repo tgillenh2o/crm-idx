@@ -35,9 +35,7 @@ export default function AdminDashboard() {
   };
 
   const updateLead = updatedLead => {
-    setLeads(prev =>
-      prev.map(l => (l._id === updatedLead._id ? updatedLead : l))
-    );
+    setLeads(prev => prev.map(l => (l._id === updatedLead._id ? updatedLead : l)));
     setSelectedLead(updatedLead);
   };
 
@@ -50,7 +48,7 @@ export default function AdminDashboard() {
       {list.map(lead => (
         <div
           key={lead._id}
-          className={`lead-row status-${lead.status.toLowerCase()}`}
+          className={`lead-row status-${lead.status.replace(" ", "_").toLowerCase()}`}
           onClick={() => setSelectedLead(lead)}
         >
           <span className="lead-name">{lead.name}</span>
@@ -64,12 +62,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="dashboard">
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        isAdmin
-      />
-
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin />
       <div className="main-panel">
         <Topbar />
 
@@ -77,10 +70,7 @@ export default function AdminDashboard() {
 
         {activeTab === "all-leads" && (
           <>
-            <button
-              className="add-lead-btn"
-              onClick={() => setShowAddLead(prev => !prev)}
-            >
+            <button className="add-lead-btn" onClick={() => setShowAddLead(prev => !prev)}>
               {showAddLead ? "Close Lead Form" : "+ Add Lead"}
             </button>
 
@@ -117,11 +107,11 @@ export default function AdminDashboard() {
       {selectedLead && (
         <LeadCard
           lead={selectedLead}
-          isAdmin
-          users={users}
-          currentUserEmail={user.email}
           onUpdate={updateLead}
           onClose={() => setSelectedLead(null)}
+          currentUserEmail={user.email}
+          isAdmin={user.role === "teamAdmin"}
+          users={users}
         />
       )}
     </div>
