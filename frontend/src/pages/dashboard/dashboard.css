@@ -1,198 +1,12 @@
-/* ================== DASHBOARD LAYOUT ================== */
-.dashboard {
-  display: flex;
-  height: 100vh;
-  font-family: "Inter", sans-serif;
-  background-color: #1e1e2f; /* dark dashboard background */
-  color: #f5f5f5;
-}
-
+/* Dark background */
 .dashboard .main-panel {
-  flex: 1;
-  padding: 24px;
-  overflow-y: auto;
+  background-color: #121226;
+  color: #fff;
+  min-height: 100vh;
+  padding: 20px;
 }
 
-.dashboard.sidebar-collapsed .main-panel {
-  margin-left: 80px;
-}
-
-.dashboard h3 {
-  margin-bottom: 16px;
-  font-weight: 600;
-  color: #e0e0e0;
-}
-
-/* ================== LEADS GRID ================== */
-.dashboard .leads-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-}
-
-/* ================== LEAD CARD ================== */
-.dashboard .lead-card {
-  border-radius: 10px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-  transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
-  color: #f5f5f5;
-  position: relative;
-  cursor: default;
-}
-
-.dashboard .lead-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.7);
-}
-
-/* STATUS BACKGROUNDS */
-.dashboard .lead-card.status-new { background-color: #2a2a3f; }
-.dashboard .lead-card.status-contacted { background-color: #2a3f3f; }
-.dashboard .lead-card.status-follow-up { background-color: #3f2a2a; }
-.dashboard .lead-card.status-closed { background-color: #33333d; }
-
-/* FLASH EFFECT */
-.dashboard .lead-card.flash {
-  animation: flash-bg 0.5s ease-in-out;
-}
-
-@keyframes flash-bg {
-  0% { box-shadow: 0 0 0 rgba(0,0,0,0); }
-  50% { box-shadow: 0 0 10px #64b5f6; }
-  100% { box-shadow: 0 0 0 rgba(0,0,0,0); }
-}
-
-/* ================== BUTTONS ================== */
-.dashboard button {
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-/* Claim / Return / Delete */
-.dashboard .claim-button {
-  background-color: #64b5f6;
-  color: white;
-  margin-top: 8px;
-}
-.dashboard .claim-button:hover { background-color: #42a5f5; }
-
-.dashboard .return-button {
-  background-color: #ffa726;
-  color: white;
-  margin-top: 8px;
-}
-.dashboard .return-button:hover { background-color: #fb8c00; }
-
-.dashboard .delete-button {
-  background-color: #f44336;
-  color: white;
-  margin-top: 8px;
-}
-.dashboard .delete-button:hover { background-color: #d32f2f; }
-
-/* ================== INTERACTION FORM (RESPONSIVE) ================== */
-.dashboard .interaction-form {
-  display: flex;
-  flex-wrap: wrap;       /* allow wrapping on narrow cards */
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.dashboard .interaction-form input,
-.dashboard .interaction-form select {
-  flex: 1 1 150px;      /* grow/shrink, min 150px */
-  min-width: 0;         /* prevent overflow */
-  padding: 6px 8px;
-  border: 1px solid #555;
-  border-radius: 4px;
-  background-color: #3a3a55;
-  color: #f5f5f5;
-}
-
-.dashboard .interaction-form button {
-  flex: 0 0 auto;       /* button keeps natural width */
-  margin-top: 0;
-}
-
-/* Stack on very small cards */
-@media (max-width: 300px) {
-  .dashboard .interaction-form input,
-  .dashboard .interaction-form select,
-  .dashboard .interaction-form button {
-    flex: 1 1 100%;
-  }
-}
-
-/* ================== INTERACTIONS HISTORY ================== */
-.dashboard .interaction-history {
-  margin-top: 12px;
-  font-size: 0.85rem;
-  max-height: 180px;
-  overflow-y: auto;
-}
-
-.dashboard .interaction-item {
-  padding: 6px 0;
-  border-bottom: 1px solid #444;
-}
-
-/* ================== ADD LEAD BUTTON & FORM ================== */
-.dashboard .add-lead-button {
-  background-color: #64b5f6;
-  color: white;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-.dashboard .add-lead-button:hover {
-  background-color: #42a5f5;
-}
-
-.dashboard .add-lead-form-container {
-  background-color: #2a2a3f;
-  padding: 16px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-  margin-bottom: 16px;
-}
-
-.dashboard .add-lead-form-container input,
-.dashboard .add-lead-form-container select {
-  width: 100%;
-  padding: 8px 10px;
-  margin-bottom: 10px;
-  border-radius: 6px;
-  border: 1px solid #555;
-  background-color: #3a3a55;
-  color: #f5f5f5;
-}
-
-.dashboard .cancel-button {
-  background-color: #f44336;
-  color: white;
-  padding: 6px 12px;
-  margin-top: 6px;
-}
-.dashboard .cancel-button:hover {
-  background-color: #d32f2f;
-}
-
-.lead-list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-/* Each lead row as a styled clickable card */
+/* Lead List Cards */
 .lead-list {
   display: flex;
   flex-direction: column;
@@ -200,32 +14,107 @@
   margin-top: 16px;
 }
 
-/* Each lead row as a card */
 .lead-row {
   display: grid;
-  grid-template-columns: 2fr 2fr 2fr 2fr 1fr; /* Name, Email, Phone, Assigned, Status */
+  grid-template-columns: 2fr 2fr 2fr 2fr 1fr;
   align-items: center;
   padding: 14px 18px;
-  background-color: #1f1f2e; /* Slightly lighter than dashboard bg */
   border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
   cursor: pointer;
   transition: background 0.2s, transform 0.1s;
   color: #fff;
 }
 
 .lead-row:hover {
-  background-color: #2c2c44;
   transform: translateY(-2px);
+  filter: brightness(1.1);
 }
 
-.lead-name {
-  font-weight: bold;
-}
+/* Status backgrounds */
+.status-new { background-color: #4a90e2; }
+.status-contacted { background-color: #f5a623; }
+.status-follow-up { background-color: #50e3c2; }
+.status-closed { background-color: #d0021b; }
 
-.lead-list span {
+.lead-row span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  padding-right: 8px;
+  font-size: 0.95rem;
 }
 
+/* Modal */
+.lead-card-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.lead-card-modal {
+  background-color: #1f1f2f;
+  padding: 20px;
+  border-radius: 12px;
+  width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #d0021b;
+  color: #fff;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+/* Interaction */
+.interaction-form {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.interaction-form input {
+  flex: 1;
+  padding: 6px;
+  border-radius: 4px;
+  border: none;
+}
+
+.interaction-form select {
+  padding: 6px;
+  border-radius: 4px;
+  border: none;
+}
+
+.interaction-form button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  background-color: #4a90e2;
+  color: #fff;
+  cursor: pointer;
+}
+
+.interaction-history {
+  margin-top: 10px;
+}
+
+.interaction-item {
+  padding: 6px 0;
+  border-bottom: 1px solid #333;
+}
