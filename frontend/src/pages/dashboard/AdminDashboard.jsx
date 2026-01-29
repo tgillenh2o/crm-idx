@@ -35,8 +35,39 @@ export default function AdminDashboard() {
   };
 
   const updateLead = (updatedLead) => {
-    setLeads((prev) => prev.map((l) => (l._id === updatedLead._id ? updatedLead : l)));
+    setLeads((prev) =>
+      prev.map((l) => (l._id === updatedLead._id ? updatedLead : l))
+    );
     setSelectedLead(updatedLead);
+  };
+
+  const claimLead = async (id) => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${id}/claim`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      fetchLeads();
+    } catch (err) {
+      console.error("Claim failed:", err);
+    }
+  };
+
+  const returnToPond = async (id) => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${id}/return`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      fetchLeads();
+    } catch (err) {
+      console.error("Return failed:", err);
+    }
+  };
+
+  const addInteraction = (interactions) => {
+    if (!selectedLead) return;
+    setSelectedLead({ ...selectedLead, interactions });
   };
 
   const allLeads = leads;
@@ -48,7 +79,7 @@ export default function AdminDashboard() {
       {list.map((lead) => (
         <div
           key={lead._id}
-          className={`lead-row status-${lead.status.toLowerCase().replace(/\s/g, "_")}`}
+          className={`lead-row status-${lead.status.toLowerCase().replace(" ", "_")}`}
           onClick={() => setSelectedLead(lead)}
         >
           <span className="lead-name">{lead.name}</span>
@@ -63,34 +94,43 @@ export default function AdminDashboard() {
   return (
     <div className="dashboard">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin />
+
       <div className="main-panel">
         <Topbar />
+
         {activeTab === "profile" && <Profile user={user} />}
+
         {activeTab === "all-leads" && (
           <>
-            <button className="add-lead-btn" onClick={() => setShowAddLead((prev) => !prev)}>
+            <button
+              className="add-lead-btn"
+              onClick={() => setShowAddLead((prev) => !prev)}
+            >
               {showAddLead ? "Close Lead Form" : "+ Add Lead"}
             </button>
+
             {showAddLead && (
               <AddLead
                 isAdmin
-                users={users}
                 onLeadAdded={(lead) => {
                   setLeads([lead, ...leads]);
                   setShowAddLead(false);
                 }}
               />
             )}
+
             <h3>All Leads</h3>
             {renderList(allLeads)}
           </>
         )}
+
         {activeTab === "lead-pond" && (
           <>
             <h3>Lead Pond</h3>
             {renderList(leadPond)}
           </>
         )}
+
         {activeTab === "my-leads" && (
           <>
             <h3>My Leads</h3>
@@ -105,8 +145,12 @@ export default function AdminDashboard() {
           isAdmin
           users={users}
           currentUserEmail={user.email}
+          showReassign={true}
           onUpdate={updateLead}
           onClose={() => setSelectedLead(null)}
+          claimLead={claimLead}
+          returnToPond={returnToPond}
+          addInteraction={addInteraction}
         />
       )}
     </div>
