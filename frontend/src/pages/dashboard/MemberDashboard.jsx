@@ -11,6 +11,7 @@ export default function MemberDashboard() {
   const [leads, setLeads] = useState([]);
   const [activeTab, setActiveTab] = useState("lead-pond");
   const [selectedLead, setSelectedLead] = useState(null);
+  const [showAddLead, setShowAddLead] = useState(false);
 
   useEffect(() => {
     fetchLeads();
@@ -18,7 +19,9 @@ export default function MemberDashboard() {
 
   const fetchLeads = async () => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     });
     const data = await res.json();
     setLeads(Array.isArray(data) ? data : []);
@@ -68,7 +71,22 @@ export default function MemberDashboard() {
 
         {activeTab === "lead-pond" && (
           <>
-            <AddLead onLeadAdded={l => setLeads([l, ...leads])} />
+            <button
+              className="add-lead-btn"
+              onClick={() => setShowAddLead(prev => !prev)}
+            >
+              {showAddLead ? "Close Lead Form" : "+ Add Lead"}
+            </button>
+
+            {showAddLead && (
+              <AddLead
+                onLeadAdded={lead => {
+                  setLeads([lead, ...leads]);
+                  setShowAddLead(false);
+                }}
+              />
+            )}
+
             <h3>Lead Pond</h3>
             {renderLeadList(leadPond)}
           </>

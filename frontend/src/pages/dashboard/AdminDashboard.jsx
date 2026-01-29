@@ -12,6 +12,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState("all-leads");
   const [selectedLead, setSelectedLead] = useState(null);
+  const [showAddLead, setShowAddLead] = useState(false);
 
   useEffect(() => {
     fetchLeads();
@@ -20,7 +21,9 @@ export default function AdminDashboard() {
 
   const fetchLeads = async () => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     });
     const data = await res.json();
     setLeads(Array.isArray(data) ? data : []);
@@ -28,7 +31,9 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     });
     const data = await res.json();
     setUsers(Array.isArray(data) ? data : []);
@@ -79,7 +84,23 @@ export default function AdminDashboard() {
 
         {activeTab === "all-leads" && (
           <>
-            <AddLead onLeadAdded={l => setLeads([l, ...leads])} isAdmin />
+            <button
+              className="add-lead-btn"
+              onClick={() => setShowAddLead(prev => !prev)}
+            >
+              {showAddLead ? "Close Lead Form" : "+ Add Lead"}
+            </button>
+
+            {showAddLead && (
+              <AddLead
+                isAdmin
+                onLeadAdded={lead => {
+                  setLeads([lead, ...leads]);
+                  setShowAddLead(false);
+                }}
+              />
+            )}
+
             <h3>All Leads</h3>
             {renderLeadList(allLeads)}
           </>
