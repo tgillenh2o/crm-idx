@@ -19,58 +19,71 @@ export default function MemberDashboard() {
   }, []);
 
   const fetchLeads = async () => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
-    const data = await res.json();
-    setLeads(data);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      const data = await res.json();
+      setLeads(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to fetch leads:", err);
+    }
   };
 
+  // Update lead in dashboard and modal
   const updateLead = updatedLead => {
-    setLeads(prev => prev.map(l => (l._id === updatedLead._id ? updatedLead : l)));
+    setLeads(prev =>
+      prev.map(l => (l._id === updatedLead._id ? updatedLead : l))
+    );
     setSelectedLead(updatedLead);
   };
 
-  const addLead = lead => {
-    // auto-assign new lead to current member
-    lead.assignedTo = user.email;
-    setLeads([lead, ...leads]);
-    setShowAddLead(false);
-  };
-
-  // Filters
   const myLeads = leads.filter(l => l.assignedTo === user.email);
+  const allLeads = leads;
   const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
 
-  const counts = {
-    "my-leads": myLeads.length,
-    "lead-pond": leadPond.length
-  };
-
+  // Render clickable lead rows
   const renderList = list => (
     <div className="lead-list">
-      {list.map(lead => (
-        <div
-          key={lead._id}
-          className={`lead-row status-${lead.status.toLowerCase().replace(" ", "-")}`}
-          onClick={() => setSelectedLead(lead)}
-        >
-          <span className="lead-name">{lead.name}</span>
-          <span>{lead.email}</span>
-          <span>{lead.assignedTo || "POND"}</span>
-          <span>{lead.status}</span>
-        </div>
-      ))}
+      {list.map(lead => {
+        const statusClass = lead.status ? lead.status.toLowerCase().replace(" ", "-") : "new";
+        return (
+          <div
+            key={lead._id}
+            className={`lead-row status-${statusClass}`}
+            onClick={() => setSelectedLead(lead)}
+          >
+            <span className="lead-name">{lead.name}</span>
+            <span>{lead.email}</span>
+            <span>{lead.assignedTo || "POND"}</span>
+            <span>{lead.status}</span>
+          </div>
+        );
+      })}
     </div>
   );
 
   return (
     <div className="dashboard">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} counts={counts} />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="main-panel">
         <Topbar />
 
         {activeTab === "profile" && <Profile user={user} />}
+
+        {activeTab === "all-leads" && (
+          <>
+            <h3>All Leads</h3>
+            {renderList(allLeads)}
+          </>
+        )}
+
+        {activeTab === "lead-pond" && (
+          <>
+            <h3>Lead Pond</h3>
+            {renderList(leadPond)}
+          </>
+        )}
 
         {activeTab === "my-leads" && (
           <>
@@ -81,17 +94,19 @@ export default function MemberDashboard() {
               {showAddLead ? "Close Lead Form" : "+ Add Lead"}
             </button>
 
-            {showAddLead && <AddLead onLeadAdded={addLead} />}
+            {showAddLead && (
+              <AddLead
+                onLeadAdded={lead => {
+                  // Auto-assign to current member
+                  const assignedLead = { ...lead, assignedTo: user.email, status: "New" };
+                  setLeads([assignedLead, ...leads]);
+                  setShowAddLead(false);
+                }}
+              />
+            )}
 
             <h3>My Leads</h3>
             {renderList(myLeads)}
-          </>
-        )}
-
-        {activeTab === "lead-pond" && (
-          <>
-            <h3>Lead Pond</h3>
-            {renderList(leadPond)}
           </>
         )}
       </div>
@@ -100,7 +115,7 @@ export default function MemberDashboard() {
         <LeadCard
           lead={selectedLead}
           isAdmin={false}
-          users={[]} // members can't reassign
+          users={[]} // members don't reassign
           currentUserEmail={user.email}
           onUpdate={updateLead}
           onClose={() => setSelectedLead(null)}
