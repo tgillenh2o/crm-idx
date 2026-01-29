@@ -73,6 +73,24 @@ export default function LeadCard({
         )}
 
         <button onClick={onClose}>Close</button>
+{/* Interaction History */}
+<div className="interaction-history">
+  <h4>Interactions</h4>
+
+  {lead.interactions && lead.interactions.length > 0 ? (
+    lead.interactions.map((interaction, index) => (
+      <div key={index} className="interaction-item">
+        <strong>{interaction.type}</strong>: {interaction.note}
+        <div style={{ fontSize: "12px", opacity: 0.7 }}>
+          {new Date(interaction.date).toLocaleString()}
+        </div>
+      </div>
+    ))
+  ) : (
+    <p style={{ opacity: 0.6 }}>No interactions yet</p>
+  )}
+</div>
+
       </div>
     </div>
   );
