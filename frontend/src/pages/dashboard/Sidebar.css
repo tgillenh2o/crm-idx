@@ -1,53 +1,54 @@
-/* Sidebar container */
 .sidebar {
-  width: 200px;
-  background-color: #1e1e2f; /* dark theme */
-  color: #ffffff;
+  width: 220px;
+  background-color: #1e1e2f;
+  color: #fff;
   display: flex;
   flex-direction: column;
+  height: 100vh;
   padding: 16px 0;
-  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.4);
-  user-select: none; /* prevents text selection on click */
 }
 
-/* Sidebar buttons / tabs */
-.sidebar-button {
-  background: none;
-  border: none;
-  color: inherit;
-  text-align: left;
-  padding: 12px 24px;
-  margin: 4px 0;
-  font-size: 16px;
-  cursor: pointer; /* ensures proper pointer cursor */
-  transition: background 0.2s, transform 0.2s;
-  border-radius: 8px;
+.sidebar-header {
+  text-align: center;
+  margin-bottom: 24px;
 }
 
-.sidebar-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  transform: translateX(4px);
+.sidebar-header h2 {
+  font-size: 1.5rem;
+  color: #fff;
+  margin: 0;
 }
 
-.sidebar-button.active {
-  background-color: rgba(33, 150, 243, 0.3);
+.sidebar-tabs {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+}
+
+.sidebar-tab {
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-tab:hover {
+  background-color: #2a2a3d;
+}
+
+.sidebar-tab.active {
+  background-color: #4caf50;
+  color: #fff;
   font-weight: bold;
 }
 
-/* Optional icons if you have them */
-.sidebar-button i {
-  margin-right: 8px;
-  pointer-events: none; /* ensures icon doesn’t block click */
-}
-
-/* Fix for nested text elements inside buttons */
-.sidebar-button span,
-.sidebar-button div {
-  cursor: pointer;
-}
-
-/* Scrollable sidebar if too long */
-.sidebar .sidebar-scroll {
-  overflow-y: auto;
-  flex-grow: 1;
+.tab-count {
+  background-color: #fff;
+  color: #4caf50;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.8rem;
 }

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import "./LeadCard.css";
 
 export default function LeadCard({ lead, isAdmin, users, currentUserEmail, onUpdate, onClose }) {
-  // Defensive defaults to prevent crashes
   const [editableLead, setEditableLead] = useState({
     name: "",
     email: "",
@@ -15,6 +14,7 @@ export default function LeadCard({ lead, isAdmin, users, currentUserEmail, onUpd
 
   const [editing, setEditing] = useState(false);
   const [flash, setFlash] = useState("");
+  const [newInteraction, setNewInteraction] = useState("");
 
   useEffect(() => {
     setEditableLead({
@@ -29,40 +29,57 @@ export default function LeadCard({ lead, isAdmin, users, currentUserEmail, onUpd
 
   const safeUsers = Array.isArray(users) ? users : [];
 
-  // Flash animation on update
   const triggerFlash = () => {
     setFlash(isAdmin ? "flash-admin" : "flash-member");
     setTimeout(() => setFlash(""), 800);
   };
 
-  // Field changes
   const handleChange = e => setEditableLead({ ...editableLead, [e.target.name]: e.target.value });
 
-  // Save edits
   const handleSave = () => {
     onUpdate(editableLead);
     setEditing(false);
     triggerFlash();
   };
 
-  // Member claim from pond
   const handleClaim = () => {
     const updated = { ...editableLead, assignedTo: currentUserEmail };
     onUpdate(updated);
+    setEditableLead(updated);
     triggerFlash();
   };
 
-  // Admin reassign
   const handleReassign = newEmail => {
     const updated = { ...editableLead, assignedTo: newEmail };
     onUpdate(updated);
+    setEditableLead(updated);
+    triggerFlash();
+  };
+
+  const handleAddInteraction = () => {
+    if (!newInteraction.trim()) return;
+
+    const interaction = {
+      note: newInteraction.trim(),
+      createdBy: currentUserEmail,
+      date: new Date().toISOString(),
+      type: "note"
+    };
+
+    const updated = {
+      ...editableLead,
+      interactions: [...editableLead.interactions, interaction]
+    };
+
+    onUpdate(updated);
+    setEditableLead(updated);
+    setNewInteraction("");
     triggerFlash();
   };
 
   const memberCanEdit = !isAdmin && editableLead.assignedTo === currentUserEmail;
   const statusClass = editableLead.status ? editableLead.status.toLowerCase().replace(" ", "-") : "new";
 
-  // Safe interaction renderer
   const renderNote = note => {
     if (typeof note === "string") return note;
     if (note.note) return note.note;
@@ -74,13 +91,10 @@ export default function LeadCard({ lead, isAdmin, users, currentUserEmail, onUpd
   return (
     <div className="lead-modal">
       <div className={`lead-card ${flash} status-${statusClass}`}>
-        {/* Close button */}
         <button className="close-button" onClick={onClose}>×</button>
 
-        {/* Lead name */}
         <h3>{editableLead.name}</h3>
 
-        {/* Editable form */}
         {(isAdmin || memberCanEdit) && editing ? (
           <div className="lead-edit-form">
             <label>Name: <input name="name" value={editableLead.name} onChange={handleChange} /></label>
@@ -109,12 +123,10 @@ export default function LeadCard({ lead, isAdmin, users, currentUserEmail, onUpd
             <p><strong>Status:</strong> {editableLead.status}</p>
             <p><strong>Assigned To:</strong> {editableLead.assignedTo || "POND"}</p>
 
-            {/* Member claim from pond */}
             {!isAdmin && (!editableLead.assignedTo || editableLead.assignedTo === "POND") && (
               <button className="claim-button" onClick={handleClaim}>Claim from Pond</button>
             )}
 
-            {/* Admin actions */}
             {isAdmin && (
               <div className="admin-actions">
                 <label>
@@ -133,14 +145,12 @@ export default function LeadCard({ lead, isAdmin, users, currentUserEmail, onUpd
               </div>
             )}
 
-            {/* Member edit button */}
             {memberCanEdit && !editing && (
               <button className="close-button" onClick={() => setEditing(true)}>Edit Lead</button>
             )}
           </div>
         )}
 
-        {/* Interaction history */}
         <div className="interaction-history">
           <h4>Interactions</h4>
           {editableLead.interactions.length > 0 ? (
@@ -152,6 +162,19 @@ export default function LeadCard({ lead, isAdmin, users, currentUserEmail, onUpd
           ) : (
             <p>No interactions yet.</p>
           )}
+
+          {/* Add new interaction */}
+          <div className="interaction-form">
+            <input
+              type="text"
+              placeholder="Add a note..."
+              value={newInteraction}
+              onChange={e => setNewInteraction(e.target.value)}
+            />
+            <button type="button" onClick={handleAddInteraction}>
+              Add
+            </button>
+          </div>
         </div>
       </div>
     </div>
