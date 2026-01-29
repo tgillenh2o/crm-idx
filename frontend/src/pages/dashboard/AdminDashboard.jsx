@@ -135,22 +135,23 @@ export default function AdminDashboard() {
             {loading ? (
               <p>Loading leads...</p>
             ) : (
-              <div className="lead-list">
-                {getLeadsForTab().length === 0 && <p>No leads to display.</p>}
-                {getLeadsForTab().map((lead) => (
-                  <div
-                    key={lead._id}
-                    className="lead-row"
-                    onClick={() => setSelectedLead(lead)}
-                  >
-                    <span className="lead-name">{lead.name}</span>
-                    <span>{lead.email}</span>
-                    <span>{lead.phone}</span>
-                    <span>{lead.assignedTo || "Unassigned"}</span>
-                    <span>{lead.status}</span>
-                  </div>
-                ))}
-              </div>
+          <div className="lead-list">
+  {getLeadsForTab().length === 0 && <p>No leads to display.</p>}
+  {getLeadsForTab().map((lead) => (
+    <div
+      key={lead._id}
+      className="lead-row"
+      onClick={() => setSelectedLead(lead)}
+    >
+      <span className="lead-name">{lead.name}</span>
+      <span>{lead.email}</span>
+      <span>{lead.phone}</span>
+      <span>{lead.assignedTo || "Unassigned"}</span>
+      <span>{lead.status}</span>
+    </div>
+  ))}
+</div>
+
             )}
           </>
         )}

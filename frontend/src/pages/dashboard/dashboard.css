@@ -184,3 +184,38 @@
 .dashboard .cancel-button:hover {
   background-color: #d32f2f;
 }
+
+.lead-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* Each lead row as a styled clickable card */
+.lead-row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 2fr 1fr; /* Name, Email, Phone, Assigned, Status */
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #1e1e2f;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: #fff; /* text visible on dark theme */
+}
+
+.lead-row:hover {
+  background-color: #2c2c44;
+}
+
+.lead-name {
+  font-weight: bold;
+}
+
+.lead-list span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
