@@ -126,6 +126,26 @@ export default function AdminDashboard() {
             </div>
           </>
         )}
+{/* All Leads */}
+{activeTab === "all-leads" && (
+  <>
+    <h3>All Leads</h3>
+    <div className="leads-grid">
+      {leads.map((l) => (
+        <LeadCard
+          key={l._id}
+          lead={l}
+          isAdmin={true}
+          currentUserEmail={user.email}
+          onAssign={handleAssign}
+          onDelete={handleDelete}
+          users={users}
+        />
+      ))}
+    </div>
+  </>
+)}
+
 
         {/* My Leads */}
         {activeTab === "my-leads" && (
