@@ -10,6 +10,8 @@ export default function LeadCard({
   currentUserEmail,
 }) {
   const [status, setStatus] = useState(lead.status);
+  const [interactionNote, setInteractionNote] = useState("");
+  const [interactionType, setInteractionType] = useState("note");
 
   // ================== UPDATE STATUS ==================
   const saveStatus = async (newStatus) => {
@@ -25,7 +27,6 @@ export default function LeadCard({
           body: JSON.stringify({ status: newStatus }),
         }
       );
-
       if (!res.ok) throw new Error("Status update failed");
       const updated = await res.json();
       onUpdate(updated);
@@ -40,14 +41,8 @@ export default function LeadCard({
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/return`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+        { method: "PATCH", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
-
       if (!res.ok) throw new Error("Return to pond failed");
       const updated = await res.json();
       onUpdate(updated);
@@ -62,20 +57,62 @@ export default function LeadCard({
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/claim`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+        { method: "PATCH", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
-
       if (!res.ok) throw new Error("Claim lead failed");
       const updated = await res.json();
       onUpdate(updated);
     } catch (err) {
       console.error("Claim error:", err);
       alert("Failed to claim lead");
+    }
+  };
+
+  // ================== ADD INTERACTION ==================
+  const addInteraction = async () => {
+    if (!interactionNote) return;
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ type: interactionType, note: interactionNote }),
+        }
+      );
+      if (!res.ok) throw new Error("Add interaction failed");
+      const data = await res.json();
+      onUpdate({ ...lead, interactions: data.interactions });
+      setInteractionNote("");
+    } catch (err) {
+      console.error("Add interaction error:", err);
+      alert("Failed to add interaction");
+    }
+  };
+
+  // ================== REASSIGN (ADMIN ONLY) ==================
+  const reassignLead = async (newUserEmail) => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/reassign`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ assignedTo: newUserEmail }),
+        }
+      );
+      if (!res.ok) throw new Error("Reassign failed");
+      const updated = await res.json();
+      onUpdate(updated);
+    } catch (err) {
+      console.error("Reassign error:", err);
+      alert("Failed to reassign lead");
     }
   };
 
@@ -87,6 +124,7 @@ export default function LeadCard({
         <p><strong>Email:</strong> {lead.email}</p>
         <p><strong>Phone:</strong> {lead.phone}</p>
 
+        {/* Status Selector */}
         <label>Status</label>
         <select
           value={status}
@@ -102,19 +140,67 @@ export default function LeadCard({
           <option>Closed</option>
         </select>
 
-        {/* Show RETURN button if lead is assigned to current user (member) */}
+        {/* CLAIM / RETURN BUTTONS */}
         {lead.assignedTo === currentUserEmail && (
           <button className="return-button" onClick={returnToPond}>
             Return to Lead Pond
           </button>
         )}
-
-        {/* Show CLAIM button if lead is in the pond */}
         {lead.assignedTo === "POND" && (
           <button className="claim-button" onClick={claimLead}>
             Claim Lead
           </button>
         )}
+
+        {/* ADMIN REASSIGN */}
+        {isAdmin && (
+          <div>
+            <label>Reassign Lead</label>
+            <select
+              value={lead.assignedTo}
+              onChange={(e) => reassignLead(e.target.value)}
+            >
+              <option value="POND">POND</option>
+              {users.map((u) => (
+                <option key={u.email} value={u.email}>
+                  {u.name} ({u.email})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* INTERACTIONS */}
+        <div className="interaction-form">
+          <label>Add Interaction</label>
+          <select
+            value={interactionType}
+            onChange={(e) => setInteractionType(e.target.value)}
+          >
+            <option value="note">Note</option>
+            <option value="call">Call</option>
+            <option value="email">Email</option>
+            <option value="meeting">Meeting</option>
+          </select>
+          <textarea
+            placeholder="Write a note..."
+            value={interactionNote}
+            onChange={(e) => setInteractionNote(e.target.value)}
+          />
+          <button onClick={addInteraction}>Add Interaction</button>
+        </div>
+
+        {/* Interaction history */}
+        <div className="interaction-history">
+          <h4>History</h4>
+          {lead.interactions?.map((i, idx) => (
+            <div key={idx} className="interaction-item">
+              <strong>{i.type}</strong> ({new Date(i.date).toLocaleString()})<br />
+              {i.note}<br />
+              <em>by {i.createdBy}</em>
+            </div>
+          ))}
+        </div>
 
         <button className="delete-button" onClick={onClose}>
           Close
