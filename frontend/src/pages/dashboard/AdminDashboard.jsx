@@ -3,7 +3,7 @@ import { AuthContext } from "../../context/AuthContext";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import LeadCard from "./LeadCard";
-import AddLeadWrapper from "./AddLeadWrapper";
+import AddLead from "./AddLead";
 import Profile from "./Profile";
 import "./Dashboard.css";
 
@@ -14,6 +14,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("lead-pond");
+  const [showAddLeadForm, setShowAddLeadForm] = useState(false);
 
   useEffect(() => {
     fetchLeads();
@@ -48,7 +49,9 @@ export default function AdminDashboard() {
   };
 
   const handleLeadUpdate = (updatedLead) => {
-    setLeads((prev) => prev.map((l) => (l._id === updatedLead._id ? updatedLead : l)));
+    setLeads((prev) =>
+      prev.map((l) => (l._id === updatedLead._id ? updatedLead : l))
+    );
   };
 
   const handleDelete = async (leadId) => {
@@ -78,13 +81,36 @@ export default function AdminDashboard() {
 
         {activeTab === "profile" && <Profile />}
 
+        {/* Lead Pond / All Leads */}
         {activeTab === "lead-pond" && (
           <>
-            <AddLeadWrapper
-              currentUser={user}
-              isAdmin={true}
-              onLeadAdded={(lead) => setLeads([lead, ...leads])}
-            />
+            {!showAddLeadForm && (
+              <button
+                className="add-lead-button"
+                onClick={() => setShowAddLeadForm(true)}
+              >
+                + Add Lead
+              </button>
+            )}
+
+            {showAddLeadForm && (
+              <div className="add-lead-form-container">
+                <AddLead
+                  currentUser={user}
+                  isAdmin={true}
+                  onLeadAdded={(lead) => {
+                    setLeads([lead, ...leads]);
+                    setShowAddLeadForm(false);
+                  }}
+                />
+                <button
+                  className="cancel-button"
+                  onClick={() => setShowAddLeadForm(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
 
             <h3>All Leads</h3>
             <div className="leads-grid">

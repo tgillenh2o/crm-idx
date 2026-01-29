@@ -3,7 +3,7 @@ import { AuthContext } from "../../context/AuthContext";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import LeadCard from "./LeadCard";
-import AddLeadWrapper from "./AddLeadWrapper";
+import AddLead from "./AddLead";
 import Profile from "./Profile";
 import "./Dashboard.css";
 
@@ -13,6 +13,7 @@ export default function MemberDashboard() {
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("lead-pond");
+  const [showAddLeadForm, setShowAddLeadForm] = useState(false);
 
   useEffect(() => {
     fetchLeads();
@@ -68,13 +69,36 @@ export default function MemberDashboard() {
 
         {activeTab === "profile" && <Profile />}
 
+        {/* Lead Pond */}
         {activeTab === "lead-pond" && (
           <>
-            <AddLeadWrapper
-              currentUser={user}
-              isAdmin={false}
-              onLeadAdded={handleLeadUpdate}
-            />
+            {!showAddLeadForm && (
+              <button
+                className="add-lead-button"
+                onClick={() => setShowAddLeadForm(true)}
+              >
+                + Add Lead
+              </button>
+            )}
+
+            {showAddLeadForm && (
+              <div className="add-lead-form-container">
+                <AddLead
+                  currentUser={user}
+                  isAdmin={false}
+                  onLeadAdded={(lead) => {
+                    handleLeadUpdate(lead);
+                    setShowAddLeadForm(false);
+                  }}
+                />
+                <button
+                  className="cancel-button"
+                  onClick={() => setShowAddLeadForm(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
 
             <h3>Lead Pond</h3>
             <div className="leads-grid">
@@ -91,6 +115,7 @@ export default function MemberDashboard() {
           </>
         )}
 
+        {/* My Leads */}
         {activeTab === "my-leads" && (
           <>
             <h3>My Leads</h3>
