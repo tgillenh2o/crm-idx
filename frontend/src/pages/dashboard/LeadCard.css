@@ -4,25 +4,24 @@
   border-radius: 12px;
   padding: 16px;
   margin: 8px;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: background-color 0.3s, transform 0.2s, border-left 0.3s;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  max-width: 400px;
+  border-left: 4px solid transparent; /* will be colored per status */
 }
 
-/* Status backgrounds */
-.lead-card.status-new { background-color: #e3f2fd; }
-.lead-card.status-contacted { background-color: #e0f7fa; }
-.lead-card.status-follow-up { background-color: #fff3e0; }
-.lead-card.status-under_contract { background-color: #90EE90; }
-.lead-card.status-closed { background-color: #f5f5f5; }
-
-/* Status backgrounds */
-.lead-card.status-new { background-color: #e3f2fd; }
-.lead-card.status-contacted { background-color: #e0f7fa; }
-.lead-card.status-follow-up { background-color: #fff3e0; }
-.lead-card.status-closed { background-color: #f5f5f5; }
+/* Status left border highlights */
+.lead-card.status-new { border-left-color: #4caf50; }          /* green */
+.lead-card.status-contacted { border-left-color: #2196f3; }   /* blue */
+.lead-card.status-follow-up { border-left-color: #ff9800; }   /* orange */
+.lead-card.status-under-contract { border-left-color: #9c27b0; } /* purple */
+.lead-card.status-closed { border-left-color: #f44336; }      /* red */
 
 /* Hover */
-.lead-card:hover { transform: translateY(-2px); }
+.lead-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+}
 
 /* Buttons */
 .claim-button { background-color: #4caf50; color:white; border:none; padding:8px 12px; margin:4px; border-radius:4px; cursor:pointer; transition: 0.2s; }
@@ -31,15 +30,46 @@
 .return-button:hover { transform: scale(1.05); background-color:#fb8c00; }
 .delete-button { background-color:#f44336; color:white; border:none; padding:8px 12px; margin:4px; border-radius:4px; cursor:pointer; transition:0.2s; }
 .delete-button:hover { transform: scale(1.05); background-color:#d32f2f; }
+.close-button { background-color:#333; color:white; border:none; padding:8px 12px; margin:4px; border-radius:4px; cursor:pointer; transition:0.2s; }
+.close-button:hover { background-color:#555; transform: scale(1.05); }
 
-/* Interaction */
-.interaction-form { margin-top:12px; }
-.interaction-form input, .interaction-form select { padding:6px; margin-right:4px; border-radius:4px; border:1px solid #ccc; }
-.interaction-history { margin-top:12px; font-size:14px; }
-.interaction-item { margin-bottom:6px; padding:4px; background-color: rgba(255,255,255,0.6); border-radius:4px; }
+/* Interaction form */
+.interaction-form { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
+.interaction-form input, .interaction-form select {
+  padding:6px;
+  border-radius:4px;
+  border:1px solid #555;
+  background-color: #2a2a3d;
+  color:#fff;
+}
+.interaction-form button {
+  background-color: #4caf50;
+  color: #fff;
+  border:none;
+  padding:8px 12px;
+  border-radius:4px;
+  cursor:pointer;
+}
+.interaction-form button:hover {
+  transform: scale(1.05);
+  background-color:#45a049;
+}
 
-/* Flash animations */
-/* Member: yellow flash */
+/* Interaction history */
+.interaction-history {
+  margin-top:12px;
+  font-size:14px;
+}
+.interaction-item {
+  margin-bottom:6px;
+  padding:6px;
+  background-color: #2a2a3d;
+  border-radius:4px;
+  font-size:14px;
+}
+.interaction-item strong { color: #4caf50; }
+
+/* Flash animations (optional) */
 @keyframes flashMember {
   0% { box-shadow: 0 0 10px 4px rgba(255, 235, 59, 0.7); transform: scale(1.02); }
   50% { box-shadow: 0 0 20px 6px rgba(255, 235, 59, 0.9); transform: scale(1.05); }
@@ -47,7 +77,6 @@
 }
 .flash-member { animation: flashMember 0.8s ease; }
 
-/* Admin: blue flash */
 @keyframes flashAdmin {
   0% { box-shadow: 0 0 10px 4px rgba(33, 150, 243, 0.7); transform: scale(1.02); }
   50% { box-shadow: 0 0 20px 6px rgba(33, 150, 243, 0.9); transform: scale(1.05); }
@@ -55,6 +84,7 @@
 }
 .flash-admin { animation: flashAdmin 0.8s ease; }
 
+/* Modal overlay */
 .lead-modal {
   position: fixed;
   inset: 0;
@@ -64,4 +94,3 @@
   align-items: center;
   justify-content: center;
 }
-
