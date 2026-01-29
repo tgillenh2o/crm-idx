@@ -6,7 +6,7 @@
   margin: 8px;
   transition: background-color 0.3s, transform 0.2s;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-}v
+}
 
 /* Status backgrounds */
 .lead-card.status-new { background-color: #e3f2fd; }
@@ -53,3 +53,14 @@
   100% { box-shadow: 0 0 10px 0 rgba(33, 150, 243, 0); transform: scale(1); }
 }
 .flash-admin { animation: flashAdmin 0.8s ease; }
+
+.lead-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
