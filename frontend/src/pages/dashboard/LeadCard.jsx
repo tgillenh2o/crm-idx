@@ -144,6 +144,8 @@ export default function LeadCard({
           Claim Lead
         </button>
       )}
+console.log("Lead assignedTo:", lead.assignedTo, "Current user:", currentUserEmail, "IsAdmin:", isAdmin);
+
 {/* MEMBER: Return lead to pond */}
 {!isAdmin && lead.assignedTo === currentUserEmail && (
   <button

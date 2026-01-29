@@ -14,6 +14,7 @@ export default function MemberDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("lead-pond");
 
+  // Fetch leads on mount
   useEffect(() => {
     fetchLeads();
   }, []);
@@ -35,26 +36,51 @@ export default function MemberDashboard() {
     }
   };
 
+  // CLAIM lead from pond
   const handleClaim = async (leadId) => {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ userId: user.email }),
-      }
-    );
-
-    const updatedLead = await res.json();
-    setLeads((prev) =>
-      prev.map((l) => (l._id === leadId ? updatedLead : l))
-    );
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ userId: user.email }),
+        }
+      );
+      const updatedLead = await res.json();
+      setLeads((prev) =>
+        prev.map((l) => (l._id === leadId ? updatedLead : l))
+      );
+    } catch (err) {
+      console.error("Failed to claim lead:", err);
+    }
   };
 
-  // Lead Pond = POND or UNASSIGNED
+  // RETURN lead to pond
+  const handleReturn = async (leadId) => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/leads/${leadId}/return`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      const updatedLead = await res.json();
+      setLeads((prev) =>
+        prev.map((l) => (l._id === leadId ? updatedLead : l))
+      );
+    } catch (err) {
+      console.error("Failed to return lead:", err);
+    }
+  };
+
+  // Leads in pond (unassigned)
   const leadPondLeads = leads.filter(
     (l) =>
       !l.assignedTo ||
@@ -62,10 +88,8 @@ export default function MemberDashboard() {
       l.assignedTo === "UNASSIGNED"
   );
 
-  // My Leads = assigned to logged-in member
-  const myLeads = leads.filter(
-    (l) => l.assignedTo === user.email
-  );
+  // My Leads (assigned to current user)
+  const myLeads = leads.filter((l) => l.assignedTo === user.email);
 
   return (
     <div className="dashboard">
@@ -95,15 +119,19 @@ export default function MemberDashboard() {
             <h3 style={{ color: "#64b5f6" }}>Lead Pond</h3>
 
             <div className="leads-grid">
-              {leadPondLeads.map((l) => (
-                <LeadCard
-                  key={l._id}
-                  lead={l}
-                  isLeadPond
-                  currentUserEmail={user.email}
-                  onAssign={handleClaim}
-                />
-              ))}
+              {leadPondLeads.length === 0 ? (
+                <p>No leads in the pond.</p>
+              ) : (
+                leadPondLeads.map((l) => (
+                  <LeadCard
+                    key={l._id}
+                    lead={l}
+                    isLeadPond
+                    currentUserEmail={user.email}
+                    onAssign={handleClaim}
+                  />
+                ))
+              )}
             </div>
           </>
         )}
@@ -113,9 +141,18 @@ export default function MemberDashboard() {
           <>
             <h3>My Leads</h3>
             <div className="leads-grid">
-              {myLeads.map((l) => (
-                <LeadCard key={l._id} lead={l} />
-              ))}
+              {myLeads.length === 0 ? (
+                <p>You have no leads assigned.</p>
+              ) : (
+                myLeads.map((l) => (
+                  <LeadCard
+                    key={l._id}
+                    lead={l}
+                    currentUserEmail={user.email}
+                    onAssign={handleReturn} // Allows returning to pond
+                  />
+                ))
+              )}
             </div>
           </>
         )}
