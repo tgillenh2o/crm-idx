@@ -1,37 +1,68 @@
 import React from "react";
+import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
-export default function Sidebar({ activeTab, setActiveTab, isAdmin, counts = {} }) {
-  const tabs = [
-    { id: "all-leads", label: "All Leads", adminOnly: false },
-    { id: "my-leads", label: "My Leads", adminOnly: false },
-    { id: "lead-pond", label: "Lead Pond", adminOnly: false },
-    { id: "profile", label: "Profile", adminOnly: false },
-    // Add more admin-only tabs here if needed
-  ];
-
+export default function Sidebar({ isAdmin }) {
   return (
-    <div className="sidebar">
+    <aside className="sidebar">
       <div className="sidebar-header">
-        <h2>At Home Team</h2>
+        <h2>CRM</h2>
       </div>
-      <ul className="sidebar-tabs">
-        {tabs.map(tab => {
-          if (tab.adminOnly && !isAdmin) return null;
 
-          const count = counts[tab.id] || 0;
+      <nav className="sidebar-nav">
+        <NavLink
+          to="/dashboard"
+          className={({ isActive }) =>
+            isActive ? "sidebar-link active" : "sidebar-link"
+          }
+        >
+          📊 Dashboard
+        </NavLink>
 
-          return (
-            <li
-              key={tab.id}
-              className={`sidebar-tab ${activeTab === tab.id ? "active" : ""}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label} {count > 0 && <span className="tab-count">{count}</span>}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
+        <NavLink
+          to="/leads"
+          className={({ isActive }) =>
+            isActive ? "sidebar-link active" : "sidebar-link"
+          }
+        >
+          📋 My Leads
+        </NavLink>
+
+        <NavLink
+          to="/pond"
+          className={({ isActive }) =>
+            isActive ? "sidebar-link active" : "sidebar-link"
+          }
+        >
+          🐟 Lead Pond
+        </NavLink>
+
+        {isAdmin && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) =>
+              isActive ? "sidebar-link active" : "sidebar-link"
+            }
+          >
+            🛠 Admin
+          </NavLink>
+        )}
+      </nav>
+
+      <div className="sidebar-footer">
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            isActive ? "sidebar-link active" : "sidebar-link"
+          }
+        >
+          ⚙️ Settings
+        </NavLink>
+
+        <NavLink to="/logout" className="sidebar-link logout">
+          🚪 Logout
+        </NavLink>
+      </div>
+    </aside>
   );
 }
