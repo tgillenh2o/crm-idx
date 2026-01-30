@@ -79,9 +79,24 @@ export default function AdminDashboard() {
     return list;
   }, [leads, filterStatus, filterAgent]);
 
+  const myLeads = useMemo(
+    () => leads.filter(l => l.assignedTo === user.email),
+    [leads, user.email]
+  );
+
+  const filteredMyLeads = useMemo(
+    () => (filterStatus ? myLeads.filter(l => l.status === filterStatus) : myLeads),
+    [myLeads, filterStatus]
+  );
+
   const leadPond = useMemo(
     () => leads.filter(l => !l.assignedTo || l.assignedTo === "POND"),
     [leads]
+  );
+
+  const filteredLeadPond = useMemo(
+    () => (filterStatus ? leadPond.filter(l => l.status === filterStatus) : leadPond),
+    [leadPond, filterStatus]
   );
 
   /* ================= AGENT STATS ================= */
@@ -178,8 +193,39 @@ export default function AdminDashboard() {
               ))}
             </div>
 
+            {/* MY LEADS FOR ADMIN */}
             <h3>My Leads</h3>
-            {renderList(leads.filter(l => l.assignedTo === user.email))}
+            <div className="status-filter">
+              <label>Filter by Status: </label>
+              <select
+                value={filterStatus}
+                onChange={e => setFilterStatus(e.target.value)}
+              >
+                <option value="">All</option>
+                {Object.keys(STATUS_COLORS).map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+              {filterStatus && <button onClick={() => setFilterStatus("")}>Clear</button>}
+            </div>
+            {renderList(filteredMyLeads)}
+
+            {/* POND FILTER */}
+            <h3>Lead Pond</h3>
+            <div className="status-filter">
+              <label>Filter by Status: </label>
+              <select
+                value={filterStatus}
+                onChange={e => setFilterStatus(e.target.value)}
+              >
+                <option value="">All</option>
+                {Object.keys(STATUS_COLORS).map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+              {filterStatus && <button onClick={() => setFilterStatus("")}>Clear</button>}
+            </div>
+            {renderList(filteredLeadPond)}
           </>
         )}
 
@@ -206,9 +252,6 @@ export default function AdminDashboard() {
             {renderList(filteredLeads)}
           </>
         )}
-
-        {/* LEAD POND */}
-        {activeTab === "lead-pond" && renderList(leadPond)}
 
         {/* PROFILE */}
         {activeTab === "profile" && <Profile user={user} />}

@@ -30,7 +30,8 @@ export default function MemberDashboard() {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
-    setLeads(await res.json());
+    const data = await res.json();
+    setLeads(data);
   };
 
   const fetchUsers = async () => {
@@ -44,7 +45,7 @@ export default function MemberDashboard() {
   useEffect(() => {
     fetchLeads();
     fetchUsers();
-    const interval = setInterval(fetchLeads, 8000);
+    const interval = setInterval(fetchLeads, 8000); // refresh every 8s
     return () => clearInterval(interval);
   }, []);
 
@@ -74,15 +75,42 @@ export default function MemberDashboard() {
     () => leads.filter(l => l.assignedTo === user.email),
     [leads, user.email]
   );
-
   const leadPond = useMemo(
     () => leads.filter(l => !l.assignedTo || l.assignedTo === "POND"),
     [leads]
   );
 
-  const filteredLeads = useMemo(() => {
-    return filterStatus ? myLeads.filter(l => l.status === filterStatus) : myLeads;
-  }, [myLeads, filterStatus]);
+  const filteredMyLeads = useMemo(
+    () => (filterStatus ? myLeads.filter(l => l.status === filterStatus) : myLeads),
+    [myLeads, filterStatus]
+  );
+
+  const filteredLeadPond = useMemo(
+    () => (filterStatus ? leadPond.filter(l => l.status === filterStatus) : leadPond),
+    [leadPond, filterStatus]
+  );
+
+  /* ================= AGENT STATS (OPTIONAL FOR MEMBERS) ================= */
+  const agentStats = useMemo(() => {
+    const stats = {};
+    leads.forEach(l => {
+      const agent = l.assignedTo || "POND";
+      if (!stats[agent]) {
+        stats[agent] = {
+          total: 0,
+          New: 0,
+          Contacted: 0,
+          "Follow-Up": 0,
+          "Under Contract": 0,
+          Closed: 0,
+        };
+      }
+      stats[agent].total++;
+      const status = l.status || "New";
+      if (stats[agent][status] !== undefined) stats[agent][status]++;
+    });
+    return stats;
+  }, [leads]);
 
   /* ================= RENDER LEAD LIST ================= */
   const renderList = list => (
@@ -92,6 +120,7 @@ export default function MemberDashboard() {
           key={lead._id}
           className={`lead-row status-${(lead.status || "New").toLowerCase().replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
+          style={{ cursor: "pointer" }}
         >
           <span className="lead-name">{lead.name}</span>
           <span>{lead.email}</span>
@@ -118,54 +147,62 @@ export default function MemberDashboard() {
   return (
     <div className="dashboard">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={false} />
-
       <div className="main-panel">
         <Topbar />
 
-        {/* DASHBOARD */}
+        {/* DASHBOARD STATS */}
         {activeTab === "dashboard" && (
           <>
             <h2>My Dashboard</h2>
 
             <div className="stats-grid">
-              <StatCard title="Total Leads" value={myLeads.length} />
+              <StatCard title="My Leads" value={myLeads.length} />
               <StatCard title="Lead Pond" value={leadPond.length} />
               {Object.entries(STATUS_COLORS).map(([status, color]) => (
                 <StatCard
                   key={status}
                   title={status}
-                  value={myLeads.filter(l => l.status === status).length}
+                  value={leads.filter(l => l.status === status).length}
                   color={color}
                   onClick={() => setFilterStatus(status)}
                 />
               ))}
             </div>
+
+            <h3>My Leads</h3>
+            <div className="status-filter">
+              <label>Filter by Status: </label>
+              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                <option value="">All</option>
+                {Object.keys(STATUS_COLORS).map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+              {filterStatus && <button onClick={() => setFilterStatus("")}>Clear</button>}
+            </div>
+            {renderList(filteredMyLeads)}
+
+            <h3>Lead Pond</h3>
+            <div className="status-filter">
+              <label>Filter by Status: </label>
+              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                <option value="">All</option>
+                {Object.keys(STATUS_COLORS).map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+              {filterStatus && <button onClick={() => setFilterStatus("")}>Clear</button>}
+            </div>
+            {renderList(filteredLeadPond)}
           </>
         )}
 
-        {/* MY LEADS */}
+        {/* ADD NEW LEAD */}
         {activeTab === "my-leads" && (
           <>
-            <div className="my-leads-header">
-              <button className="add-lead-btn" onClick={() => setShowAddLead(p => !p)}>
-                {showAddLead ? "Close Lead Form" : "+ Add Lead"}
-              </button>
-
-              {/* STATUS FILTER */}
-              <div className="status-filter">
-                <label>Filter by Status: </label>
-                <select
-                  value={filterStatus}
-                  onChange={e => setFilterStatus(e.target.value)}
-                >
-                  <option value="">All</option>
-                  {Object.keys(STATUS_COLORS).map(status => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
-                </select>
-                {filterStatus && <button onClick={() => setFilterStatus("")}>Clear</button>}
-              </div>
-            </div>
+            <button className="add-lead-btn" onClick={() => setShowAddLead(p => !p)}>
+              {showAddLead ? "Close Lead Form" : "+ Add Lead"}
+            </button>
 
             {showAddLead && (
               <AddLead
@@ -178,12 +215,20 @@ export default function MemberDashboard() {
               />
             )}
 
-            {renderList(filteredLeads)}
+            <div className="status-filter">
+              <label>Filter by Status: </label>
+              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                <option value="">All</option>
+                {Object.keys(STATUS_COLORS).map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+              {filterStatus && <button onClick={() => setFilterStatus("")}>Clear</button>}
+            </div>
+
+            {renderList(filteredMyLeads)}
           </>
         )}
-
-        {/* LEAD POND */}
-        {activeTab === "lead-pond" && renderList(leadPond)}
 
         {/* PROFILE */}
         {activeTab === "profile" && <Profile user={user} />}
