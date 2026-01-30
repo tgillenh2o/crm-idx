@@ -160,6 +160,20 @@ export default function LeadCard({
             <p>
               <strong>Assigned To:</strong> {editableLead.assignedTo || "POND"}
             </p>
+   
+            {/* Return to Pond */}
+{(isAdmin || memberCanEdit) && editableLead.assignedTo && (
+  <button
+    className="return-button"
+    onClick={() => {
+      onUpdate({ ...editableLead, assignedTo: "" });
+      triggerFlash();
+    }}
+  >
+    Return to Pond
+  </button>
+)}
+
 
             {/* Claim for members */}
             {!isAdmin &&
