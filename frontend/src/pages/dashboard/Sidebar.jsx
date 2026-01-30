@@ -14,7 +14,7 @@ export default function Sidebar({ activeTab, setActiveTab, isAdmin }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <h2>CRM</h2>
+        <h2>AT Home Team/h2>
       </div>
 
       <nav className="sidebar-nav">
