@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
@@ -24,18 +24,17 @@ export default function AdminDashboard() {
   const [selectedLead, setSelectedLead] = useState(null);
   const [showAddLead, setShowAddLead] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
+  const [filterAgent, setFilterAgent] = useState("");
 
-  useEffect(() => {
-    fetchLeads();
-    fetchUsers();
-  }, []);
+  /* ================= FETCH ================= */
 
-  // ---------- API ----------
   const fetchLeads = async () => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
-    setLeads(await res.json());
+    const data = await res.json();
+    setLeads(data);
+    return data;
   };
 
   const fetchUsers = async () => {
@@ -44,6 +43,27 @@ export default function AdminDashboard() {
     });
     setUsers(await res.json());
   };
+
+  /* 🔁 POLLING */
+  useEffect(() => {
+    let alive = true;
+
+    const load = async () => {
+      if (!alive) return;
+      await fetchLeads();
+    };
+
+    load();
+    fetchUsers();
+    const interval = setInterval(load, 8000);
+
+    return () => {
+      alive = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  /* ================= ACTIONS ================= */
 
   const updateLead = updated => {
     setLeads(prev => prev.map(l => (l._id === updated._id ? updated : l)));
@@ -62,31 +82,60 @@ export default function AdminDashboard() {
         body: JSON.stringify({ assignedTo: user.email }),
       }
     );
-
     updateLead(await res.json());
   };
 
-  // ---------- Filters ----------
-  const myLeads = leads.filter(l => l.assignedTo === user.email);
+  /* ================= FILTERED LISTS ================= */
+
+  const filteredLeads = useMemo(() => {
+    let list = [...leads];
+    if (filterStatus) list = list.filter(l => l.status === filterStatus);
+    if (filterAgent) list = list.filter(l => l.assignedTo === filterAgent);
+    return list;
+  }, [leads, filterStatus, filterAgent]);
+
   const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
 
-  const allLeads = filterStatus
-    ? leads.filter(l => l.status === filterStatus)
-    : leads;
+  /* ================= AGENT STATS ================= */
 
-  // ---------- Render List ----------
+  const agentStats = useMemo(() => {
+    const stats = {};
+    leads.forEach(l => {
+      const agent = l.assignedTo || "POND";
+      if (!stats[agent]) {
+        stats[agent] = {
+          total: 0,
+          New: 0,
+          Contacted: 0,
+          "Follow-Up": 0,
+          "Under Contract": 0,
+          Closed: 0,
+        };
+      }
+      stats[agent].total++;
+      const status = l.status || "New";
+      if (stats[agent][status] !== undefined) stats[agent][status]++;
+    });
+    return stats;
+  }, [leads]);
+
+  /* ================= RENDER ================= */
+
   const renderList = list => (
     <div className="lead-list">
       {list.map(lead => (
         <div
           key={lead._id}
-          className="lead-row"
+          className={`lead-row status-${(lead.status || "New")
+            .toLowerCase()
+            .replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
+          style={{ cursor: "pointer" }}
         >
           <span className="lead-name">{lead.name}</span>
           <span>{lead.email}</span>
           <span>{lead.assignedTo || "POND"}</span>
-          <span>{lead.status || "New"}</span>
+          <span>{lead.status}</span>
 
           {!lead.assignedTo && (
             <button
@@ -106,38 +155,51 @@ export default function AdminDashboard() {
 
   return (
     <div className="dashboard">
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        isAdmin
-      />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin />
 
       <div className="main-panel">
         <Topbar />
 
+        {/* DASHBOARD */}
         {activeTab === "dashboard" && (
-          <DashboardStats
-            leads={leads}
-            users={users}
-            onFilter={setFilterStatus}
-            activeFilter={filterStatus}
-          />
-        )}
-
-        {activeTab === "my-leads" && (
           <>
+            <h2>Admin Dashboard</h2>
+
+            <div className="stats-grid">
+              <StatCard title="Total Leads" value={leads.length} />
+              <StatCard title="Pond" value={leadPond.length} />
+
+              {Object.entries(STATUS_COLORS).map(([status, color]) => (
+                <StatCard
+                  key={status}
+                  title={status}
+                  value={leads.filter(l => l.status === status).length}
+                  color={color}
+                  onClick={() => setFilterStatus(status)}
+                />
+              ))}
+            </div>
+
+            <h3>Agents</h3>
+            <div className="stats-grid">
+              {Object.entries(agentStats).map(([agent, s]) => (
+                <StatCard
+                  key={agent}
+                  title={agent === "POND" ? "Lead Pond" : agent}
+                  value={`${s.total} (${s.Closed} closed)`}
+                  onClick={() =>
+                    setFilterAgent(agent === "POND" ? "" : agent)
+                  }
+                />
+              ))}
+            </div>
+
             <h3>My Leads</h3>
-            {renderList(myLeads)}
+            {renderList(leads.filter(l => l.assignedTo === user.email))}
           </>
         )}
 
-        {activeTab === "lead-pond" && (
-          <>
-            <h3>Lead Pond</h3>
-            {renderList(leadPond)}
-          </>
-        )}
-
+        {/* ALL LEADS */}
         {activeTab === "all-leads" && (
           <>
             <button
@@ -151,17 +213,20 @@ export default function AdminDashboard() {
               <AddLead
                 isAdmin
                 onLeadAdded={lead => {
-                  setLeads([lead, ...leads]);
+                  setLeads(prev => [lead, ...prev]);
                   setShowAddLead(false);
                 }}
               />
             )}
 
-            <h3>All Leads</h3>
-            {renderList(allLeads)}
+            {renderList(filteredLeads)}
           </>
         )}
 
+        {/* LEAD POND */}
+        {activeTab === "lead-pond" && renderList(leadPond)}
+
+        {/* PROFILE */}
         {activeTab === "profile" && <Profile user={user} />}
       </div>
 
@@ -179,64 +244,16 @@ export default function AdminDashboard() {
   );
 }
 
-/* ================= DASHBOARD STATS ================= */
-
-function DashboardStats({ leads, users, onFilter, activeFilter }) {
-  const statusCounts = {
-    New: 0,
-    Contacted: 0,
-    "Follow-Up": 0,
-    "Under Contract": 0,
-    Closed: 0,
-  };
-
-  leads.forEach(l => {
-    const s = l.status || "New";
-    if (statusCounts[s] !== undefined) statusCounts[s]++;
-  });
-
-  // ----- Stats per agent -----
-  const agentStats = {};
-  leads.forEach(l => {
-    if (!l.assignedTo) return;
-    agentStats[l.assignedTo] = (agentStats[l.assignedTo] || 0) + 1;
-  });
-
+/* ================= SMALL STAT CARD ================= */
+function StatCard({ title, value, color, onClick }) {
   return (
-    <div className="dashboard-stats">
-      <h2>Admin Dashboard</h2>
-
-      <div className="stats-grid">
-        <div
-          className={`stat-card ${activeFilter === "" ? "active-filter" : ""}`}
-          onClick={() => onFilter("")}
-        >
-          <h3>Total Leads</h3>
-          <p>{leads.length}</p>
-        </div>
-
-        {Object.entries(statusCounts).map(([status, count]) => (
-          <div
-            key={status}
-            className={`stat-card ${activeFilter === status ? "active-filter" : ""}`}
-            style={{ borderTop: `4px solid ${STATUS_COLORS[status]}` }}
-            onClick={() => onFilter(status)}
-          >
-            <h3>{status}</h3>
-            <p>{count}</p>
-          </div>
-        ))}
-      </div>
-
-      <h3 style={{ marginTop: 30 }}>Leads Per Agent</h3>
-      <div className="stats-grid">
-        {Object.entries(agentStats).map(([email, count]) => (
-          <div key={email} className="stat-card">
-            <h4>{email}</h4>
-            <p>{count}</p>
-          </div>
-        ))}
-      </div>
+    <div
+      className="stat-card"
+      onClick={onClick}
+      style={{ borderTop: color ? `4px solid ${color}` : undefined }}
+    >
+      <h3>{title}</h3>
+      <p>{value}</p>
     </div>
   );
 }

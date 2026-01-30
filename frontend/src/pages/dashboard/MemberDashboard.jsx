@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
@@ -25,11 +25,7 @@ export default function MemberDashboard() {
   const [showAddLead, setShowAddLead] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
 
-  // ---------------- Fetch Data ----------------
-  useEffect(() => {
-    fetchLeads();
-    fetchUsers();
-  }, []);
+  /* ================= FETCH ================= */
 
   const fetchLeads = async () => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
@@ -45,15 +41,22 @@ export default function MemberDashboard() {
     setUsers(await res.json());
   };
 
-  // ---------------- State Sync ----------------
-  const updateLead = updatedLead => {
-    setLeads(prev =>
-      prev.map(l => (l._id === updatedLead._id ? updatedLead : l))
-    );
-    setSelectedLead(updatedLead);
+  /* 🔁 POLLING */
+  useEffect(() => {
+    fetchLeads();
+    fetchUsers();
+
+    const interval = setInterval(fetchLeads, 10000); // refresh every 10s
+    return () => clearInterval(interval);
+  }, []);
+
+  /* ================= ACTIONS ================= */
+
+  const updateLead = updated => {
+    setLeads(prev => prev.map(l => (l._id === updated._id ? updated : l)));
+    setSelectedLead(updated);
   };
 
-  // ---------------- Claim Lead (BACKEND SAFE) ----------------
   const claimLead = async lead => {
     const res = await fetch(
       `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/assign`,
@@ -66,20 +69,22 @@ export default function MemberDashboard() {
         body: JSON.stringify({ assignedTo: user.email }),
       }
     );
-
-    const updated = await res.json();
-    updateLead(updated);
+    updateLead(await res.json());
   };
 
-  // ---------------- Filters ----------------
+  /* ================= FILTERS ================= */
+
   const myLeads = leads.filter(l => l.assignedTo === user.email);
   const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
 
-  const filteredLeads = filterStatus
-    ? myLeads.filter(l => l.status === filterStatus)
-    : myLeads;
+  const filteredLeads = useMemo(() => {
+    let list = [...myLeads];
+    if (filterStatus) list = list.filter(l => l.status === filterStatus);
+    return list;
+  }, [myLeads, filterStatus]);
 
-  // ---------------- Render List ----------------
+  /* ================= RENDER ================= */
+
   const renderList = list => (
     <div className="lead-list">
       {list.map(lead => (
@@ -89,7 +94,6 @@ export default function MemberDashboard() {
             .toLowerCase()
             .replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
-          style={{ cursor: "pointer" }}
         >
           <span className="lead-name">{lead.name}</span>
           <span>{lead.email}</span>
@@ -112,33 +116,41 @@ export default function MemberDashboard() {
     </div>
   );
 
-  // ---------------- Render ----------------
   return (
     <div className="dashboard">
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        isAdmin={false}
-      />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={false} />
 
       <div className="main-panel">
         <Topbar />
 
+        {/* DASHBOARD */}
         {activeTab === "dashboard" && (
-          <DashboardStats
-            leads={myLeads}
-            onFilter={setFilterStatus}
-            activeFilter={filterStatus}
-          />
+          <>
+            <h2>My Dashboard</h2>
+
+            <div className="stats-grid">
+              <StatCard title="Total Leads" value={myLeads.length} />
+              <StatCard title="Pond" value={leadPond.length} />
+
+              {Object.entries(STATUS_COLORS).map(([status, color]) => (
+                <StatCard
+                  key={status}
+                  title={status}
+                  value={myLeads.filter(l => l.status === status).length}
+                  color={color}
+                  onClick={() => setFilterStatus(status)}
+                />
+              ))}
+            </div>
+          </>
         )}
 
-        {activeTab === "profile" && <Profile user={user} />}
-
+        {/* MY LEADS */}
         {activeTab === "my-leads" && (
           <>
             <button
               className="add-lead-btn"
-              onClick={() => setShowAddLead(prev => !prev)}
+              onClick={() => setShowAddLead(p => !p)}
             >
               {showAddLead ? "Close Lead Form" : "+ Add Lead"}
             </button>
@@ -147,24 +159,22 @@ export default function MemberDashboard() {
               <AddLead
                 isAdmin={false}
                 onLeadAdded={lead => {
-                  const assigned = { ...lead, assignedTo: user.email };
-                  setLeads([assigned, ...leads]);
+                  const newLead = { ...lead, assignedTo: user.email };
+                  setLeads(prev => [newLead, ...prev]);
                   setShowAddLead(false);
                 }}
               />
             )}
 
-            <h3>My Leads</h3>
             {renderList(filteredLeads)}
           </>
         )}
 
-        {activeTab === "lead-pond" && (
-          <>
-            <h3>Lead Pond</h3>
-            {renderList(leadPond)}
-          </>
-        )}
+        {/* LEAD POND */}
+        {activeTab === "lead-pond" && renderList(leadPond)}
+
+        {/* PROFILE */}
+        {activeTab === "profile" && <Profile user={user} />}
       </div>
 
       {selectedLead && (
@@ -181,48 +191,17 @@ export default function MemberDashboard() {
   );
 }
 
-// ---------------- Dashboard Stats ----------------
-function DashboardStats({ leads, onFilter, activeFilter }) {
-  const statusCounts = {
-    New: 0,
-    Contacted: 0,
-    "Follow-Up": 0,
-    "Under Contract": 0,
-    Closed: 0,
-  };
+/* ================= SMALL STAT CARD ================= */
 
-  leads.forEach(l => {
-    const status = l.status || "New";
-    if (statusCounts[status] !== undefined) statusCounts[status]++;
-  });
-
+function StatCard({ title, value, color, onClick }) {
   return (
-    <div className="dashboard-stats">
-      <h2>My Dashboard</h2>
-
-      <div className="stats-grid">
-        <div
-          className={`stat-card ${activeFilter === "" ? "active-filter" : ""}`}
-          onClick={() => onFilter("")}
-        >
-          <h3>Total Leads</h3>
-          <p>{leads.length}</p>
-        </div>
-
-        {Object.entries(statusCounts).map(([status, count]) => (
-          <div
-            key={status}
-            className={`stat-card ${
-              activeFilter === status ? "active-filter" : ""
-            }`}
-            style={{ borderTop: `4px solid ${STATUS_COLORS[status]}` }}
-            onClick={() => onFilter(status)}
-          >
-            <h3>{status}</h3>
-            <p>{count}</p>
-          </div>
-        ))}
-      </div>
+    <div
+      className="stat-card"
+      onClick={onClick}
+      style={{ borderTop: color ? `4px solid ${color}` : undefined }}
+    >
+      <h3>{title}</h3>
+      <p>{value}</p>
     </div>
   );
 }
