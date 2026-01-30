@@ -1,8 +1,16 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
-export default function Sidebar({ isAdmin }) {
+export default function Sidebar({ activeTab, setActiveTab, isAdmin }) {
+  const Item = ({ tab, label }) => (
+    <button
+      className={`sidebar-link ${activeTab === tab ? "active" : ""}`}
+      onClick={() => setActiveTab(tab)}
+    >
+      {label}
+    </button>
+  );
+
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
@@ -10,27 +18,13 @@ export default function Sidebar({ isAdmin }) {
       </div>
 
       <nav className="sidebar-nav">
-        <NavLink to="/dashboard" className="sidebar-link">
-          Dashboard
-        </NavLink>
+        <Item tab="dashboard" label="Dashboard" />
 
-        {isAdmin && (
-          <NavLink to="/leads" className="sidebar-link">
-            All Leads
-          </NavLink>
-        )}
+        {isAdmin && <Item tab="all-leads" label="All Leads" />}
 
-        <NavLink to="/pond" className="sidebar-link">
-          Pond
-        </NavLink>
-
-        <NavLink to="/my-leads" className="sidebar-link">
-          My Leads
-        </NavLink>
-
-        <NavLink to="/profile" className="sidebar-link">
-          Profile
-        </NavLink>
+        <Item tab="lead-pond" label="Pond" />
+        <Item tab="my-leads" label="My Leads" />
+        <Item tab="profile" label="Profile" />
       </nav>
     </aside>
   );
