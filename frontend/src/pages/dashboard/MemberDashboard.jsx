@@ -26,7 +26,6 @@ export default function MemberDashboard() {
   const [filterStatus, setFilterStatus] = useState("");
 
   /* ================= FETCH ================= */
-
   const fetchLeads = async () => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -45,13 +44,11 @@ export default function MemberDashboard() {
   useEffect(() => {
     fetchLeads();
     fetchUsers();
-
-    const interval = setInterval(fetchLeads, 10000); // refresh every 10s
+    const interval = setInterval(fetchLeads, 8000);
     return () => clearInterval(interval);
   }, []);
 
   /* ================= ACTIONS ================= */
-
   const updateLead = updated => {
     setLeads(prev => prev.map(l => (l._id === updated._id ? updated : l)));
     setSelectedLead(updated);
@@ -72,27 +69,28 @@ export default function MemberDashboard() {
     updateLead(await res.json());
   };
 
-  /* ================= FILTERS ================= */
+  /* ================= FILTERED LEADS ================= */
+  const myLeads = useMemo(
+    () => leads.filter(l => l.assignedTo === user.email),
+    [leads, user.email]
+  );
 
-  const myLeads = leads.filter(l => l.assignedTo === user.email);
-  const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
+  const leadPond = useMemo(
+    () => leads.filter(l => !l.assignedTo || l.assignedTo === "POND"),
+    [leads]
+  );
 
   const filteredLeads = useMemo(() => {
-    let list = [...myLeads];
-    if (filterStatus) list = list.filter(l => l.status === filterStatus);
-    return list;
+    return filterStatus ? myLeads.filter(l => l.status === filterStatus) : myLeads;
   }, [myLeads, filterStatus]);
 
-  /* ================= RENDER ================= */
-
+  /* ================= RENDER LEAD LIST ================= */
   const renderList = list => (
     <div className="lead-list">
       {list.map(lead => (
         <div
           key={lead._id}
-          className={`lead-row status-${(lead.status || "New")
-            .toLowerCase()
-            .replace(" ", "-")}`}
+          className={`lead-row status-${(lead.status || "New").toLowerCase().replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
         >
           <span className="lead-name">{lead.name}</span>
@@ -116,6 +114,7 @@ export default function MemberDashboard() {
     </div>
   );
 
+  /* ================= RENDER ================= */
   return (
     <div className="dashboard">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={false} />
@@ -130,8 +129,7 @@ export default function MemberDashboard() {
 
             <div className="stats-grid">
               <StatCard title="Total Leads" value={myLeads.length} />
-              <StatCard title="Pond" value={leadPond.length} />
-
+              <StatCard title="Lead Pond" value={leadPond.length} />
               {Object.entries(STATUS_COLORS).map(([status, color]) => (
                 <StatCard
                   key={status}
@@ -148,12 +146,26 @@ export default function MemberDashboard() {
         {/* MY LEADS */}
         {activeTab === "my-leads" && (
           <>
-            <button
-              className="add-lead-btn"
-              onClick={() => setShowAddLead(p => !p)}
-            >
-              {showAddLead ? "Close Lead Form" : "+ Add Lead"}
-            </button>
+            <div className="my-leads-header">
+              <button className="add-lead-btn" onClick={() => setShowAddLead(p => !p)}>
+                {showAddLead ? "Close Lead Form" : "+ Add Lead"}
+              </button>
+
+              {/* STATUS FILTER */}
+              <div className="status-filter">
+                <label>Filter by Status: </label>
+                <select
+                  value={filterStatus}
+                  onChange={e => setFilterStatus(e.target.value)}
+                >
+                  <option value="">All</option>
+                  {Object.keys(STATUS_COLORS).map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+                {filterStatus && <button onClick={() => setFilterStatus("")}>Clear</button>}
+              </div>
+            </div>
 
             {showAddLead && (
               <AddLead
@@ -192,7 +204,6 @@ export default function MemberDashboard() {
 }
 
 /* ================= SMALL STAT CARD ================= */
-
 function StatCard({ title, value, color, onClick }) {
   return (
     <div

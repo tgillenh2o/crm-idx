@@ -27,14 +27,12 @@ export default function AdminDashboard() {
   const [filterAgent, setFilterAgent] = useState("");
 
   /* ================= FETCH ================= */
-
   const fetchLeads = async () => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     const data = await res.json();
     setLeads(data);
-    return data;
   };
 
   const fetchUsers = async () => {
@@ -46,25 +44,13 @@ export default function AdminDashboard() {
 
   /* 🔁 POLLING */
   useEffect(() => {
-    let alive = true;
-
-    const load = async () => {
-      if (!alive) return;
-      await fetchLeads();
-    };
-
-    load();
+    fetchLeads();
     fetchUsers();
-    const interval = setInterval(load, 8000);
-
-    return () => {
-      alive = false;
-      clearInterval(interval);
-    };
+    const interval = setInterval(fetchLeads, 8000);
+    return () => clearInterval(interval);
   }, []);
 
   /* ================= ACTIONS ================= */
-
   const updateLead = updated => {
     setLeads(prev => prev.map(l => (l._id === updated._id ? updated : l)));
     setSelectedLead(updated);
@@ -85,8 +71,7 @@ export default function AdminDashboard() {
     updateLead(await res.json());
   };
 
-  /* ================= FILTERED LISTS ================= */
-
+  /* ================= FILTERED LEADS ================= */
   const filteredLeads = useMemo(() => {
     let list = [...leads];
     if (filterStatus) list = list.filter(l => l.status === filterStatus);
@@ -94,10 +79,12 @@ export default function AdminDashboard() {
     return list;
   }, [leads, filterStatus, filterAgent]);
 
-  const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
+  const leadPond = useMemo(
+    () => leads.filter(l => !l.assignedTo || l.assignedTo === "POND"),
+    [leads]
+  );
 
   /* ================= AGENT STATS ================= */
-
   const agentStats = useMemo(() => {
     const stats = {};
     leads.forEach(l => {
@@ -119,18 +106,14 @@ export default function AdminDashboard() {
     return stats;
   }, [leads]);
 
-  /* ================= RENDER ================= */
-
+  /* ================= RENDER LEAD LIST ================= */
   const renderList = list => (
     <div className="lead-list">
       {list.map(lead => (
         <div
           key={lead._id}
-          className={`lead-row status-${(lead.status || "New")
-            .toLowerCase()
-            .replace(" ", "-")}`}
+          className={`lead-row status-${(lead.status || "New").toLowerCase().replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
-          style={{ cursor: "pointer" }}
         >
           <span className="lead-name">{lead.name}</span>
           <span>{lead.email}</span>
@@ -153,6 +136,7 @@ export default function AdminDashboard() {
     </div>
   );
 
+  /* ================= RENDER ================= */
   return (
     <div className="dashboard">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin />
@@ -167,7 +151,7 @@ export default function AdminDashboard() {
 
             <div className="stats-grid">
               <StatCard title="Total Leads" value={leads.length} />
-              <StatCard title="Pond" value={leadPond.length} />
+              <StatCard title="Lead Pond" value={leadPond.length} />
 
               {Object.entries(STATUS_COLORS).map(([status, color]) => (
                 <StatCard
