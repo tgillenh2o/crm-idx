@@ -54,39 +54,7 @@ export default function AdminDashboard() {
 
   const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
 
-const renderList = list => (
-  <div className="lead-list">
-    {list.map(lead => (
-      <div
-        key={lead._id}
-        className={`lead-row status-${(lead.status || "New").toLowerCase().replace(" ", "-")}`}
-        onClick={() => setSelectedLead(lead)}
-        style={{ cursor: "pointer" }}
-      >
-        <span className="lead-name">{lead.name}</span>
-        <span>{lead.email}</span>
-        <span>{lead.assignedTo || "POND"}</span>
-        <span>{lead.status}</span>
-
-        {/* Claim button for unassigned leads */}
-        {!lead.assignedTo && (
-          <button
-            className="claim-button"
-            onClick={e => {
-              e.stopPropagation(); // Prevent opening LeadCard
-              const updated = { ...lead, assignedTo: user.email };
-              updateLead(updated);
-            }}
-          >
-            Claim
-          </button>
-        )}
-      </div>
-    ))}
-  </div>
-);
-
-
+  // ---------- Render Leads ----------
   const renderList = list => (
     <div className="lead-list">
       {list.map(lead => (
@@ -100,6 +68,20 @@ const renderList = list => (
           <span>{lead.email}</span>
           <span>{lead.assignedTo || "POND"}</span>
           <span>{lead.status}</span>
+
+          {/* Claim button for unassigned leads */}
+          {!lead.assignedTo && (
+            <button
+              className="claim-button"
+              onClick={e => {
+                e.stopPropagation(); // Prevent opening LeadCard
+                const updated = { ...lead, assignedTo: user.email };
+                updateLead(updated);
+              }}
+            >
+              Claim
+            </button>
+          )}
         </div>
       ))}
     </div>
@@ -163,6 +145,7 @@ const renderList = list => (
   );
 }
 
+// ---------- Dashboard Stats Component ----------
 function DashboardStats({ leads, onFilter, activeFilter, isAdmin }) {
   const totalLeads = leads.length;
   const statusCounts = {
