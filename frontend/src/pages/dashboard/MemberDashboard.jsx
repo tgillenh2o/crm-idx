@@ -22,6 +22,7 @@ export default function MemberDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [selectedLead, setSelectedLead] = useState(null);
   const [showAddLead, setShowAddLead] = useState(false);
+  const [filterStatus, setFilterStatus] = useState("");
 
   useEffect(() => {
     fetchLeads();
@@ -52,6 +53,11 @@ export default function MemberDashboard() {
   const myLeads = leads.filter(l => l.assignedTo === user.email);
   const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
 
+  const filteredLeads =
+    filterStatus
+      ? myLeads.filter(l => l.status === filterStatus)
+      : myLeads;
+
   const renderList = list => (
     <div className="lead-list">
       {list.map(lead => (
@@ -65,6 +71,18 @@ export default function MemberDashboard() {
           <span>{lead.email}</span>
           <span>{lead.assignedTo || "POND"}</span>
           <span>{lead.status}</span>
+          {!lead.assignedTo && (
+            <button
+              className="claim-button"
+              onClick={e => {
+                e.stopPropagation();
+                const updated = { ...lead, assignedTo: user.email };
+                updateLead(updated);
+              }}
+            >
+              Claim
+            </button>
+          )}
         </div>
       ))}
     </div>
@@ -77,7 +95,11 @@ export default function MemberDashboard() {
         <Topbar />
 
         {activeTab === "dashboard" && (
-          <DashboardStats leads={myLeads} />
+          <DashboardStats
+            leads={myLeads}
+            onFilter={status => setFilterStatus(status)}
+            activeFilter={filterStatus}
+          />
         )}
 
         {activeTab === "profile" && <Profile user={user} />}
@@ -98,7 +120,7 @@ export default function MemberDashboard() {
               />
             )}
             <h3>My Leads</h3>
-            {renderList(myLeads)}
+            {renderList(filteredLeads)}
           </>
         )}
 
@@ -124,7 +146,7 @@ export default function MemberDashboard() {
   );
 }
 
-function DashboardStats({ leads }) {
+function DashboardStats({ leads, onFilter, activeFilter }) {
   const totalLeads = leads.length;
   const statusCounts = {
     New: 0,
@@ -143,12 +165,20 @@ function DashboardStats({ leads }) {
     <div className="dashboard-stats">
       <h2>My Dashboard</h2>
       <div className="stats-grid">
-        <div className="stat-card">
+        <div
+          className={`stat-card ${activeFilter === "" ? "active-filter" : ""}`}
+          onClick={() => onFilter("")}
+        >
           <h3>Total Leads</h3>
           <p>{totalLeads}</p>
         </div>
         {Object.entries(statusCounts).map(([status, count]) => (
-          <div key={status} className="stat-card" style={{ borderTop: `4px solid ${STATUS_COLORS[status]}` }}>
+          <div
+            key={status}
+            className={`stat-card ${activeFilter === status ? "active-filter" : ""}`}
+            style={{ borderTop: `4px solid ${STATUS_COLORS[status]}` }}
+            onClick={() => onFilter(status)}
+          >
             <h3>{status}</h3>
             <p>{count}</p>
           </div>

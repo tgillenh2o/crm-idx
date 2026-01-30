@@ -22,6 +22,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [selectedLead, setSelectedLead] = useState(null);
   const [showAddLead, setShowAddLead] = useState(false);
+  const [filterStatus, setFilterStatus] = useState("");
 
   useEffect(() => {
     fetchLeads();
@@ -47,7 +48,10 @@ export default function AdminDashboard() {
     setSelectedLead(updatedLead);
   };
 
-  const allLeads = leads;
+  const allLeads = filterStatus
+    ? leads.filter(l => l.status === filterStatus)
+    : leads;
+
   const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
 
   const renderList = list => (
@@ -75,7 +79,12 @@ export default function AdminDashboard() {
         <Topbar />
 
         {activeTab === "dashboard" && (
-          <DashboardStats leads={leads} isAdmin={true} />
+          <DashboardStats
+            leads={leads}
+            onFilter={status => setFilterStatus(status)}
+            activeFilter={filterStatus}
+            isAdmin={true}
+          />
         )}
 
         {activeTab === "profile" && <Profile user={user} />}
@@ -121,7 +130,7 @@ export default function AdminDashboard() {
   );
 }
 
-function DashboardStats({ leads, isAdmin }) {
+function DashboardStats({ leads, onFilter, activeFilter, isAdmin }) {
   const totalLeads = leads.length;
   const statusCounts = {
     New: 0,
@@ -138,14 +147,22 @@ function DashboardStats({ leads, isAdmin }) {
 
   return (
     <div className="dashboard-stats">
-      <h2>Admin Dashboard</h2>
+      <h2>{isAdmin ? "Admin Dashboard" : "My Dashboard"}</h2>
       <div className="stats-grid">
-        <div className="stat-card">
+        <div
+          className={`stat-card ${activeFilter === "" ? "active-filter" : ""}`}
+          onClick={() => onFilter("")}
+        >
           <h3>Total Leads</h3>
           <p>{totalLeads}</p>
         </div>
         {Object.entries(statusCounts).map(([status, count]) => (
-          <div key={status} className="stat-card" style={{ borderTop: `4px solid ${STATUS_COLORS[status]}` }}>
+          <div
+            key={status}
+            className={`stat-card ${activeFilter === status ? "active-filter" : ""}`}
+            style={{ borderTop: `4px solid ${STATUS_COLORS[status]}` }}
+            onClick={() => onFilter(status)}
+          >
             <h3>{status}</h3>
             <p>{count}</p>
           </div>
