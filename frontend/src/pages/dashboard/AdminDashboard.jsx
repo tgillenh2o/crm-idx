@@ -17,6 +17,7 @@ const STATUS_COLORS = {
 
 export default function AdminDashboard() {
   const { user } = useContext(AuthContext);
+
   const [leads, setLeads] = useState([]);
   const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -29,6 +30,7 @@ export default function AdminDashboard() {
     fetchUsers();
   }, []);
 
+  // ---------- API ----------
   const fetchLeads = async () => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -43,40 +45,55 @@ export default function AdminDashboard() {
     setUsers(await res.json());
   };
 
-  const updateLead = updatedLead => {
-    setLeads(prev => prev.map(l => (l._id === updatedLead._id ? updatedLead : l)));
-    setSelectedLead(updatedLead);
+  const updateLead = updated => {
+    setLeads(prev => prev.map(l => (l._id === updated._id ? updated : l)));
+    setSelectedLead(updated);
   };
+
+  const claimLead = async lead => {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/assign`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ assignedTo: user.email }),
+      }
+    );
+
+    updateLead(await res.json());
+  };
+
+  // ---------- Filters ----------
+  const myLeads = leads.filter(l => l.assignedTo === user.email);
+  const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
 
   const allLeads = filterStatus
     ? leads.filter(l => l.status === filterStatus)
     : leads;
 
-  const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
-
-  // ---------- Render Leads ----------
+  // ---------- Render List ----------
   const renderList = list => (
     <div className="lead-list">
       {list.map(lead => (
         <div
           key={lead._id}
-          className={`lead-row status-${(lead.status || "New").toLowerCase().replace(" ", "-")}`}
+          className="lead-row"
           onClick={() => setSelectedLead(lead)}
-          style={{ cursor: "pointer" }}
         >
           <span className="lead-name">{lead.name}</span>
           <span>{lead.email}</span>
           <span>{lead.assignedTo || "POND"}</span>
-          <span>{lead.status}</span>
+          <span>{lead.status || "New"}</span>
 
-          {/* Claim button for unassigned leads */}
           {!lead.assignedTo && (
             <button
               className="claim-button"
               onClick={e => {
-                e.stopPropagation(); // Prevent opening LeadCard
-                const updated = { ...lead, assignedTo: user.email };
-                updateLead(updated);
+                e.stopPropagation();
+                claimLead(lead);
               }}
             >
               Claim
@@ -89,37 +106,28 @@ export default function AdminDashboard() {
 
   return (
     <div className="dashboard">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={true} />
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        isAdmin
+      />
+
       <div className="main-panel">
         <Topbar />
 
         {activeTab === "dashboard" && (
           <DashboardStats
             leads={leads}
-            onFilter={status => setFilterStatus(status)}
+            users={users}
+            onFilter={setFilterStatus}
             activeFilter={filterStatus}
-            isAdmin={true}
           />
         )}
 
-        {activeTab === "profile" && <Profile user={user} />}
-
-        {activeTab === "all-leads" && (
+        {activeTab === "my-leads" && (
           <>
-            <button className="add-lead-btn" onClick={() => setShowAddLead(prev => !prev)}>
-              {showAddLead ? "Close Lead Form" : "+ Add Lead"}
-            </button>
-            {showAddLead && (
-              <AddLead
-                isAdmin
-                onLeadAdded={lead => {
-                  setLeads([lead, ...leads]);
-                  setShowAddLead(false);
-                }}
-              />
-            )}
-            <h3>All Leads</h3>
-            {renderList(allLeads)}
+            <h3>My Leads</h3>
+            {renderList(myLeads)}
           </>
         )}
 
@@ -129,12 +137,38 @@ export default function AdminDashboard() {
             {renderList(leadPond)}
           </>
         )}
+
+        {activeTab === "all-leads" && (
+          <>
+            <button
+              className="add-lead-btn"
+              onClick={() => setShowAddLead(p => !p)}
+            >
+              {showAddLead ? "Close Lead Form" : "+ Add Lead"}
+            </button>
+
+            {showAddLead && (
+              <AddLead
+                isAdmin
+                onLeadAdded={lead => {
+                  setLeads([lead, ...leads]);
+                  setShowAddLead(false);
+                }}
+              />
+            )}
+
+            <h3>All Leads</h3>
+            {renderList(allLeads)}
+          </>
+        )}
+
+        {activeTab === "profile" && <Profile user={user} />}
       </div>
 
       {selectedLead && (
         <LeadCard
           lead={selectedLead}
-          isAdmin={true}
+          isAdmin
           users={users}
           currentUserEmail={user.email}
           onUpdate={updateLead}
@@ -145,33 +179,42 @@ export default function AdminDashboard() {
   );
 }
 
-// ---------- Dashboard Stats Component ----------
-function DashboardStats({ leads, onFilter, activeFilter, isAdmin }) {
-  const totalLeads = leads.length;
+/* ================= DASHBOARD STATS ================= */
+
+function DashboardStats({ leads, users, onFilter, activeFilter }) {
   const statusCounts = {
     New: 0,
     Contacted: 0,
     "Follow-Up": 0,
     "Under Contract": 0,
-    Closed: 0
+    Closed: 0,
   };
 
   leads.forEach(l => {
-    const status = l.status || "New";
-    if (statusCounts[status] !== undefined) statusCounts[status]++;
+    const s = l.status || "New";
+    if (statusCounts[s] !== undefined) statusCounts[s]++;
+  });
+
+  // ----- Stats per agent -----
+  const agentStats = {};
+  leads.forEach(l => {
+    if (!l.assignedTo) return;
+    agentStats[l.assignedTo] = (agentStats[l.assignedTo] || 0) + 1;
   });
 
   return (
     <div className="dashboard-stats">
-      <h2>{isAdmin ? "Admin Dashboard" : "My Dashboard"}</h2>
+      <h2>Admin Dashboard</h2>
+
       <div className="stats-grid">
         <div
           className={`stat-card ${activeFilter === "" ? "active-filter" : ""}`}
           onClick={() => onFilter("")}
         >
           <h3>Total Leads</h3>
-          <p>{totalLeads}</p>
+          <p>{leads.length}</p>
         </div>
+
         {Object.entries(statusCounts).map(([status, count]) => (
           <div
             key={status}
@@ -180,6 +223,16 @@ function DashboardStats({ leads, onFilter, activeFilter, isAdmin }) {
             onClick={() => onFilter(status)}
           >
             <h3>{status}</h3>
+            <p>{count}</p>
+          </div>
+        ))}
+      </div>
+
+      <h3 style={{ marginTop: 30 }}>Leads Per Agent</h3>
+      <div className="stats-grid">
+        {Object.entries(agentStats).map(([email, count]) => (
+          <div key={email} className="stat-card">
+            <h4>{email}</h4>
             <p>{count}</p>
           </div>
         ))}
