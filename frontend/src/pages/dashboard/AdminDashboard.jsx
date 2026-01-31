@@ -7,6 +7,9 @@ import AddLead from "./AddLead";
 import Profile from "./Profile";
 import "./Dashboard.css";
 
+const [showAddLead, setShowAddLead] = useState(false);
+
+
 const STATUS_COLORS = {
   New: "#4caf50",
   Contacted: "#2196f3",
@@ -150,6 +153,16 @@ export default function AdminDashboard() {
 
       <div className="main-panel">
         <Topbar />
+
+        <div className="dashboard-actions">
+         <button
+         className="add-lead-btn"
+         onClick={() => setShowAddLead(true)}
+         >
+         + Add Lead
+         </button>
+         </div>
+
 
         {/* DASHBOARD STATS */}
         {activeTab === "dashboard" && (
@@ -307,4 +320,14 @@ function StatCard({ title, value, color, onClick }) {
       <p>{value}</p>
     </div>
   );
-}
+}{showAddLead && (
+  <AddLead
+    isAdmin
+    onLeadAdded={lead => {
+      setLeads(prev => [lead, ...prev]);
+      setShowAddLead(false);
+    }}
+    onClose={() => setShowAddLead(false)}
+  />
+)}
+
