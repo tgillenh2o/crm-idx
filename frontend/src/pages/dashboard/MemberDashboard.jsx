@@ -7,9 +7,6 @@ import AddLead from "./AddLead";
 import Profile from "./Profile";
 import "./Dashboard.css";
 
-const [showAddLead, setShowAddLead] = useState(false);
-
-
 const STATUS_COLORS = {
   New: "#4caf50",
   Contacted: "#2196f3",
@@ -102,7 +99,6 @@ export default function MemberDashboard() {
             .toLowerCase()
             .replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
-          style={{ cursor: "pointer" }}
         >
           <span className="lead-name">{lead.name}</span>
           <span>{lead.email}</span>
@@ -128,21 +124,24 @@ export default function MemberDashboard() {
   /* ================= RENDER ================= */
   return (
     <div className="dashboard">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={false} />
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        isAdmin={false}
+      />
+
       <div className="main-panel">
         <Topbar />
 
         <div className="dashboard-actions">
-         <button
-         className="add-lead-btn"
-         onClick={() => setShowAddLead(true)}
+          <button
+            className="add-lead-btn"
+            onClick={() => setShowAddLead(true)}
           >
-         + Add Lead
-         </button>
-         </div>
+            + Add Lead
+          </button>
+        </div>
 
-
-        {/* DASHBOARD STATS */}
         {activeTab === "dashboard" && (
           <>
             <h2>My Dashboard</h2>
@@ -159,71 +158,11 @@ export default function MemberDashboard() {
                 />
               ))}
             </div>
-
-            <h3>Agents</h3>
-            <div className="stats-grid">
-              {Object.entries(agentStats).map(([agent, count]) => (
-                <StatCard
-                  key={agent}
-                  title={agent === "POND" ? "Lead Pond" : agent}
-                  value={count}
-                />
-              ))}
-            </div>
           </>
         )}
 
-        {/* MY LEADS */}
-        {activeTab === "my-leads" && (
-          <>
-            <h3>My Leads</h3>
-            <div className="status-filter">
-              <label>Filter by Status: </label>
-              <select
-                value={filterStatus}
-                onChange={e => setFilterStatus(e.target.value)}
-              >
-                <option value="">All</option>
-                {Object.keys(STATUS_COLORS).map(status => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-              {filterStatus && (
-                <button onClick={() => setFilterStatus("")}>Clear</button>
-              )}
-            </div>
-            {renderList(filteredMyLeads)}
-          </>
-        )}
-
-        {/* LEAD POND */}
-        {activeTab === "lead-pond" && (
-          <>
-            <h3>Lead Pond</h3>
-            <div className="status-filter">
-              <label>Filter by Status: </label>
-              <select
-                value={filterStatus}
-                onChange={e => setFilterStatus(e.target.value)}
-              >
-                <option value="">All</option>
-                {Object.keys(STATUS_COLORS).map(status => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-              {filterStatus && (
-                <button onClick={() => setFilterStatus("")}>Clear</button>
-              )}
-            </div>
-            {renderList(filteredLeadPond)}
-          </>
-        )}
-
-        {/* PROFILE */}
+        {activeTab === "my-leads" && renderList(filteredMyLeads)}
+        {activeTab === "lead-pond" && renderList(filteredLeadPond)}
         {activeTab === "profile" && <Profile user={user} />}
       </div>
 
@@ -237,11 +176,21 @@ export default function MemberDashboard() {
           onClose={() => setSelectedLead(null)}
         />
       )}
+
+      {showAddLead && (
+        <AddLead
+          onLeadAdded={lead => {
+            setLeads(prev => [lead, ...prev]);
+            setShowAddLead(false);
+          }}
+          onClose={() => setShowAddLead(false)}
+        />
+      )}
     </div>
   );
 }
 
-/* ================= SMALL STAT CARD ================= */
+/* ================= STAT CARD ================= */
 function StatCard({ title, value, color, onClick }) {
   return (
     <div
@@ -254,14 +203,3 @@ function StatCard({ title, value, color, onClick }) {
     </div>
   );
 }
-
-{showAddLead && (
-  <AddLead
-    onLeadAdded={lead => {
-      setLeads(prev => [lead, ...prev]);
-      setShowAddLead(false);
-    }}
-    onClose={() => setShowAddLead(false)}
-  />
-)}
-

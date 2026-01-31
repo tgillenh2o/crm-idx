@@ -7,9 +7,6 @@ import AddLead from "./AddLead";
 import Profile from "./Profile";
 import "./Dashboard.css";
 
-const [showAddLead, setShowAddLead] = useState(false);
-
-
 const STATUS_COLORS = {
   New: "#4caf50",
   Contacted: "#2196f3",
@@ -154,15 +151,15 @@ export default function AdminDashboard() {
       <div className="main-panel">
         <Topbar />
 
+        {/* GLOBAL ADD LEAD BUTTON */}
         <div className="dashboard-actions">
-         <button
-         className="add-lead-btn"
-         onClick={() => setShowAddLead(true)}
-         >
-         + Add Lead
-         </button>
-         </div>
-
+          <button
+            className="add-lead-btn"
+            onClick={() => setShowAddLead(true)}
+          >
+            + Add Lead
+          </button>
+        </div>
 
         {/* DASHBOARD STATS */}
         {activeTab === "dashboard" && (
@@ -198,101 +195,23 @@ export default function AdminDashboard() {
           </>
         )}
 
-        {/* ALL LEADS */}
-        {activeTab === "all-leads" && (
-          <>
-            <button
-              className="add-lead-btn"
-              onClick={() => setShowAddLead(p => !p)}
-            >
-              {showAddLead ? "Close Lead Form" : "+ Add Lead"}
-            </button>
-
-            {showAddLead && (
-              <AddLead
-                isAdmin
-                onLeadAdded={lead => {
-                  setLeads(prev => [lead, ...prev]);
-                  setShowAddLead(false);
-                }}
-              />
-            )}
-
-            <div className="status-filter">
-              <label>Filter by Status: </label>
-              <select
-                value={filterStatus}
-                onChange={e => setFilterStatus(e.target.value)}
-              >
-                <option value="">All</option>
-                {Object.keys(STATUS_COLORS).map(status => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-              {filterStatus && (
-                <button onClick={() => setFilterStatus("")}>Clear</button>
-              )}
-            </div>
-
-            {renderList(filteredLeads)}
-          </>
-        )}
-
-        {/* MY LEADS */}
-        {activeTab === "my-leads" && (
-          <>
-            <h3>My Leads</h3>
-            <div className="status-filter">
-              <label>Filter by Status: </label>
-              <select
-                value={filterStatus}
-                onChange={e => setFilterStatus(e.target.value)}
-              >
-                <option value="">All</option>
-                {Object.keys(STATUS_COLORS).map(status => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-              {filterStatus && (
-                <button onClick={() => setFilterStatus("")}>Clear</button>
-              )}
-            </div>
-            {renderList(filteredMyLeads)}
-          </>
-        )}
-
-        {/* LEAD POND */}
-        {activeTab === "lead-pond" && (
-          <>
-            <h3>Lead Pond</h3>
-            <div className="status-filter">
-              <label>Filter by Status: </label>
-              <select
-                value={filterStatus}
-                onChange={e => setFilterStatus(e.target.value)}
-              >
-                <option value="">All</option>
-                {Object.keys(STATUS_COLORS).map(status => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-              {filterStatus && (
-                <button onClick={() => setFilterStatus("")}>Clear</button>
-              )}
-            </div>
-            {renderList(filteredLeadPond)}
-          </>
-        )}
-
-        {/* PROFILE */}
+        {activeTab === "all-leads" && renderList(filteredLeads)}
+        {activeTab === "my-leads" && renderList(filteredMyLeads)}
+        {activeTab === "lead-pond" && renderList(filteredLeadPond)}
         {activeTab === "profile" && <Profile user={user} />}
       </div>
+
+      {/* ADD LEAD MODAL (ONCE, SAFE) */}
+      {showAddLead && (
+        <AddLead
+          isAdmin
+          onLeadAdded={lead => {
+            setLeads(prev => [lead, ...prev]);
+            setShowAddLead(false);
+          }}
+          onClose={() => setShowAddLead(false)}
+        />
+      )}
 
       {selectedLead && (
         <LeadCard
@@ -320,14 +239,4 @@ function StatCard({ title, value, color, onClick }) {
       <p>{value}</p>
     </div>
   );
-}{showAddLead && (
-  <AddLead
-    isAdmin
-    onLeadAdded={lead => {
-      setLeads(prev => [lead, ...prev]);
-      setShowAddLead(false);
-    }}
-    onClose={() => setShowAddLead(false)}
-  />
-)}
-
+}
