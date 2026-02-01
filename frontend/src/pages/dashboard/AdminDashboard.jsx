@@ -98,7 +98,13 @@ export default function AdminDashboard() {
 
   /* ================= BASE LISTS ================= */
   const myLeads = useMemo(() => leads.filter((l) => l.assignedTo === user.email), [leads, user.email]);
-  const leadPond = useMemo(() => leads.filter((l) => !l.assignedTo), [leads]);
+  const leadPond = useMemo(
+  () =>
+    leads.filter(
+      (l) => !l.assignedTo || l.assignedTo === "POND"
+    ),
+  [leads]
+);
 
   /* ================= SORTING ================= */
   const sortLeads = (list) => {
