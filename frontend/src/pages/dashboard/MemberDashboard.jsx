@@ -18,6 +18,15 @@ const STATUS_COLORS = {
 // Status sorting order
 const STATUS_ORDER = ["New", "Contacted", "Follow-Up", "Under Contract", "Closed"];
 
+const STATUS_ORDER = [
+  "New",
+  "Contacted",
+  "Follow-Up",
+  "Under Contract",
+  "Closed",
+];
+
+
 export default function MemberDashboard() {
   const { user } = useContext(AuthContext);
 
@@ -79,28 +88,35 @@ export default function MemberDashboard() {
   };
 
   /* ================= SORT FUNCTION ================= */
- const getStatusIndex = (status) => {
-  const idx = STATUS_ORDER.indexOf(status);
+const getStatusIndex = (status) => {
+  const idx = STATUS_ORDER.indexOf(status || "New");
   return idx === -1 ? STATUS_ORDER.length : idx;
 };
 
 const sortByStatus = (list) =>
-  [...list].sort((a, b) => {
-    return getStatusIndex(a.status || "New") - getStatusIndex(b.status || "New");
-  });
+  [...list].sort(
+    (a, b) => getStatusIndex(a.status) - getStatusIndex(b.status)
+  );
+
 
   /* ================= FILTERED LISTS ================= */
-  const myLeads = leads.filter((l) => l.assignedTo === user.email);
-  const filteredMyLeads = useMemo(() => {
-    let list = filterStatus ? myLeads.filter((l) => l.status === filterStatus) : myLeads;
-    return sortByStatus(list);
-  }, [myLeads, filterStatus]);
+ const filteredMyLeads = useMemo(() => {
+  let list = filterStatus
+    ? myLeads.filter((l) => l.status === filterStatus)
+    : myLeads;
 
-  const leadPond = leads.filter((l) => !l.assignedTo || l.assignedTo === "POND");
+  return sortBy === "status" ? sortByStatus(list) : list;
+}, [myLeads, filterStatus, sortBy]);
+
+
   const filteredLeadPond = useMemo(() => {
-    let list = filterStatus ? leadPond.filter((l) => l.status === filterStatus) : leadPond;
-    return sortByStatus(list);
-  }, [leadPond, filterStatus]);
+  let list = filterStatus
+    ? leadPond.filter((l) => l.status === filterStatus)
+    : leadPond;
+
+  return sortBy === "status" ? sortByStatus(list) : list;
+}, [leadPond, filterStatus, sortBy]);
+
 
   /* ================= RENDER LIST ================= */
   const renderList = (list) => (
@@ -144,6 +160,10 @@ const sortByStatus = (list) =>
           <button className="add-lead-btn" onClick={() => setShowAddLead(true)}>
             + Add Lead
           </button>
+<select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+  <option value="status">Sort by Status</option>
+</select>
+
         </div>
 
         {activeTab === "dashboard" && (
