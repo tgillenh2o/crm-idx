@@ -89,11 +89,15 @@ export default function AdminDashboard() {
   };
 
   /* ================= SORT FUNCTION ================= */
-  const sortByStatus = (list) =>
-    [...list].sort(
-      (a, b) =>
-        STATUS_ORDER.indexOf(a.status || "New") - STATUS_ORDER.indexOf(b.status || "New")
-    );
+ const getStatusIndex = (status) => {
+  const idx = STATUS_ORDER.indexOf(status);
+  return idx === -1 ? STATUS_ORDER.length : idx;
+};
+
+const sortByStatus = (list) =>
+  [...list].sort((a, b) => {
+    return getStatusIndex(a.status || "New") - getStatusIndex(b.status || "New");
+  });
 
   /* ================= FILTERED LISTS ================= */
   const filteredLeads = useMemo(() => {
