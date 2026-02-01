@@ -15,8 +15,7 @@ const STATUS_COLORS = {
   Closed: "#f44336",
 };
 
-// Status sorting order
-const STATUS_ORDER = ["New", "Contacted", "Follow-Up", "Under Contract", "Closed"];
+
 
 const STATUS_ORDER = [
   "New",
@@ -25,6 +24,7 @@ const STATUS_ORDER = [
   "Under Contract",
   "Closed",
 ];
+
 
 
 export default function MemberDashboard() {
