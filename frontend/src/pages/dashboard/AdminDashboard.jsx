@@ -279,4 +279,12 @@ export default function AdminDashboard() {
 function StatCard({ title, value, color, onClick }) {
   return (
     <div
-      clas
+      className="stat-card"
+      onClick={onClick}
+      style={{ borderTop: color ? `4px solid ${color}` : undefined }}
+    >
+      <h3>{title}</h3>
+      <p>{value}</p>
+    </div>
+  );
+}
