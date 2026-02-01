@@ -15,6 +15,9 @@ const STATUS_COLORS = {
   Closed: "#f44336",
 };
 
+// Define the order for status sorting
+const STATUS_ORDER = ["New", "Contacted", "Follow-Up", "Under Contract", "Closed"];
+
 export default function AdminDashboard() {
   const { user } = useContext(AuthContext);
 
@@ -25,7 +28,6 @@ export default function AdminDashboard() {
   const [showAddLead, setShowAddLead] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
   const [filterAgent, setFilterAgent] = useState("");
-  const [sortBy, setSortBy] = useState("newest"); // Added sorting
 
   /* ================= FETCH ================= */
   const fetchLeads = async () => {
@@ -51,19 +53,15 @@ export default function AdminDashboard() {
   }, []);
 
   /* ================= ACTIONS ================= */
-  // Update lead and persist to backend
   const updateLead = async (updated) => {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/leads/${updated._id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(updated),
-      }
-    );
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${updated._id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(updated),
+    });
     const saved = await res.json();
     setLeads((prev) => prev.map((l) => (l._id === saved._id ? saved : l)));
     setSelectedLead(saved);
@@ -79,45 +77,37 @@ export default function AdminDashboard() {
   };
 
   const claimLead = async (lead) => {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/assign`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ assignedTo: user.email }),
-      }
-    );
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/assign`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ assignedTo: user.email }),
+    });
     updateLead(await res.json());
   };
 
-  /* ================= FILTERED & SORTED LISTS ================= */
+  /* ================= SORT FUNCTION ================= */
+  const sortByStatus = (list) =>
+    [...list].sort(
+      (a, b) =>
+        STATUS_ORDER.indexOf(a.status || "New") - STATUS_ORDER.indexOf(b.status || "New")
+    );
+
+  /* ================= FILTERED LISTS ================= */
   const filteredLeads = useMemo(() => {
     let list = [...leads];
     if (filterStatus) list = list.filter((l) => l.status === filterStatus);
     if (filterAgent) list = list.filter((l) => l.assignedTo === filterAgent);
-
-    // Sort by newest or oldest
-    list.sort((a, b) =>
-      sortBy === "newest"
-        ? new Date(b.createdAt) - new Date(a.createdAt)
-        : new Date(a.createdAt) - new Date(b.createdAt)
-    );
-
-    return list;
-  }, [leads, filterStatus, filterAgent, sortBy]);
+    return sortByStatus(list);
+  }, [leads, filterStatus, filterAgent]);
 
   const myLeads = leads.filter((l) => l.assignedTo === user.email);
-  const filteredMyLeads = filterStatus
-    ? myLeads.filter((l) => l.status === filterStatus)
-    : myLeads;
+  const filteredMyLeads = sortByStatus(filterStatus ? myLeads.filter((l) => l.status === filterStatus) : myLeads);
 
   const leadPond = leads.filter((l) => !l.assignedTo || l.assignedTo === "POND");
-  const filteredLeadPond = filterStatus
-    ? leadPond.filter((l) => l.status === filterStatus)
-    : leadPond;
+  const filteredLeadPond = sortByStatus(filterStatus ? leadPond.filter((l) => l.status === filterStatus) : leadPond);
 
   /* ================= AGENT STATS ================= */
   const agentStats = useMemo(() => {
@@ -178,11 +168,6 @@ export default function AdminDashboard() {
           <button className="add-lead-btn" onClick={() => setShowAddLead(true)}>
             + Add Lead
           </button>
-          {/* Sorting dropdown */}
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-          </select>
         </div>
 
         {/* DASHBOARD STATS */}
