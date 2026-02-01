@@ -24,6 +24,7 @@ export default function MemberDashboard() {
   const [selectedLead, setSelectedLead] = useState(null);
   const [showAddLead, setShowAddLead] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
+  const [sortBy, setSortBy] = useState("newest"); // sorting added
 
   /* ================= FETCH ================= */
   const fetchLeads = async () => {
@@ -49,12 +50,24 @@ export default function MemberDashboard() {
   }, []);
 
   /* ================= ACTIONS ================= */
-  const updateLead = updated => {
-    setLeads(prev => prev.map(l => (l._id === updated._id ? updated : l)));
-    setSelectedLead(updated);
+  const updateLead = async (updated) => {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/leads/${updated._id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(updated),
+      }
+    );
+    const saved = await res.json();
+    setLeads((prev) => prev.map((l) => (l._id === saved._id ? saved : l)));
+    setSelectedLead(saved);
   };
 
-  const claimLead = async lead => {
+  const claimLead = async (lead) => {
     const res = await fetch(
       `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/assign`,
       {
@@ -69,35 +82,40 @@ export default function MemberDashboard() {
     updateLead(await res.json());
   };
 
-  /* ================= FILTERED LISTS ================= */
-  const myLeads = leads.filter(l => l.assignedTo === user.email);
-  const filteredMyLeads = filterStatus
-    ? myLeads.filter(l => l.status === filterStatus)
-    : myLeads;
+  /* ================= FILTERED & SORTED LISTS ================= */
+  const myLeads = leads.filter((l) => l.assignedTo === user.email);
+  const filteredMyLeads = useMemo(() => {
+    let list = filterStatus ? myLeads.filter((l) => l.status === filterStatus) : myLeads;
 
-  const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
-  const filteredLeadPond = filterStatus
-    ? leadPond.filter(l => l.status === filterStatus)
-    : leadPond;
+    list.sort((a, b) =>
+      sortBy === "newest"
+        ? new Date(b.createdAt) - new Date(a.createdAt)
+        : new Date(a.createdAt) - new Date(b.createdAt)
+    );
 
-  const agentStats = useMemo(() => {
-    const stats = {};
-    leads.forEach(l => {
-      const agent = l.assignedTo || "POND";
-      stats[agent] = (stats[agent] || 0) + 1;
-    });
-    return stats;
-  }, [leads]);
+    return list;
+  }, [myLeads, filterStatus, sortBy]);
+
+  const leadPond = leads.filter((l) => !l.assignedTo || l.assignedTo === "POND");
+  const filteredLeadPond = useMemo(() => {
+    let list = filterStatus ? leadPond.filter((l) => l.status === filterStatus) : leadPond;
+
+    list.sort((a, b) =>
+      sortBy === "newest"
+        ? new Date(b.createdAt) - new Date(a.createdAt)
+        : new Date(a.createdAt) - new Date(b.createdAt)
+    );
+
+    return list;
+  }, [leadPond, filterStatus, sortBy]);
 
   /* ================= RENDER LIST ================= */
-  const renderList = list => (
+  const renderList = (list) => (
     <div className="lead-list">
-      {list.map(lead => (
+      {list.map((lead) => (
         <div
           key={lead._id}
-          className={`lead-row status-${(lead.status || "New")
-            .toLowerCase()
-            .replace(" ", "-")}`}
+          className={`lead-row status-${(lead.status || "New").toLowerCase().replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
         >
           <span className="lead-name">{lead.name}</span>
@@ -108,7 +126,7 @@ export default function MemberDashboard() {
           {!lead.assignedTo && (
             <button
               className="claim-button"
-              onClick={e => {
+              onClick={(e) => {
                 e.stopPropagation();
                 claimLead(lead);
               }}
@@ -124,22 +142,19 @@ export default function MemberDashboard() {
   /* ================= RENDER ================= */
   return (
     <div className="dashboard">
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        isAdmin={false}
-      />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={false} />
 
       <div className="main-panel">
         <Topbar />
 
         <div className="dashboard-actions">
-          <button
-            className="add-lead-btn"
-            onClick={() => setShowAddLead(true)}
-          >
+          <button className="add-lead-btn" onClick={() => setShowAddLead(true)}>
             + Add Lead
           </button>
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+          </select>
         </div>
 
         {activeTab === "dashboard" && (
@@ -152,7 +167,7 @@ export default function MemberDashboard() {
                 <StatCard
                   key={status}
                   title={status}
-                  value={myLeads.filter(l => l.status === status).length}
+                  value={myLeads.filter((l) => l.status === status).length}
                   color={color}
                   onClick={() => setFilterStatus(status)}
                 />
@@ -179,8 +194,8 @@ export default function MemberDashboard() {
 
       {showAddLead && (
         <AddLead
-          onLeadAdded={lead => {
-            setLeads(prev => [lead, ...prev]);
+          onLeadAdded={(lead) => {
+            setLeads((prev) => [lead, ...prev]);
             setShowAddLead(false);
           }}
           onClose={() => setShowAddLead(false)}
@@ -193,11 +208,7 @@ export default function MemberDashboard() {
 /* ================= STAT CARD ================= */
 function StatCard({ title, value, color, onClick }) {
   return (
-    <div
-      className="stat-card"
-      onClick={onClick}
-      style={{ borderTop: color ? `4px solid ${color}` : undefined }}
-    >
+    <div className="stat-card" onClick={onClick} style={{ borderTop: color ? `4px solid ${color}` : undefined }}>
       <h3>{title}</h3>
       <p>{value}</p>
     </div>

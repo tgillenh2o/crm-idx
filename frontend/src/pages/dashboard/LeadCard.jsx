@@ -46,173 +46,34 @@ export default function LeadCard({
 
   /* ================= ACTIONS ================= */
   const handleStatusChange = e =>
-    saveLead({ ...localLead, status: e.target.value });
+    saveLead({ ...localLead, status: e.target.value || "New" });
 
   const handleChange = e =>
     setLocalLead({ ...localLead, [e.target.name]: e.target.value });
 
   const handleSave = () => {
-    saveLead(localLead);
+    saveLead({ ...localLead, status: localLead.status || "New" });
     setEditing(false);
   };
 
-  const handleClaim = () =>
+  const handleClaim = e => {
+    e.stopPropagation();
     saveLead({ ...localLead, assignedTo: currentUserEmail });
+  };
 
-  const handleReturnToPond = () =>
+  const handleReturnToPond = e => {
+    e.stopPropagation();
     saveLead({ ...localLead, assignedTo: "" });
+  };
 
-  const handleReassign = email =>
+  const handleReassign = (e, email) => {
+    e.stopPropagation();
     saveLead({ ...localLead, assignedTo: email });
+  };
 
-  const handleDelete = async () => {
+  const handleDelete = async e => {
+    e.stopPropagation();
     if (!window.confirm("Delete this lead permanently?")) return;
 
     await fetch(
-      `${import.meta.env.VITE_API_URL}/api/leads/${localLead._id}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-
-    onClose();
-  };
-
-  const handleAddInteraction = () => {
-    if (!newInteraction.trim()) return;
-
-    saveLead({
-      ...localLead,
-      interactions: [
-        ...(localLead.interactions || []),
-        {
-          note: newInteraction,
-          createdBy: currentUserEmail,
-          date: new Date().toISOString(),
-        },
-      ],
-    });
-
-    setNewInteraction("");
-  };
-
-  /* ================= PERMISSIONS ================= */
-  const memberCanEdit =
-    !isAdmin && localLead.assignedTo === currentUserEmail;
-
-  const canEdit = isAdmin || memberCanEdit;
-
-  const statusClass = (localLead.status || "New")
-    .toLowerCase()
-    .replace(" ", "-");
-
-  /* ================= RENDER ================= */
-  return (
-    <div className="lead-modal">
-      <div className={`lead-card status-${statusClass} ${flash}`}>
-        <button className="close-button" onClick={onClose}>×</button>
-
-        <h3>{localLead.name}</h3>
-
-        {/* EDIT MODE */}
-        {editing && canEdit ? (
-          <div className="lead-edit-form">
-            <input name="name" value={localLead.name} onChange={handleChange} />
-            <input name="email" value={localLead.email} onChange={handleChange} />
-            <input name="phone" value={localLead.phone || ""} onChange={handleChange} />
-
-            <select value={localLead.status} onChange={handleStatusChange}>
-              <option>New</option>
-              <option>Contacted</option>
-              <option>Follow-Up</option>
-              <option>Under Contract</option>
-              <option>Closed</option>
-            </select>
-
-            <div className="form-buttons">
-              <button className="claim-button" onClick={handleSave}>Save</button>
-              <button className="return-button" onClick={() => setEditing(false)}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* VIEW MODE */}
-            <p><strong>Email:</strong> {localLead.email}</p>
-            <p><strong>Phone:</strong> {localLead.phone}</p>
-            <p><strong>Status:</strong> {localLead.status}</p>
-            <p><strong>Assigned:</strong> {localLead.assignedTo || "POND"}</p>
-
-            {canEdit && (
-              <button className="close-button" onClick={() => setEditing(true)}>
-                Edit Lead
-              </button>
-            )}
-
-            {canEdit && localLead.assignedTo && (
-              <button className="return-button" onClick={handleReturnToPond}>
-                Return to Pond
-              </button>
-            )}
-
-            {!isAdmin && !localLead.assignedTo && (
-              <button className="claim-button" onClick={handleClaim}>
-                Claim from Pond
-              </button>
-            )}
-
-            {isAdmin && (
-              <div className="admin-actions">
-                <select
-                  value={localLead.assignedTo || ""}
-                  onChange={e => handleReassign(e.target.value)}
-                >
-                  <option value="">POND</option>
-                  {users.map(u => (
-                    <option key={u.email} value={u.email}>
-                      {u.name} ({u.email})
-                    </option>
-                  ))}
-                </select>
-
-                <button className="delete-button" onClick={handleDelete}>
-                  Delete Lead
-                </button>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* INTERACTIONS */}
-        <div className="interaction-history">
-          <h4>Interactions</h4>
-
-          {(localLead.interactions || []).length ? (
-            localLead.interactions.map((i, idx) => (
-              <div key={idx} className="interaction-item">
-                <strong>{i.createdBy}:</strong> {i.note}
-              </div>
-            ))
-          ) : (
-            <p>No interactions yet.</p>
-          )}
-
-          {canEdit && (
-            <div className="interaction-form">
-              <input
-                value={newInteraction}
-                onChange={e => setNewInteraction(e.target.value)}
-                placeholder="Add interaction..."
-              />
-              <button onClick={handleAddInteraction}>Add</button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+      `${import.meta.env.VITE_API_URL}/api/leads/

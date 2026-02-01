@@ -25,6 +25,7 @@ export default function AdminDashboard() {
   const [showAddLead, setShowAddLead] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
   const [filterAgent, setFilterAgent] = useState("");
+  const [sortBy, setSortBy] = useState("newest"); // Added sorting
 
   /* ================= FETCH ================= */
   const fetchLeads = async () => {
@@ -50,12 +51,34 @@ export default function AdminDashboard() {
   }, []);
 
   /* ================= ACTIONS ================= */
-  const updateLead = updated => {
-    setLeads(prev => prev.map(l => (l._id === updated._id ? updated : l)));
-    setSelectedLead(updated);
+  // Update lead and persist to backend
+  const updateLead = async (updated) => {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/leads/${updated._id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(updated),
+      }
+    );
+    const saved = await res.json();
+    setLeads((prev) => prev.map((l) => (l._id === saved._id ? saved : l)));
+    setSelectedLead(saved);
   };
 
-  const claimLead = async lead => {
+  const deleteLead = async (id) => {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    setLeads((prev) => prev.filter((l) => l._id !== id));
+    setSelectedLead(null);
+  };
+
+  const claimLead = async (lead) => {
     const res = await fetch(
       `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/assign`,
       {
@@ -70,38 +93,39 @@ export default function AdminDashboard() {
     updateLead(await res.json());
   };
 
-  /* ================= FILTERED LISTS ================= */
+  /* ================= FILTERED & SORTED LISTS ================= */
   const filteredLeads = useMemo(() => {
     let list = [...leads];
-    if (filterStatus) list = list.filter(l => l.status === filterStatus);
-    if (filterAgent) list = list.filter(l => l.assignedTo === filterAgent);
-    return list;
-  }, [leads, filterStatus, filterAgent]);
+    if (filterStatus) list = list.filter((l) => l.status === filterStatus);
+    if (filterAgent) list = list.filter((l) => l.assignedTo === filterAgent);
 
-  const myLeads = leads.filter(l => l.assignedTo === user.email);
+    // Sort by newest or oldest
+    list.sort((a, b) =>
+      sortBy === "newest"
+        ? new Date(b.createdAt) - new Date(a.createdAt)
+        : new Date(a.createdAt) - new Date(b.createdAt)
+    );
+
+    return list;
+  }, [leads, filterStatus, filterAgent, sortBy]);
+
+  const myLeads = leads.filter((l) => l.assignedTo === user.email);
   const filteredMyLeads = filterStatus
-    ? myLeads.filter(l => l.status === filterStatus)
+    ? myLeads.filter((l) => l.status === filterStatus)
     : myLeads;
 
-  const leadPond = leads.filter(l => !l.assignedTo || l.assignedTo === "POND");
+  const leadPond = leads.filter((l) => !l.assignedTo || l.assignedTo === "POND");
   const filteredLeadPond = filterStatus
-    ? leadPond.filter(l => l.status === filterStatus)
+    ? leadPond.filter((l) => l.status === filterStatus)
     : leadPond;
 
   /* ================= AGENT STATS ================= */
   const agentStats = useMemo(() => {
     const stats = {};
-    leads.forEach(l => {
+    leads.forEach((l) => {
       const agent = l.assignedTo || "POND";
       if (!stats[agent]) {
-        stats[agent] = {
-          total: 0,
-          New: 0,
-          Contacted: 0,
-          "Follow-Up": 0,
-          "Under Contract": 0,
-          Closed: 0,
-        };
+        stats[agent] = { total: 0, New: 0, Contacted: 0, "Follow-Up": 0, "Under Contract": 0, Closed: 0 };
       }
       stats[agent].total++;
       const status = l.status || "New";
@@ -111,14 +135,12 @@ export default function AdminDashboard() {
   }, [leads]);
 
   /* ================= RENDER LIST ================= */
-  const renderList = list => (
+  const renderList = (list) => (
     <div className="lead-list">
-      {list.map(lead => (
+      {list.map((lead) => (
         <div
           key={lead._id}
-          className={`lead-row status-${(lead.status || "New")
-            .toLowerCase()
-            .replace(" ", "-")}`}
+          className={`lead-row status-${(lead.status || "New").toLowerCase().replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
           style={{ cursor: "pointer" }}
         >
@@ -130,7 +152,7 @@ export default function AdminDashboard() {
           {!lead.assignedTo && (
             <button
               className="claim-button"
-              onClick={e => {
+              onClick={(e) => {
                 e.stopPropagation();
                 claimLead(lead);
               }}
@@ -153,12 +175,14 @@ export default function AdminDashboard() {
 
         {/* GLOBAL ADD LEAD BUTTON */}
         <div className="dashboard-actions">
-          <button
-            className="add-lead-btn"
-            onClick={() => setShowAddLead(true)}
-          >
+          <button className="add-lead-btn" onClick={() => setShowAddLead(true)}>
             + Add Lead
           </button>
+          {/* Sorting dropdown */}
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+          </select>
         </div>
 
         {/* DASHBOARD STATS */}
@@ -172,7 +196,7 @@ export default function AdminDashboard() {
                 <StatCard
                   key={status}
                   title={status}
-                  value={leads.filter(l => l.status === status).length}
+                  value={leads.filter((l) => l.status === status).length}
                   color={color}
                   onClick={() => setFilterStatus(status)}
                 />
@@ -186,9 +210,7 @@ export default function AdminDashboard() {
                   key={agent}
                   title={agent === "POND" ? "Lead Pond" : agent}
                   value={`${s.total} (${s.Closed} closed)`}
-                  onClick={() =>
-                    setFilterAgent(agent === "POND" ? "" : agent)
-                  }
+                  onClick={() => setFilterAgent(agent === "POND" ? "" : agent)}
                 />
               ))}
             </div>
@@ -201,12 +223,12 @@ export default function AdminDashboard() {
         {activeTab === "profile" && <Profile user={user} />}
       </div>
 
-      {/* ADD LEAD MODAL (ONCE, SAFE) */}
+      {/* ADD LEAD MODAL */}
       {showAddLead && (
         <AddLead
           isAdmin
-          onLeadAdded={lead => {
-            setLeads(prev => [lead, ...prev]);
+          onLeadAdded={(lead) => {
+            setLeads((prev) => [lead, ...prev]);
             setShowAddLead(false);
           }}
           onClose={() => setShowAddLead(false)}
@@ -220,6 +242,7 @@ export default function AdminDashboard() {
           users={users}
           currentUserEmail={user.email}
           onUpdate={updateLead}
+          onDelete={deleteLead} // Pass delete function
           onClose={() => setSelectedLead(null)}
         />
       )}
@@ -230,11 +253,7 @@ export default function AdminDashboard() {
 /* ================= SMALL STAT CARD ================= */
 function StatCard({ title, value, color, onClick }) {
   return (
-    <div
-      className="stat-card"
-      onClick={onClick}
-      style={{ borderTop: color ? `4px solid ${color}` : undefined }}
-    >
+    <div className="stat-card" onClick={onClick} style={{ borderTop: color ? `4px solid ${color}` : undefined }}>
       <h3>{title}</h3>
       <p>{value}</p>
     </div>
