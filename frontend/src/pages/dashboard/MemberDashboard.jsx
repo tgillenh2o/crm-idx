@@ -112,21 +112,32 @@ export default function MemberDashboard() {
     );
 
   /* ================= FILTERED LISTS ================= */
-  const filteredMyLeads = useMemo(() => {
-    let list = filterStatus
-      ? myLeads.filter((l) => l.status === filterStatus)
-      : myLeads;
+  const myLeads = leads.filter(
+  (l) => l.assignedTo === user.email
+);
 
-    return sortBy === "status" ? sortByStatus(list) : list;
-  }, [myLeads, filterStatus, sortBy]);
+const leadPond = leads.filter(
+  (l) => !l.assignedTo
+);
 
-  const filteredLeadPond = useMemo(() => {
-    let list = filterStatus
-      ? leadPond.filter((l) => l.status === filterStatus)
-      : leadPond;
+const filteredLeads = useMemo(() => {
+  let list = [...leads];
+  if (filterStatus) list = list.filter((l) => l.status === filterStatus);
+  if (filterAgent) list = list.filter((l) => l.assignedTo === filterAgent);
+  return sortLeads(list);
+}, [leads, filterStatus, filterAgent, sortBy]);
 
-    return sortBy === "status" ? sortByStatus(list) : list;
-  }, [leadPond, filterStatus, sortBy]);
+const filteredMyLeads = useMemo(() => {
+  let list = [...myLeads];
+  if (filterStatus) list = list.filter((l) => l.status === filterStatus);
+  return sortLeads(list);
+}, [myLeads, filterStatus, sortBy]);
+
+const filteredLeadPond = useMemo(() => {
+  let list = [...leadPond];
+  if (filterStatus) list = list.filter((l) => l.status === filterStatus);
+  return sortLeads(list);
+}, [leadPond, filterStatus, sortBy]);
 
   /* ================= RENDER LIST ================= */
   const renderList = (list) => (
@@ -172,10 +183,6 @@ export default function MemberDashboard() {
           <button className="add-lead-btn" onClick={() => setShowAddLead(true)}>
             + Add Lead
           </button>
-
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="status">Sort by Status</option>
-          </select>
         </div>
 
         {activeTab === "dashboard" && (
@@ -196,6 +203,15 @@ export default function MemberDashboard() {
             </div>
           </>
         )}
+<div className="list-controls">
+  <label>Sort:</label>
+  <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+    <option value="status">Status</option>
+    <option value="newest">Newest</option>
+    <option value="oldest">Oldest</option>
+  </select>
+</div>
+
 
         {activeTab === "my-leads" && renderList(filteredMyLeads)}
         {activeTab === "lead-pond" && renderList(filteredLeadPond)}

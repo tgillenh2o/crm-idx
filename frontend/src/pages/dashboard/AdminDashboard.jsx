@@ -33,6 +33,8 @@ export default function AdminDashboard() {
   const [showAddLead, setShowAddLead] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
   const [filterAgent, setFilterAgent] = useState("");
+  const [sortBy, setSortBy] = useState("status");
+
 
   /* ================= FETCH ================= */
   const fetchLeads = async () => {
@@ -121,26 +123,33 @@ export default function AdminDashboard() {
     );
 
   /* ================= FILTERED LISTS ================= */
-  const filteredLeads = useMemo(() => {
-    let list = [...leads];
-    if (filterStatus) list = list.filter((l) => l.status === filterStatus);
-    if (filterAgent) list = list.filter((l) => l.assignedTo === filterAgent);
-    return sortByStatus(list);
-  }, [leads, filterStatus, filterAgent]);
+const myLeads = leads.filter(
+  (l) => l.assignedTo === user.email
+);
 
-  const filteredMyLeads = useMemo(() => {
-    let list = filterStatus
-      ? myLeads.filter((l) => l.status === filterStatus)
-      : myLeads;
-    return sortByStatus(list);
-  }, [myLeads, filterStatus]);
+const leadPond = leads.filter(
+  (l) => !l.assignedTo
+);
 
-  const filteredLeadPond = useMemo(() => {
-    let list = filterStatus
-      ? leadPond.filter((l) => l.status === filterStatus)
-      : leadPond;
-    return sortByStatus(list);
-  }, [leadPond, filterStatus]);
+const filteredLeads = useMemo(() => {
+  let list = [...leads];
+  if (filterStatus) list = list.filter((l) => l.status === filterStatus);
+  if (filterAgent) list = list.filter((l) => l.assignedTo === filterAgent);
+  return sortLeads(list);
+}, [leads, filterStatus, filterAgent, sortBy]);
+
+const filteredMyLeads = useMemo(() => {
+  let list = [...myLeads];
+  if (filterStatus) list = list.filter((l) => l.status === filterStatus);
+  return sortLeads(list);
+}, [myLeads, filterStatus, sortBy]);
+
+const filteredLeadPond = useMemo(() => {
+  let list = [...leadPond];
+  if (filterStatus) list = list.filter((l) => l.status === filterStatus);
+  return sortLeads(list);
+}, [leadPond, filterStatus, sortBy]);
+
 
   /* ================= AGENT STATS ================= */
   const agentStats = useMemo(() => {
@@ -242,6 +251,16 @@ export default function AdminDashboard() {
             </div>
           </>
         )}
+
+<div className="list-controls">
+  <label>Sort:</label>
+  <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+    <option value="status">Status</option>
+    <option value="newest">Newest</option>
+    <option value="oldest">Oldest</option>
+  </select>
+</div>
+
 
         {activeTab === "all-leads" && renderList(filteredLeads)}
         {activeTab === "my-leads" && renderList(filteredMyLeads)}
