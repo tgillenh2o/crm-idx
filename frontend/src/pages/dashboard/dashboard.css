@@ -327,3 +327,18 @@ button:focus {
   color: #a5b4fc;
 }
 
+/* ---------- Select / Dropdown Fix ---------- */
+select {
+  background-color: #12121f;
+  color: #ffffff;
+  border: 1px solid #444;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+select option {
+  background-color: #1e1e2f;
+  color: #ffffff;
+}

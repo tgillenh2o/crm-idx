@@ -16,13 +16,7 @@ const STATUS_COLORS = {
   Closed: "#f44336",
 };
 
-const STATUS_ORDER = [
-  "New",
-  "Contacted",
-  "Follow-Up",
-  "Under Contract",
-  "Closed",
-];
+const STATUS_ORDER = ["New", "Contacted", "Follow-Up", "Under Contract", "Closed"];
 
 /* ================= COMPONENT ================= */
 export default function MemberDashboard() {
@@ -34,8 +28,8 @@ export default function MemberDashboard() {
   const [selectedLead, setSelectedLead] = useState(null);
   const [showAddLead, setShowAddLead] = useState(false);
 
-  const [filterStatus, setFilterStatus] = useState("");
-  const [sortBy, setSortBy] = useState("status"); // Only status sorting
+  const [filterStatus, setFilterStatus] = useState(""); // For filtering
+  const [sortBy] = useState("status"); // Status-only sorting
 
   /* ================= FETCH ================= */
   const fetchLeads = async () => {
@@ -87,24 +81,32 @@ export default function MemberDashboard() {
   };
 
   /* ================= BASE LISTS ================= */
-  const myLeads = useMemo(() => leads.filter((l) => l.assignedTo === user.email), [leads, user.email]);
-  const leadPond = useMemo(
-  () =>
-    leads.filter(
-      (l) => !l.assignedTo || l.assignedTo === "POND"
-    ),
-  [leads]
-);
+  const myLeads = useMemo(
+    () => leads.filter((l) => l.assignedTo === user.email),
+    [leads, user.email]
+  );
 
+  const leadPond = useMemo(
+    () => leads.filter((l) => !l.assignedTo || l.assignedTo === "POND"),
+    [leads]
+  );
 
   /* ================= SORTING ================= */
-  const sortLeads = (list) => {
-    return [...list].sort((a, b) => STATUS_ORDER.indexOf(a.status || "New") - STATUS_ORDER.indexOf(b.status || "New"));
-  };
+  const sortLeads = (list) =>
+    [...list].sort(
+      (a, b) => STATUS_ORDER.indexOf(a.status || "New") - STATUS_ORDER.indexOf(b.status || "New")
+    );
 
   /* ================= FILTERED LISTS ================= */
-  const filteredMyLeads = useMemo(() => sortLeads(myLeads.filter((l) => !filterStatus || l.status === filterStatus)), [myLeads, filterStatus]);
-  const filteredLeadPond = useMemo(() => sortLeads(leadPond.filter((l) => !filterStatus || l.status === filterStatus)), [leadPond, filterStatus]);
+  const filteredMyLeads = useMemo(
+    () => sortLeads(myLeads.filter((l) => !filterStatus || l.status === filterStatus)),
+    [myLeads, filterStatus]
+  );
+
+  const filteredLeadPond = useMemo(
+    () => sortLeads(leadPond.filter((l) => !filterStatus || l.status === filterStatus)),
+    [leadPond, filterStatus]
+  );
 
   /* ================= RENDER LIST ================= */
   const renderList = (list) => (
@@ -140,7 +142,6 @@ export default function MemberDashboard() {
   return (
     <div className="dashboard">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={false} />
-
       <div className="main-panel">
         <Topbar />
 
@@ -149,9 +150,17 @@ export default function MemberDashboard() {
             + Add Lead
           </button>
 
-          {/* Only Status Sorting */}
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="status">Sort by Status</option>
+          {/* ================= Filter by Status ================= */}
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="">All Statuses</option>
+            {Object.keys(STATUS_COLORS).map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
           </select>
         </div>
 
