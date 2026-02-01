@@ -96,48 +96,40 @@ export default function MemberDashboard() {
   );
 
   const leadPond = useMemo(
-    () => leads.filter((l) => !l.assignedTo || l.assignedTo === "POND"),
+    () => leads.filter((l) => !l.assignedTo),
     [leads]
   );
 
   /* ================= SORTING ================= */
-  const getStatusIndex = (status) => {
-    const idx = STATUS_ORDER.indexOf(status || "New");
-    return idx === -1 ? STATUS_ORDER.length : idx;
+  const getStatusIndex = (status) =>
+    STATUS_ORDER.indexOf(status || "New");
+
+  const sortLeads = (list) => {
+    const sorted = [...list];
+    if (sortBy === "status") {
+      sorted.sort((a, b) => getStatusIndex(a.status) - getStatusIndex(b.status));
+    }
+    if (sortBy === "newest") {
+      sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+    if (sortBy === "oldest") {
+      sorted.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    }
+    return sorted;
   };
 
-  const sortByStatus = (list) =>
-    [...list].sort(
-      (a, b) => getStatusIndex(a.status) - getStatusIndex(b.status)
-    );
-
   /* ================= FILTERED LISTS ================= */
-  const myLeads = leads.filter(
-  (l) => l.assignedTo === user.email
-);
+  const filteredMyLeads = useMemo(() => {
+    let list = [...myLeads];
+    if (filterStatus) list = list.filter((l) => l.status === filterStatus);
+    return sortLeads(list);
+  }, [myLeads, filterStatus, sortBy]);
 
-const leadPond = leads.filter(
-  (l) => !l.assignedTo
-);
-
-const filteredLeads = useMemo(() => {
-  let list = [...leads];
-  if (filterStatus) list = list.filter((l) => l.status === filterStatus);
-  if (filterAgent) list = list.filter((l) => l.assignedTo === filterAgent);
-  return sortLeads(list);
-}, [leads, filterStatus, filterAgent, sortBy]);
-
-const filteredMyLeads = useMemo(() => {
-  let list = [...myLeads];
-  if (filterStatus) list = list.filter((l) => l.status === filterStatus);
-  return sortLeads(list);
-}, [myLeads, filterStatus, sortBy]);
-
-const filteredLeadPond = useMemo(() => {
-  let list = [...leadPond];
-  if (filterStatus) list = list.filter((l) => l.status === filterStatus);
-  return sortLeads(list);
-}, [leadPond, filterStatus, sortBy]);
+  const filteredLeadPond = useMemo(() => {
+    let list = [...leadPond];
+    if (filterStatus) list = list.filter((l) => l.status === filterStatus);
+    return sortLeads(list);
+  }, [leadPond, filterStatus, sortBy]);
 
   /* ================= RENDER LIST ================= */
   const renderList = (list) => (
@@ -175,7 +167,6 @@ const filteredLeadPond = useMemo(() => {
   return (
     <div className="dashboard">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={false} />
-
       <div className="main-panel">
         <Topbar />
 
@@ -183,6 +174,12 @@ const filteredLeadPond = useMemo(() => {
           <button className="add-lead-btn" onClick={() => setShowAddLead(true)}>
             + Add Lead
           </button>
+
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option value="status">Sort by Status</option>
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+          </select>
         </div>
 
         {activeTab === "dashboard" && (
@@ -203,41 +200,32 @@ const filteredLeadPond = useMemo(() => {
             </div>
           </>
         )}
-<div className="list-controls">
-  <label>Sort:</label>
-  <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-    <option value="status">Status</option>
-    <option value="newest">Newest</option>
-    <option value="oldest">Oldest</option>
-  </select>
-</div>
-
 
         {activeTab === "my-leads" && renderList(filteredMyLeads)}
         {activeTab === "lead-pond" && renderList(filteredLeadPond)}
         {activeTab === "profile" && <Profile user={user} />}
+
+        {showAddLead && (
+          <AddLead
+            onLeadAdded={(lead) => {
+              setLeads((prev) => [lead, ...prev]);
+              setShowAddLead(false);
+            }}
+            onClose={() => setShowAddLead(false)}
+          />
+        )}
+
+        {selectedLead && (
+          <LeadCard
+            lead={selectedLead}
+            isAdmin={false}
+            users={users}
+            currentUserEmail={user.email}
+            onUpdate={updateLead}
+            onClose={() => setSelectedLead(null)}
+          />
+        )}
       </div>
-
-      {selectedLead && (
-        <LeadCard
-          lead={selectedLead}
-          isAdmin={false}
-          users={users}
-          currentUserEmail={user.email}
-          onUpdate={updateLead}
-          onClose={() => setSelectedLead(null)}
-        />
-      )}
-
-      {showAddLead && (
-        <AddLead
-          onLeadAdded={(lead) => {
-            setLeads((prev) => [lead, ...prev]);
-            setShowAddLead(false);
-          }}
-          onClose={() => setShowAddLead(false)}
-        />
-      )}
     </div>
   );
 }

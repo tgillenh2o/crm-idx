@@ -7,6 +7,7 @@ import AddLead from "./AddLead";
 import Profile from "./Profile";
 import "./Dashboard.css";
 
+/* ================= CONSTANTS ================= */
 const STATUS_COLORS = {
   New: "#4caf50",
   Contacted: "#2196f3",
@@ -23,6 +24,7 @@ const STATUS_ORDER = [
   "Closed",
 ];
 
+/* ================= COMPONENT ================= */
 export default function AdminDashboard() {
   const { user } = useContext(AuthContext);
 
@@ -31,10 +33,10 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [selectedLead, setSelectedLead] = useState(null);
   const [showAddLead, setShowAddLead] = useState(false);
+
   const [filterStatus, setFilterStatus] = useState("");
   const [filterAgent, setFilterAgent] = useState("");
   const [sortBy, setSortBy] = useState("status");
-
 
   /* ================= FETCH ================= */
   const fetchLeads = async () => {
@@ -107,49 +109,58 @@ export default function AdminDashboard() {
   );
 
   const leadPond = useMemo(
-    () => leads.filter((l) => !l.assignedTo || l.assignedTo === "POND"),
+    () => leads.filter((l) => !l.assignedTo),
     [leads]
   );
 
-  /* ================= SORT ================= */
-  const getStatusIndex = (status) => {
-    const idx = STATUS_ORDER.indexOf(status || "New");
-    return idx === -1 ? STATUS_ORDER.length : idx;
+  /* ================= SORTING ================= */
+  const getStatusIndex = (status) =>
+    STATUS_ORDER.indexOf(status || "New");
+
+  const sortLeads = (list) => {
+    const sorted = [...list];
+
+    if (sortBy === "status") {
+      sorted.sort(
+        (a, b) =>
+          getStatusIndex(a.status) - getStatusIndex(b.status)
+      );
+    }
+
+    if (sortBy === "newest") {
+      sorted.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+    }
+
+    if (sortBy === "oldest") {
+      sorted.sort(
+        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+      );
+    }
+
+    return sorted;
   };
 
-  const sortByStatus = (list) =>
-    [...list].sort(
-      (a, b) => getStatusIndex(a.status) - getStatusIndex(b.status)
-    );
-
   /* ================= FILTERED LISTS ================= */
-const myLeads = leads.filter(
-  (l) => l.assignedTo === user.email
-);
+  const filteredLeads = useMemo(() => {
+    let list = [...leads];
+    if (filterStatus) list = list.filter((l) => l.status === filterStatus);
+    if (filterAgent) list = list.filter((l) => l.assignedTo === filterAgent);
+    return sortLeads(list);
+  }, [leads, filterStatus, filterAgent, sortBy]);
 
-const leadPond = leads.filter(
-  (l) => !l.assignedTo
-);
+  const filteredMyLeads = useMemo(() => {
+    let list = [...myLeads];
+    if (filterStatus) list = list.filter((l) => l.status === filterStatus);
+    return sortLeads(list);
+  }, [myLeads, filterStatus, sortBy]);
 
-const filteredLeads = useMemo(() => {
-  let list = [...leads];
-  if (filterStatus) list = list.filter((l) => l.status === filterStatus);
-  if (filterAgent) list = list.filter((l) => l.assignedTo === filterAgent);
-  return sortLeads(list);
-}, [leads, filterStatus, filterAgent, sortBy]);
-
-const filteredMyLeads = useMemo(() => {
-  let list = [...myLeads];
-  if (filterStatus) list = list.filter((l) => l.status === filterStatus);
-  return sortLeads(list);
-}, [myLeads, filterStatus, sortBy]);
-
-const filteredLeadPond = useMemo(() => {
-  let list = [...leadPond];
-  if (filterStatus) list = list.filter((l) => l.status === filterStatus);
-  return sortLeads(list);
-}, [leadPond, filterStatus, sortBy]);
-
+  const filteredLeadPond = useMemo(() => {
+    let list = [...leadPond];
+    if (filterStatus) list = list.filter((l) => l.status === filterStatus);
+    return sortLeads(list);
+  }, [leadPond, filterStatus, sortBy]);
 
   /* ================= AGENT STATS ================= */
   const agentStats = useMemo(() => {
@@ -157,18 +168,10 @@ const filteredLeadPond = useMemo(() => {
     leads.forEach((l) => {
       const agent = l.assignedTo || "POND";
       if (!stats[agent]) {
-        stats[agent] = {
-          total: 0,
-          New: 0,
-          Contacted: 0,
-          "Follow-Up": 0,
-          "Under Contract": 0,
-          Closed: 0,
-        };
+        stats[agent] = { total: 0, Closed: 0 };
       }
       stats[agent].total++;
-      const status = l.status || "New";
-      stats[agent][status]++;
+      if (l.status === "Closed") stats[agent].Closed++;
     });
     return stats;
   }, [leads]);
@@ -217,6 +220,12 @@ const filteredLeadPond = useMemo(() => {
           <button className="add-lead-btn" onClick={() => setShowAddLead(true)}>
             + Add Lead
           </button>
+
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option value="status">Sort by Status</option>
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+          </select>
         </div>
 
         {activeTab === "dashboard" && (
@@ -225,15 +234,6 @@ const filteredLeadPond = useMemo(() => {
             <div className="stats-grid">
               <StatCard title="Total Leads" value={leads.length} />
               <StatCard title="Lead Pond" value={leadPond.length} />
-              {Object.entries(STATUS_COLORS).map(([status, color]) => (
-                <StatCard
-                  key={status}
-                  title={status}
-                  value={leads.filter((l) => l.status === status).length}
-                  color={color}
-                  onClick={() => setFilterStatus(status)}
-                />
-              ))}
             </div>
 
             <h3>Agents</h3>
@@ -251,16 +251,6 @@ const filteredLeadPond = useMemo(() => {
             </div>
           </>
         )}
-
-<div className="list-controls">
-  <label>Sort:</label>
-  <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-    <option value="status">Status</option>
-    <option value="newest">Newest</option>
-    <option value="oldest">Oldest</option>
-  </select>
-</div>
-
 
         {activeTab === "all-leads" && renderList(filteredLeads)}
         {activeTab === "my-leads" && renderList(filteredMyLeads)}
