@@ -36,7 +36,7 @@ export default function AdminDashboard() {
 
   const [filterStatus, setFilterStatus] = useState("");
   const [filterAgent, setFilterAgent] = useState("");
-  const [sortBy, setSortBy] = useState("status");
+  const [sortBy, setSortBy] = useState("status"); // Only status sorting for now
 
   /* ================= FETCH ================= */
   const fetchLeads = async () => {
@@ -62,17 +62,14 @@ export default function AdminDashboard() {
 
   /* ================= ACTIONS ================= */
   const updateLead = async (updated) => {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/leads/${updated._id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(updated),
-      }
-    );
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${updated._id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(updated),
+    });
     const saved = await res.json();
     setLeads((prev) => prev.map((l) => (l._id === saved._id ? saved : l)));
     setSelectedLead(saved);
@@ -88,58 +85,24 @@ export default function AdminDashboard() {
   };
 
   const claimLead = async (lead) => {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/assign`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ assignedTo: user.email }),
-      }
-    );
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/assign`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ assignedTo: user.email }),
+    });
     updateLead(await res.json());
   };
 
   /* ================= BASE LISTS ================= */
-  const myLeads = useMemo(
-    () => leads.filter((l) => l.assignedTo === user.email),
-    [leads, user.email]
-  );
-
-  const leadPond = useMemo(
-    () => leads.filter((l) => !l.assignedTo),
-    [leads]
-  );
+  const myLeads = useMemo(() => leads.filter((l) => l.assignedTo === user.email), [leads, user.email]);
+  const leadPond = useMemo(() => leads.filter((l) => !l.assignedTo), [leads]);
 
   /* ================= SORTING ================= */
-  const getStatusIndex = (status) =>
-    STATUS_ORDER.indexOf(status || "New");
-
   const sortLeads = (list) => {
-    const sorted = [...list];
-
-    if (sortBy === "status") {
-      sorted.sort(
-        (a, b) =>
-          getStatusIndex(a.status) - getStatusIndex(b.status)
-      );
-    }
-
-    if (sortBy === "newest") {
-      sorted.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
-    }
-
-    if (sortBy === "oldest") {
-      sorted.sort(
-        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-      );
-    }
-
-    return sorted;
+    return [...list].sort((a, b) => STATUS_ORDER.indexOf(a.status || "New") - STATUS_ORDER.indexOf(b.status || "New"));
   };
 
   /* ================= FILTERED LISTS ================= */
@@ -148,28 +111,17 @@ export default function AdminDashboard() {
     if (filterStatus) list = list.filter((l) => l.status === filterStatus);
     if (filterAgent) list = list.filter((l) => l.assignedTo === filterAgent);
     return sortLeads(list);
-  }, [leads, filterStatus, filterAgent, sortBy]);
+  }, [leads, filterStatus, filterAgent]);
 
-  const filteredMyLeads = useMemo(() => {
-    let list = [...myLeads];
-    if (filterStatus) list = list.filter((l) => l.status === filterStatus);
-    return sortLeads(list);
-  }, [myLeads, filterStatus, sortBy]);
-
-  const filteredLeadPond = useMemo(() => {
-    let list = [...leadPond];
-    if (filterStatus) list = list.filter((l) => l.status === filterStatus);
-    return sortLeads(list);
-  }, [leadPond, filterStatus, sortBy]);
+  const filteredMyLeads = useMemo(() => sortLeads(myLeads.filter((l) => !filterStatus || l.status === filterStatus)), [myLeads, filterStatus]);
+  const filteredLeadPond = useMemo(() => sortLeads(leadPond.filter((l) => !filterStatus || l.status === filterStatus)), [leadPond, filterStatus]);
 
   /* ================= AGENT STATS ================= */
   const agentStats = useMemo(() => {
     const stats = {};
     leads.forEach((l) => {
       const agent = l.assignedTo || "POND";
-      if (!stats[agent]) {
-        stats[agent] = { total: 0, Closed: 0 };
-      }
+      if (!stats[agent]) stats[agent] = { total: 0, Closed: 0 };
       stats[agent].total++;
       if (l.status === "Closed") stats[agent].Closed++;
     });
@@ -182,9 +134,7 @@ export default function AdminDashboard() {
       {list.map((lead) => (
         <div
           key={lead._id}
-          className={`lead-row status-${(lead.status || "New")
-            .toLowerCase()
-            .replace(" ", "-")}`}
+          className={`lead-row status-${(lead.status || "New").toLowerCase().replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
         >
           <span className="lead-name">{lead.name}</span>
@@ -221,10 +171,9 @@ export default function AdminDashboard() {
             + Add Lead
           </button>
 
+          {/* Only Status Sorting */}
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
             <option value="status">Sort by Status</option>
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
           </select>
         </div>
 
@@ -243,9 +192,7 @@ export default function AdminDashboard() {
                   key={agent}
                   title={agent === "POND" ? "Lead Pond" : agent}
                   value={`${s.total} (${s.Closed} closed)`}
-                  onClick={() =>
-                    setFilterAgent(agent === "POND" ? "" : agent)
-                  }
+                  onClick={() => setFilterAgent(agent === "POND" ? "" : agent)}
                 />
               ))}
             </div>
@@ -287,11 +234,7 @@ export default function AdminDashboard() {
 /* ================= STAT CARD ================= */
 function StatCard({ title, value, color, onClick }) {
   return (
-    <div
-      className="stat-card"
-      onClick={onClick}
-      style={{ borderTop: color ? `4px solid ${color}` : undefined }}
-    >
+    <div className="stat-card" onClick={onClick} style={{ borderTop: color ? `4px solid ${color}` : undefined }}>
       <h3>{title}</h3>
       <p>{value}</p>
     </div>

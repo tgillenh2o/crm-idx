@@ -7,6 +7,7 @@ import AddLead from "./AddLead";
 import Profile from "./Profile";
 import "./Dashboard.css";
 
+/* ================= CONSTANTS ================= */
 const STATUS_COLORS = {
   New: "#4caf50",
   Contacted: "#2196f3",
@@ -23,6 +24,7 @@ const STATUS_ORDER = [
   "Closed",
 ];
 
+/* ================= COMPONENT ================= */
 export default function MemberDashboard() {
   const { user } = useContext(AuthContext);
 
@@ -31,8 +33,9 @@ export default function MemberDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [selectedLead, setSelectedLead] = useState(null);
   const [showAddLead, setShowAddLead] = useState(false);
+
   const [filterStatus, setFilterStatus] = useState("");
-  const [sortBy, setSortBy] = useState("status");
+  const [sortBy, setSortBy] = useState("status"); // Only status sorting
 
   /* ================= FETCH ================= */
   const fetchLeads = async () => {
@@ -58,78 +61,43 @@ export default function MemberDashboard() {
 
   /* ================= ACTIONS ================= */
   const updateLead = async (updated) => {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/leads/${updated._id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(updated),
-      }
-    );
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${updated._id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(updated),
+    });
     const saved = await res.json();
     setLeads((prev) => prev.map((l) => (l._id === saved._id ? saved : l)));
     setSelectedLead(saved);
   };
 
   const claimLead = async (lead) => {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/assign`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ assignedTo: user.email }),
-      }
-    );
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/assign`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ assignedTo: user.email }),
+    });
     updateLead(await res.json());
   };
 
   /* ================= BASE LISTS ================= */
-  const myLeads = useMemo(
-    () => leads.filter((l) => l.assignedTo === user.email),
-    [leads, user.email]
-  );
-
-  const leadPond = useMemo(
-    () => leads.filter((l) => !l.assignedTo),
-    [leads]
-  );
+  const myLeads = useMemo(() => leads.filter((l) => l.assignedTo === user.email), [leads, user.email]);
+  const leadPond = useMemo(() => leads.filter((l) => !l.assignedTo), [leads]);
 
   /* ================= SORTING ================= */
-  const getStatusIndex = (status) =>
-    STATUS_ORDER.indexOf(status || "New");
-
   const sortLeads = (list) => {
-    const sorted = [...list];
-    if (sortBy === "status") {
-      sorted.sort((a, b) => getStatusIndex(a.status) - getStatusIndex(b.status));
-    }
-    if (sortBy === "newest") {
-      sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    }
-    if (sortBy === "oldest") {
-      sorted.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    }
-    return sorted;
+    return [...list].sort((a, b) => STATUS_ORDER.indexOf(a.status || "New") - STATUS_ORDER.indexOf(b.status || "New"));
   };
 
   /* ================= FILTERED LISTS ================= */
-  const filteredMyLeads = useMemo(() => {
-    let list = [...myLeads];
-    if (filterStatus) list = list.filter((l) => l.status === filterStatus);
-    return sortLeads(list);
-  }, [myLeads, filterStatus, sortBy]);
-
-  const filteredLeadPond = useMemo(() => {
-    let list = [...leadPond];
-    if (filterStatus) list = list.filter((l) => l.status === filterStatus);
-    return sortLeads(list);
-  }, [leadPond, filterStatus, sortBy]);
+  const filteredMyLeads = useMemo(() => sortLeads(myLeads.filter((l) => !filterStatus || l.status === filterStatus)), [myLeads, filterStatus]);
+  const filteredLeadPond = useMemo(() => sortLeads(leadPond.filter((l) => !filterStatus || l.status === filterStatus)), [leadPond, filterStatus]);
 
   /* ================= RENDER LIST ================= */
   const renderList = (list) => (
@@ -137,9 +105,7 @@ export default function MemberDashboard() {
       {list.map((lead) => (
         <div
           key={lead._id}
-          className={`lead-row status-${(lead.status || "New")
-            .toLowerCase()
-            .replace(" ", "-")}`}
+          className={`lead-row status-${(lead.status || "New").toLowerCase().replace(" ", "-")}`}
           onClick={() => setSelectedLead(lead)}
         >
           <span className="lead-name">{lead.name}</span>
@@ -167,6 +133,7 @@ export default function MemberDashboard() {
   return (
     <div className="dashboard">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={false} />
+
       <div className="main-panel">
         <Topbar />
 
@@ -175,10 +142,9 @@ export default function MemberDashboard() {
             + Add Lead
           </button>
 
+          {/* Only Status Sorting */}
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
             <option value="status">Sort by Status</option>
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
           </select>
         </div>
 
