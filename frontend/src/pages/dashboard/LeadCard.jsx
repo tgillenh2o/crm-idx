@@ -8,6 +8,7 @@ export default function LeadCard({
   currentUserEmail,
   onUpdate,
   onClose,
+  onDelete,
 }) {
   const [localLead, setLocalLead] = useState({ ...lead });
   const [editing, setEditing] = useState(false);
@@ -71,22 +72,28 @@ export default function LeadCard({
     saveLead({ ...localLead, assignedTo: email });
   };
 
-  const handleDelete = async e => {
-    e.stopPropagation();
-    if (!window.confirm("Delete this lead permanently?")) return;
+ const handleDelete = async () => {
+  if (!window.confirm("Delete this lead?")) return;
 
-    await fetch(
-      `${import.meta.env.VITE_API_URL}/api/leads/${localLead._id}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
 
-    onClose();
-  };
+  if (!res.ok) {
+    alert("Delete failed");
+    return;
+  }
+
+  onDelete(lead._id); // 🔥 THIS was crashing before
+  onClose();
+};
+
 
   const handleAddInteraction = () => {
     if (!newInteraction.trim()) return;
