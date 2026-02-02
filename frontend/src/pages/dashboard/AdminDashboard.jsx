@@ -69,14 +69,26 @@ export default function AdminDashboard() {
     setSelectedLead(saved);
   };
 
-  const deleteLead = async (id) => {
-    await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${id}`, {
+const deleteLead = async (id) => {
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/leads/${id}`,
+    {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
-    setLeads((prev) => prev.filter((l) => l._id !== id));
-    setSelectedLead(null);
-  };
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  if (!res.ok) {
+    console.error("Admin delete failed");
+    return;
+  }
+
+  setLeads((prev) => prev.filter((l) => l._id !== id));
+  setSelectedLead(null);
+};
+
 
   const claimLead = async (lead) => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/assign`, {

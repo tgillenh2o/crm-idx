@@ -157,4 +157,14 @@ router.post("/:id/interactions", verifyToken, async (req, res) => {
   }
 });
 
+router.delete("/:id", auth, async (req, res) => {
+  if (!["teamAdmin"].includes(req.user.role)) {
+    return res.status(403).json({ msg: "Not authorized" });
+  }
+
+  await Lead.findByIdAndDelete(req.params.id);
+  res.json({ msg: "Lead deleted" });
+});
+
+
 module.exports = router;

@@ -185,9 +185,17 @@ export default function LeadCard({
                   ))}
                 </select>
 
-                <button className="delete-button" onClick={handleDelete}>
-                  Delete Lead
-                </button>
+                <button
+  className="delete-button"
+  onClick={() => {
+    if (window.confirm("Delete this lead permanently?")) {
+      onDelete(lead._id);
+    }
+  }}
+>
+  Delete Lead
+</button>
+
               </div>
             )}
           </>
