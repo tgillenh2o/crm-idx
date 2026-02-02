@@ -3,6 +3,8 @@ const router = express.Router();
 const verifyToken = require("../middleware/auth");
 const isAdmin = require("../middleware/isAdmin");
 const Lead = require("../models/Lead");
+const auth = require("../middleware/auth");
+
 
 /* ================== GET LEADS ================== */
 router.get("/", verifyToken, async (req, res) => {
