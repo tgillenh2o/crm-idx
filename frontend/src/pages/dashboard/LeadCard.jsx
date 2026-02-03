@@ -26,51 +26,62 @@ export default function LeadCard({
   };
 
   /* ================= API SAVE ================= */
-  const saveLead = async updated => {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/leads/${updated._id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(updated),
-      }
-    );
+const saveLead = async (changes) => {
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(changes),
+    }
+  );
 
-    const saved = await res.json();
-    setLocalLead(saved);
-    onUpdate(saved);
-    triggerFlash();
-  };
+  const saved = await res.json();
+  setLocalLead(saved);
+  onUpdate(saved);
+  triggerFlash();
+};
+
 
   /* ================= ACTIONS ================= */
-  const handleStatusChange = e =>
-    saveLead({ ...localLead, status: e.target.value || "New" });
+const handleStatusChange = e =>
+  saveLead({ status: e.target.value || "New" });
+
 
   const handleChange = e =>
     setLocalLead({ ...localLead, [e.target.name]: e.target.value });
 
   const handleSave = () => {
-    saveLead({ ...localLead, status: localLead.status || "New" });
-    setEditing(false);
-  };
+  saveLead({
+    name: localLead.name,
+    email: localLead.email,
+    phone: localLead.phone,
+    status: localLead.status || "New",
+  });
+  setEditing(false);
+};
 
-  const handleClaim = e => {
-    e.stopPropagation();
-    saveLead({ ...localLead, assignedTo: currentUserEmail });
-  };
 
-  const handleReturnToPond = e => {
-    e.stopPropagation();
-    saveLead({ ...localLead, assignedTo: "" });
-  };
+ const handleClaim = e => {
+  e.stopPropagation();
+  saveLead({ assignedTo: currentUserEmail });
+};
 
-  const handleReassign = (e, email) => {
-    e.stopPropagation();
-    saveLead({ ...localLead, assignedTo: email });
-  };
+
+const handleReturnToPond = e => {
+  e.stopPropagation();
+  saveLead({ assignedTo: "" });
+};
+
+
+const handleReassign = (e, email) => {
+  e.stopPropagation();
+  saveLead({ assignedTo: email });
+};
+
 
  const handleDelete = async () => {
   if (!window.confirm("Delete this lead?")) return;
