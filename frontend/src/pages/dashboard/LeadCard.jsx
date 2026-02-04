@@ -30,7 +30,7 @@ const saveLead = async (changes) => {
   const res = await fetch(
     `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`,
     {
-      method: "PUT",
+      method: "PATCH", // 🔥 THIS WAS THE BUG
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -39,11 +39,17 @@ const saveLead = async (changes) => {
     }
   );
 
+  if (!res.ok) {
+    console.error("Save failed");
+    return;
+  }
+
   const saved = await res.json();
   setLocalLead(saved);
-  onUpdate(saved);
+  onUpdate(saved); // syncs dashboard
   triggerFlash();
 };
+
 
 
   /* ================= ACTIONS ================= */
@@ -115,22 +121,41 @@ const handleReassign = (e, email) => {
 };
 
 
-const handleAddInteraction = () => {
+const handleAddInteraction = async () => {
   if (!newInteraction.trim()) return;
 
-  saveLead({
-    interactions: [
-      ...(localLead.interactions || []),
-      {
-        note: newInteraction,
-        createdBy: currentUserEmail,
-        date: new Date().toISOString(),
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/interactions`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-    ],
-  });
+      body: JSON.stringify({
+        note: newInteraction,
+        type: "note",
+      }),
+    }
+  );
 
+  if (!res.ok) {
+    console.error("Interaction failed");
+    return;
+  }
+
+  const data = await res.json();
+
+  const updatedLead = {
+    ...localLead,
+    interactions: data.interactions,
+  };
+
+  setLocalLead(updatedLead);
+  onUpdate(updatedLead); // keeps dashboard in sync
   setNewInteraction("");
 };
+
 
 
   /* ================= PERMISSIONS ================= */
