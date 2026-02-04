@@ -47,8 +47,17 @@ const saveLead = async (changes) => {
 
 
   /* ================= ACTIONS ================= */
-const handleStatusChange = e =>
-  saveLead({ status: e.target.value || "New" });
+const handleStatusChange = e => {
+  const newStatus = e.target.value || "New";
+
+  setLocalLead(prev => ({
+    ...prev,
+    status: newStatus,
+  }));
+
+  saveLead({ status: newStatus });
+};
+
 
 
   const handleChange = e =>
@@ -106,23 +115,23 @@ const handleReassign = (e, email) => {
 };
 
 
-  const handleAddInteraction = () => {
-    if (!newInteraction.trim()) return;
+const handleAddInteraction = () => {
+  if (!newInteraction.trim()) return;
 
-    saveLead({
-      ...localLead,
-      interactions: [
-        ...(localLead.interactions || []),
-        {
-          note: newInteraction,
-          createdBy: currentUserEmail,
-          date: new Date().toISOString(),
-        },
-      ],
-    });
+  saveLead({
+    interactions: [
+      ...(localLead.interactions || []),
+      {
+        note: newInteraction,
+        createdBy: currentUserEmail,
+        date: new Date().toISOString(),
+      },
+    ],
+  });
 
-    setNewInteraction("");
-  };
+  setNewInteraction("");
+};
+
 
   /* ================= PERMISSIONS ================= */
   const memberCanEdit =
@@ -203,16 +212,13 @@ const handleReassign = (e, email) => {
                   ))}
                 </select>
 
-                <button
+           <button
   className="delete-button"
-  onClick={() => {
-    if (window.confirm("Delete this lead permanently?")) {
-      onDelete(lead._id);
-    }
-  }}
+  onClick={handleDelete}
 >
   Delete Lead
 </button>
+
 
               </div>
             )}
