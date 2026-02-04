@@ -54,19 +54,13 @@ export default function MemberDashboard() {
   }, []);
 
   /* ================= ACTIONS ================= */
-  const updateLead = async (updated) => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${updated._id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify(updated),
-    });
-    const saved = await res.json();
-    setLeads((prev) => prev.map((l) => (l._id === saved._id ? saved : l)));
-    setSelectedLead(saved);
-  };
+ const updateLead = (saved) => {
+  setLeads((prev) =>
+    prev.map((l) => (l._id === saved._id ? saved : l))
+  );
+  setSelectedLead(saved);
+};
+
 
   const claimLead = async (lead) => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/assign`, {
