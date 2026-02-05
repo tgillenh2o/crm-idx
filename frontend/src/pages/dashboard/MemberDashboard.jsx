@@ -62,17 +62,25 @@ export default function MemberDashboard() {
 };
 
 
-  const claimLead = async (lead) => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/assign`, {
+const claimLead = async (lead) => {
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/claim`,
+    {
       method: "PATCH",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify({ assignedTo: user.email }),
-    });
-    updateLead(await res.json());
-  };
+    }
+  );
+
+  if (!res.ok) {
+    alert("Claim failed");
+    return;
+  }
+
+  const updated = await res.json();
+  updateLead(updated);
+};
 
   /* ================= BASE LISTS ================= */
   const myLeads = useMemo(
@@ -116,7 +124,8 @@ export default function MemberDashboard() {
           <span>{lead.assignedTo || "POND"}</span>
           <span>{lead.status}</span>
 
-          {!lead.assignedTo && (
+         {(!lead.assignedTo || lead.assignedTo === "POND") && (
+
             <button
               className="claim-button"
               onClick={(e) => {

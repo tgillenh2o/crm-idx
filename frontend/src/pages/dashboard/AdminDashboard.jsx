@@ -84,17 +84,33 @@ const deleteLead = async (id) => {
 };
 
 
-  const claimLead = async (lead) => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/assign`, {
+const assignLead = async (leadId, assignedTo) => {
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/leads/${leadId}/assign`,
+    {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify({ assignedTo: user.email }),
-    });
-    updateLead(await res.json());
-  };
+      body: JSON.stringify({ assignedTo }),
+    }
+  );
+
+  if (!res.ok) {
+    console.error("Assign lead failed");
+    return;
+  }
+
+  const updated = await res.json();
+
+  setLeads((prev) =>
+    prev.map((l) => (l._id === updated._id ? updated : l))
+  );
+
+  setSelectedLead(updated);
+};
+
 
   /* ================= BASE LISTS ================= */
   const myLeads = useMemo(
@@ -170,17 +186,19 @@ const deleteLead = async (id) => {
           <span>{lead.assignedTo || "POND"}</span>
           <span>{lead.status}</span>
 
-          {!lead.assignedTo && (
-            <button
-              className="claim-button"
-              onClick={(e) => {
-                e.stopPropagation();
-                claimLead(lead);
-              }}
-            >
-              Claim
-            </button>
-          )}
+         {!lead.assignedTo && (
+ <button
+  className="claim-button"
+  onClick={(e) => {
+    e.stopPropagation();
+    assignLead(lead._id, user.email);
+  }}
+>
+  {lead.assignedTo ? "Reassign to Me" : "Claim"}
+</button>
+
+)}
+
         </div>
       ))}
     </div>
@@ -266,15 +284,17 @@ const deleteLead = async (id) => {
         )}
 
         {selectedLead && (
-          <LeadCard
-            lead={selectedLead}
-            isAdmin
-            users={users}
-            currentUserEmail={user.email}
-            onUpdate={updateLead}
-            onDelete={deleteLead}
-            onClose={() => setSelectedLead(null)}
-          />
+        <LeadCard
+  lead={selectedLead}
+  isAdmin
+  users={users}
+  currentUserEmail={user.email}
+  onUpdate={updateLead}
+  onDelete={deleteLead}
+  onAssign={assignLead}
+  onClose={() => setSelectedLead(null)}
+/>
+
         )}
       </div>
     </div>
