@@ -185,7 +185,7 @@ const handleAddInteraction = async () => {
             <select value={localLead.status || "New"} onChange={handleStatusChange}>
               <option>New</option>
               <option>Contacted</option>
-              <option>Follow-Up</option>
+              <option>Follow-up</option>
               <option>Under Contract</option>
               <option>Closed</option>
             </select>
